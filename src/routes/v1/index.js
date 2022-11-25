@@ -40,6 +40,10 @@ const defaultRoutes = [
     path: '/subjects',
     route: subjectsRoute,
   },
+  {
+    path: '/docs',
+    route: docsRoute,
+  },
 ];
 
 const devRoutes = [
