@@ -7,3 +7,5 @@ module.exports.universitiesService = require('./universities.service');
 module.exports.universitiesDetailsService = require('./universityDetails.service');
 module.exports.courseDetailsService = require('./coursedetails.service');
 module.exports.subjectsService = require('./subjects.service');
+module.exports.studentsService = require('./students.service');
+module.exports.studentAuthService = require('./studentAuth.service');
