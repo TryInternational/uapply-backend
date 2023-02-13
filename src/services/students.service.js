@@ -8,9 +8,6 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Students>}
  */
 const createStudent = async (studentBody) => {
-  if (await Students.isEmailTaken(studentBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  }
   return Students.create(studentBody);
 };
 
@@ -57,9 +54,9 @@ const updateStudentById = async (studentId, updateBody) => {
   if (!student) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Students not found');
   }
-  if (updateBody.email && (await Students.isEmailTaken(updateBody.email, studentId))) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  }
+  // if (updateBody.email && (await Students.isEmailTaken(updateBody.email, studentId))) {
+  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  // }
   Object.assign(student, updateBody);
   await student.save();
   return student;
@@ -79,6 +76,16 @@ const deleteStudentById = async (studentId) => {
   return student;
 };
 
+const searchStudent = async (text, options) => {
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  const regex = new RegExp(text, 'i');
+  const bookings = await Students.paginate(
+    { $and: [{ qualified: options.qualified, $or: [{ fullname: regex }, { phoneNumber: regex }, { email: regex }] }] },
+    options
+  );
+  return bookings;
+};
+
 module.exports = {
   createStudent,
   queryStudents,
@@ -86,4 +93,5 @@ module.exports = {
   getStudentByEmail,
   updateStudentById,
   deleteStudentById,
+  searchStudent,
 };
