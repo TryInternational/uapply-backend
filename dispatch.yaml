@@ -1,0 +1,15 @@
+dispatch:
+  - url: 'api.ulearn.study/*'
+    service: ulearn-api
+  - url: 'staging.ulearn.study/*'
+    service: ulearn-staging
+  - url: 'ulearn.study/*'
+    service: ulearn
+  - url: 'www.ulearn.study/*'
+    service: ulearn
+  - url: 'staging-api.ulearn.study/*'
+    service: ulearn-staging-api
+  - url: 'api.uapplyabroad.com/*'
+    service: uapply-api
+  - url: 'staging.api.uapplyabroad.com/*'
+    service: uapply-staging-api

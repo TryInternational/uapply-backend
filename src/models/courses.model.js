@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const AutoIncrement = require('mongoose-sequence')(mongoose);
 const { toJSON, paginate, slug, mongooseHistory } = require('./plugins');
 
 const coursesSchema = mongoose.Schema(
@@ -70,7 +69,6 @@ coursesSchema.plugin(toJSON);
 coursesSchema.plugin(paginate);
 coursesSchema.plugin(slug);
 coursesSchema.plugin(mongooseHistory);
-coursesSchema.plugin(AutoIncrement, { inc_field: 'orderNo' });
 
 /**
  * @typedef Booking

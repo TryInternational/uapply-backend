@@ -6,3 +6,5 @@ module.exports.universityDeatilsController = require('./universityDetails.contro
 module.exports.universitiesController = require('./universities.controller');
 module.exports.subjectsController = require('./subjects.controller');
 module.exports.studentsController = require('./students.controller');
+module.exports.countriesController = require('./countries.controller');
+module.exports.rolesController = require('./role.controller');

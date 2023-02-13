@@ -10,18 +10,21 @@ const studentsSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    country: {
-      type: String,
+    residence: {
+      type: Object,
       required: true,
       trim: true,
     },
     city: {
       type: String,
-      required: true,
+      trim: true,
+    },
+    cgpa: {
+      type: String,
       trim: true,
     },
     phoneNo: {
-      type: Number,
+      type: String,
       required: true,
     },
     applications: {
@@ -33,10 +36,37 @@ const studentsSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    selectedUniversity: {
+      type: Array,
+    },
+    status: {
+      type: String,
+      enum: ['New', 'Sent Whatsapp', 'Applied', 'Closed', 'Lost', 'Not Responding', 'Interested'],
+      default: 'New',
+    },
+    destination: {
+      type: Object,
+    },
+    degree: {
+      type: Object,
+    },
+    subjects: {
+      type: String,
+    },
+    nationality: {
+      type: Object,
+    },
+    parentsIncome: {
+      type: String,
+    },
+    previousSchool: {
+      type: String,
+    },
+    countriesTraveled: {
+      type: Array,
+    },
     email: {
       type: String,
-      required: true,
-      unique: true,
       trim: true,
       lowercase: true,
       validate(value) {
@@ -47,7 +77,6 @@ const studentsSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
       trim: true,
       minlength: 8,
       validate(value) {
@@ -60,7 +89,7 @@ const studentsSchema = mongoose.Schema(
 
     isEmailVerified: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   {
@@ -72,16 +101,16 @@ const studentsSchema = mongoose.Schema(
 studentsSchema.plugin(toJSON);
 studentsSchema.plugin(paginate);
 
-/**
- * Check if email is taken
- * @param {string} email - The user's email
- * @param {ObjectId} [excludeStudentId] - The id of the user to be excluded
- * @returns {Promise<boolean>}
- */
-studentsSchema.statics.isEmailTaken = async function (email, excludeStudentId) {
-  const student = await this.findOne({ email, _id: { $ne: excludeStudentId } });
-  return !!student;
-};
+// /**
+//  * Check if email is taken
+//  * @param {string} email - The user's email
+//  * @param {ObjectId} [excludeStudentId] - The id of the user to be excluded
+//  * @returns {Promise<boolean>}
+//  */
+// studentsSchema.statics.isEmailTaken = async function (email, excludeStudentId) {
+//   const student = await this.findOne({ email, _id: { $ne: excludeStudentId } });
+//   return !!student;
+// };
 
 /**
  * Check if password matches the user's password
