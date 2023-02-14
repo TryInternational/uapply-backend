@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       ## Install dependencies
-      - name: npm install
+      - name: npm install --legacy-peer-deps
         run: |
           npm install
       ## Build & Deploy Staging
