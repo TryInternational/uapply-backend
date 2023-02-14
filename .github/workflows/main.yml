@@ -14,9 +14,6 @@ jobs:
       matrix:
         node-version: [16.x]
 
-    env:
-      CI_FIREBASE_MESSAGE: ${{ github.event.head_commit.message }} - ${{ github.event.head_commit.url }}/checks
-
     steps:
       ## Checkout current branch
       - uses: actions/checkout@v3
@@ -26,10 +23,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       ## Install dependencies
-      - name: yarn install
+      - name: npm install
         run: |
-          yarn install 
-          yarn install -g firebase-tools --legacy-peer-deps
+          npm install
       ## Build & Deploy Staging
       - name: Build & Deploy GCP Staging
         if: github.ref == 'refs/heads/develop'
