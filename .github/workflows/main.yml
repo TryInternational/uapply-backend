@@ -23,9 +23,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       ## Install dependencies
-      - name: npm install --legacy-peer-deps
+      - name: npm install
         run: |
-          npm install
+          npm install --legacy-peer-deps
       ## Build & Deploy Staging
       - name: Build & Deploy GCP Staging
         if: github.ref == 'refs/heads/develop'
