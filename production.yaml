@@ -15,7 +15,7 @@ instance_class: F2
 #   memory_gb: 1
 #   disk_size_gb: 10
 env_variables:
-  APP_ENV: "production"
+  APP_ENV: 'production'
 # # inbound_services:
 # #   - warmup
 automatic_scaling:

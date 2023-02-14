@@ -1,0 +1,51 @@
+name: GAE Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  Build_Deploy_Web:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    env:
+      CI_FIREBASE_MESSAGE: ${{ github.event.head_commit.message }} - ${{ github.event.head_commit.url }}/checks
+
+    steps:
+      ## Checkout current branch
+      - uses: actions/checkout@v3
+      ## Setup node
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      ## Install dependencies
+      - name: yarn install
+        run: |
+          yarn install 
+          yarn install -g firebase-tools --legacy-peer-deps
+      ## Build & Deploy Staging
+      - name: Build & Deploy GCP Staging
+        if: github.ref == 'refs/heads/develop'
+        uses: google-github-actions/deploy-appengine@v0.4.0
+        with:
+          project_id: digital-vim-270607
+          version: develop
+          credentials: ${{secrets.GOOGLE_APP_ENGINE_KEY}}
+          flags: --no-cache
+          deliverables: staging.yaml
+      - name: Build & Deploy GCP Production
+        if: github.ref == 'refs/heads/master'
+        uses: google-github-actions/deploy-appengine@v0.4.0
+        with:
+          project_id: digital-vim-270607
+          version: master
+          credentials: ${{secrets.GOOGLE_APP_ENGINE_KEY}}
+          flags: --no-cache
+          deliverables: production.yaml

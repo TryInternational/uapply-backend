@@ -77,7 +77,7 @@ const deleteUniversityById = async (courseId) => {
 const searchUniversity = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
-  const courses = await Universities.find({ name: regex }, options);
+  const courses = await Universities.paginate({ name: regex }, options);
   return courses;
 };
 

@@ -5,3 +5,6 @@ module.exports.Universities = require('./universities.model');
 module.exports.UniversityDetails = require('./universitydetails.model');
 module.exports.CourseDetails = require('./coursedetails.model');
 module.exports.Subjects = require('./subjects.model');
+module.exports.Students = require('./students.model');
+module.exports.Countries = require('./countries.model');
+module.exports.Roles = require('./role.model');
