@@ -27,12 +27,19 @@ jobs:
         run: |
           npm install --legacy-peer-deps
       ## Build & Deploy Staging
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: digital-vim-270607
+          service_account_key: ${{secrets.GOOGLE_APP_ENGINE_KEY}}
+
       - name: Build & Deploy GCP Staging
         if: github.ref == 'refs/heads/develop'
+
         uses: google-github-actions/deploy-appengine@v0.4.0
         with:
           project_id: digital-vim-270607
-          version: develop
+          version: v1
           credentials: ${{secrets.GOOGLE_APP_ENGINE_KEY}}
           flags: --no-cache
           deliverables: staging.yaml
