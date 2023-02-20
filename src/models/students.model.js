@@ -31,10 +31,19 @@ const studentsSchema = mongoose.Schema(
       type: Array,
       required: true,
     },
+    education: {
+      type: Array,
+    },
     qualified: {
       type: Boolean,
       required: true,
       default: false,
+    },
+    testScores: {
+      type: Array,
+    },
+    workExperience: {
+      type: Array,
     },
     selectedUniversity: {
       type: Array,
