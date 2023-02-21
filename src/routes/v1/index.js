@@ -11,6 +11,8 @@ const subjectsRoute = require('./subjects.route');
 const studentsRoute = require('./students.route');
 const countriesRoute = require('./countries.route');
 const rolesRoute = require('./role.route');
+const educationRoute = require('./education.route');
+const workExpRoute = require('./workExperience.route');
 
 const router = express.Router();
 
@@ -51,6 +53,14 @@ const defaultRoutes = [
   {
     path: '/students',
     route: studentsRoute,
+  },
+  {
+    path: '/educations',
+    route: educationRoute,
+  },
+  {
+    path: '/workExperience',
+    route: workExpRoute,
   },
   {
     path: '/roles',

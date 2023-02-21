@@ -8,10 +8,10 @@ router.route('/').post(educationController.createStudentEducation);
 router.route('/').get(educationController.getStudentEducations);
 
 router
-  .route('/:roleId')
+  .route('/:educationId')
   .patch(auth('manageRoles'), educationController.updateStudentEducation)
   .delete(auth('manageRoles'), educationController.deleteStudentEducation);
 
-router.route('/:roleId').get(educationController.getStudentEducation);
+router.route('/:educationId').get(educationController.getStudentEducation);
 
 module.exports = router;

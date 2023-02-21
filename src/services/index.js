@@ -12,3 +12,4 @@ module.exports.studentAuthService = require('./studentAuth.service');
 module.exports.countriesService = require('./countries.services');
 module.exports.rolesService = require('./role.service');
 module.exports.educationService = require('./education.service');
+module.exports.workExperience = require('./workExperience.service');
