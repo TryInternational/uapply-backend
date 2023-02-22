@@ -5,7 +5,12 @@ const { toJSON, paginate } = require('./plugins');
 
 const studentsSchema = mongoose.Schema(
   {
-    fullname: {
+    firstName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    lastName: {
       type: String,
       required: true,
       trim: true,
@@ -23,6 +28,11 @@ const studentsSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    documents: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Documents',
+      autopopulate: true,
+    },
     phoneNo: {
       type: String,
       required: true,
@@ -31,18 +41,23 @@ const studentsSchema = mongoose.Schema(
       type: Array,
       required: true,
     },
-    education: {
-      type: Array,
+    preference: {
+      type: Object,
     },
     qualified: {
       type: Boolean,
       required: true,
       default: false,
     },
-    testScores: {
-      type: Array,
+    profilePhotoUrl: {
+      type: String,
+      required: true,
     },
-    workExperience: {
+    isClosed: {
+      type: Boolean,
+      default: false,
+    },
+    shortlistedCourses: {
       type: Array,
     },
     selectedUniversity: {

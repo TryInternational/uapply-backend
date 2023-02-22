@@ -8,5 +8,5 @@ module.exports.Subjects = require('./subjects.model');
 module.exports.Students = require('./students.model');
 module.exports.Countries = require('./countries.model');
 module.exports.Roles = require('./role.model');
-module.exports.Education = require('./education.model');
+module.exports.Documents = require('./documents.model');
 module.exports.WorkExperience = require('./workExperience.model');
