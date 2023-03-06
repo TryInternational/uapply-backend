@@ -9,3 +9,4 @@ module.exports.studentsController = require('./students.controller');
 module.exports.countriesController = require('./countries.controller');
 module.exports.rolesController = require('./role.controller');
 module.exports.documentsController = require('./documents.controller');
+module.exports.courseLevelController = require('./courseLevel.controller');

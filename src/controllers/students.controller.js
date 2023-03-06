@@ -1,67 +1,67 @@
 /* eslint-disable no-nested-ternary */
 const httpStatus = require('http-status');
-const { default: axios } = require('axios');
+// const { default: axios } = require('axios');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { studentsService } = require('../services');
-const config = require('../config/config');
+// const config = require('../config/config');
 
 const createStudent = catchAsync(async (req, res) => {
-  const checkQualified =
-    req.body.nationality.english_name === 'United States of America' ||
-    req.body.nationality.english_name === 'Australia' ||
-    req.body.nationality.english_name === 'Oman' ||
-    req.body.nationality.english_name === 'France' ||
-    req.body.nationality.english_name === 'Spain' ||
-    req.body.nationality.english_name === 'United Kingdom' ||
-    req.body.nationality.english_name === 'Qatar' ||
-    req.body.nationality.english_name === 'Kuwait' ||
-    req.body.nationality.english_name === 'Saudi Arabia' ||
-    req.body.nationality.english_name === 'United Arab Emirates' ||
-    req.body.nationality.english_name === 'Germany' ||
-    req.body.nationality.english_name === 'Bahrain';
+  // const checkQualified =
+  //   req.body.nationality.english_name === 'United States of America' ||
+  //   req.body.nationality.english_name === 'Australia' ||
+  //   req.body.nationality.english_name === 'Oman' ||
+  //   req.body.nationality.english_name === 'France' ||
+  //   req.body.nationality.english_name === 'Spain' ||
+  //   req.body.nationality.english_name === 'United Kingdom' ||
+  //   req.body.nationality.english_name === 'Qatar' ||
+  //   req.body.nationality.english_name === 'Kuwait' ||
+  //   req.body.nationality.english_name === 'Saudi Arabia' ||
+  //   req.body.nationality.english_name === 'United Arab Emirates' ||
+  //   req.body.nationality.english_name === 'Germany' ||
+  //   req.body.nationality.english_name === 'Bahrain';
 
-  const qualified = (req.body.parentsIncome || checkQualified) && req.body.destination.en_name === 'UK';
+  // const qualified = (req.body.parentsIncome || checkQualified) && req.body.destination.en_name === 'UK';
 
   // if (process.env.APP_ENV === 'production' && qualified) {
   //   emailService.sendEmail('aamish@try.city', 'New Qualified User', 'New Qualifed user added');
   // }
-  const student = await studentsService.createStudent({ qualified, ...req.body });
-  const slackBody = {
-    attachments: [
-      {
-        pretext: `*New qualified user ${student.fullname}*`,
-        text: `\nEmail - ${student.email}.\nPhone No - ${student.phoneNo}.\nNationality - ${
-          student.nationality.english_name
-        }.\nResidence - ${student.residence.english_name}.\nDegree- ${student.degree.en_name}.\nMajor - ${
-          student.subjects
-        }.\nGPA - ${student.cgpa}.\nCountry travelled - ${
-          student.countriesTraveled.toString() || 'N/A'
-        }.\nIncome above $30,000 - ${
-          student.parentsIncome === 'true' ? 'Yes' : student.parentsIncome === 'false' ? 'No' : 'N/A'
-        }.\nSchool study in - ${student.previousSchool || 'N/A'}`,
-        color: '#fd3e60',
-      },
-    ],
-  };
+  const student = await studentsService.createStudent({ ...req.body });
+  // const slackBody = {
+  //   attachments: [
+  //     {
+  //       pretext: `*New qualified user ${student.fullname}*`,
+  //       text: `\nEmail - ${student.email}.\nPhone No - ${student.phoneNo}.\nNationality - ${
+  //         student.nationality.english_name
+  //       }.\nResidence - ${student.residence.english_name}.\nDegree- ${student.degree.en_name}.\nMajor - ${
+  //         student.subjects
+  //       }.\nGPA - ${student.cgpa}.\nCountry travelled - ${
+  //         student.countriesTraveled.toString() || 'N/A'
+  //       }.\nIncome above $30,000 - ${
+  //         student.parentsIncome === 'true' ? 'Yes' : student.parentsIncome === 'false' ? 'No' : 'N/A'
+  //       }.\nSchool study in - ${student.previousSchool || 'N/A'}`,
+  //       color: '#fd3e60',
+  //     },
+  //   ],
+  // };
 
-  const Tryslack = {
-    method: 'post',
-    url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
-    data: JSON.stringify(slackBody),
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  };
-  const Ulearnslack = {
-    method: 'post',
-    url: `https://hooks.slack.com/services/${config.slack.slackWebHookUlearn}`,
-    data: JSON.stringify(slackBody),
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  };
-  if (process.env.APP_ENV === 'production' && qualified) {
-    await axios(Tryslack);
-    await axios(Ulearnslack);
-  }
+  // const Tryslack = {
+  //   method: 'post',
+  //   url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
+  //   data: JSON.stringify(slackBody),
+  //   headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  // };
+  // const Ulearnslack = {
+  //   method: 'post',
+  //   url: `https://hooks.slack.com/services/${config.slack.slackWebHookUlearn}`,
+  //   data: JSON.stringify(slackBody),
+  //   headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  // };
+  // if (process.env.APP_ENV === 'production' && qualified) {
+  //   await axios(Tryslack);
+  //   await axios(Ulearnslack);
+  // }
 
   res.status(httpStatus.CREATED).send(student);
 });

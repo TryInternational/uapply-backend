@@ -1,5 +1,6 @@
 const express = require('express');
 const authRoute = require('./auth.route');
+const studentAuthRoute = require('./studentAuth.route');
 const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
 const config = require('../../config/config');
@@ -12,7 +13,7 @@ const studentsRoute = require('./students.route');
 const countriesRoute = require('./countries.route');
 const rolesRoute = require('./role.route');
 const documentsRoute = require('./documents.route');
-const workExpRoute = require('./workExperience.route');
+const courseLevel = require('./courseLevel.route');
 
 const router = express.Router();
 
@@ -20,6 +21,10 @@ const defaultRoutes = [
   {
     path: '/auth',
     route: authRoute,
+  },
+  {
+    path: '/studentAuth',
+    route: studentAuthRoute,
   },
 
   {
@@ -59,8 +64,8 @@ const defaultRoutes = [
     route: documentsRoute,
   },
   {
-    path: '/workExperience',
-    route: workExpRoute,
+    path: '/courseLevels',
+    route: courseLevel,
   },
   {
     path: '/roles',
