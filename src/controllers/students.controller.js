@@ -46,12 +46,12 @@ const createStudent = catchAsync(async (req, res) => {
     ],
   };
 
-  const Tryslack = {
-    method: 'post',
-    url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
-    data: JSON.stringify(slackBody),
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  };
+  // const Tryslack = {
+  //   method: 'post',
+  //   url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
+  //   data: JSON.stringify(slackBody),
+  //   headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  // };
   const Ulearnslack = {
     method: 'post',
     url: `https://hooks.slack.com/services/${config.slack.slackWebHookUlearn}`,
@@ -59,7 +59,7 @@ const createStudent = catchAsync(async (req, res) => {
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
   };
   if (process.env.APP_ENV === 'production' && qualified) {
-    await axios(Tryslack);
+    // await axios(Tryslack);
     await axios(Ulearnslack);
   }
 
