@@ -24,9 +24,6 @@ const createStudent = catchAsync(async (req, res) => {
 
   const qualified = (req.body.parentsIncome || checkQualified) && req.body.destination.en_name === 'UK';
 
-  // if (process.env.APP_ENV === 'production' && qualified) {
-  //   emailService.sendEmail('aamish@try.city', 'New Qualified User', 'New Qualifed user added');
-  // }
   const student = await studentsService.createStudent({ qualified, ...req.body });
   const slackBody = {
     attachments: [
@@ -45,7 +42,6 @@ const createStudent = catchAsync(async (req, res) => {
       },
     ],
   };
-
   // const Tryslack = {
   //   method: 'post',
   //   url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
