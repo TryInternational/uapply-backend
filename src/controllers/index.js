@@ -10,3 +10,5 @@ module.exports.countriesController = require('./countries.controller');
 module.exports.rolesController = require('./role.controller');
 module.exports.documentsController = require('./documents.controller');
 module.exports.courseLevelController = require('./courseLevel.controller');
+module.exports.qualificationController = require('./qualification.controller');
+module.exports.disciplineController = require('./discipline.controller');

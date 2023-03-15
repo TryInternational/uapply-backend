@@ -13,3 +13,5 @@ module.exports.countriesService = require('./countries.services');
 module.exports.rolesService = require('./role.service');
 module.exports.documentsService = require('./documents.service');
 module.exports.courseLevelService = require('./courseLevels.services');
+module.exports.qualificationService = require('./qualification.service');
+module.exports.disciplineService = require('./discipline.service');
