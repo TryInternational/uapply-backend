@@ -91,10 +91,10 @@ const studentsSchema = mongoose.Schema(
       required: true,
       default: false,
     },
-    profilePhotoUrl: {
-      type: String,
-      required: true,
-    },
+    // profilePhotoUrl: {
+    //   type: String,
+    //   required: true,
+    // },
     isClosed: {
       type: Boolean,
       default: false,

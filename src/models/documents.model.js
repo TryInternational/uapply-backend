@@ -5,11 +5,15 @@ const documentsSchema = mongoose.Schema(
   {
     subType: {
       type: String,
-      required: true,
     },
     documentType: {
       type: String,
       required: true,
+    },
+    docState: {
+      type: String,
+      enum: ['Upload', 'Not Upoaded'],
+      default: 'Not Upoaded',
     },
     studentId: {
       type: mongoose.SchemaTypes.ObjectId,
@@ -18,6 +22,9 @@ const documentsSchema = mongoose.Schema(
     },
     tag: {
       type: Object,
+    },
+    blobInfo: {
+      type: Array,
     },
   },
   {
