@@ -132,6 +132,10 @@ const studentsSchema = mongoose.Schema(
     // subjects: {
     //   type: String,
     // },
+    sourceOfFund: {
+      type: String,
+      enum: ['Other', 'Govt Sponsor', 'Help From Family', 'Personal Savings', 'Private Bank Loan', 'Require Scholarship'],
+    },
     nationality: {
       type: Object,
     },

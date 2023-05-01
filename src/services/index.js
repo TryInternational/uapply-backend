@@ -15,3 +15,4 @@ module.exports.documentsService = require('./documents.service');
 module.exports.courseLevelService = require('./courseLevels.services');
 module.exports.qualificationService = require('./qualification.service');
 module.exports.disciplineService = require('./discipline.service');
+module.exports.applicationService = require('./application.service');

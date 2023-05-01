@@ -14,6 +14,7 @@ const countriesRoute = require('./countries.route');
 const rolesRoute = require('./role.route');
 const documentsRoute = require('./documents.route');
 const courseLevel = require('./courseLevel.route');
+const application = require('./application.route');
 
 const router = express.Router();
 
@@ -26,7 +27,6 @@ const defaultRoutes = [
     path: '/studentAuth',
     route: studentAuthRoute,
   },
-
   {
     path: '/countries',
     route: countriesRoute,
@@ -66,6 +66,10 @@ const defaultRoutes = [
   {
     path: '/courseLevels',
     route: courseLevel,
+  },
+  {
+    path: '/application',
+    route: application,
   },
   {
     path: '/roles',

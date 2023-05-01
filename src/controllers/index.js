@@ -12,3 +12,4 @@ module.exports.documentsController = require('./documents.controller');
 module.exports.courseLevelController = require('./courseLevel.controller');
 module.exports.qualificationController = require('./qualification.controller');
 module.exports.disciplineController = require('./discipline.controller');
+module.exports.applicationController = require('./application.controller');
