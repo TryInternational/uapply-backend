@@ -96,7 +96,7 @@ const createApplication = catchAsync(async (req, res) => {
   const application = await applicationService.createApplication({
     ...req.body,
     applicationId,
-    stages,
+    portalApplicationStatus: { applicationPhases: stages },
     startDate,
   });
 
@@ -120,7 +120,6 @@ const getApplication = catchAsync(async (req, res) => {
   res.send(application);
 });
 const getApplicationByStudentId = catchAsync(async (req, res) => {
-  console.log(req.params.studentId);
   const application = await applicationService.getApplicationByStudentId(req.params.studentId);
 
   if (!application) {
