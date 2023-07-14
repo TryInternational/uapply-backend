@@ -31,6 +31,9 @@ const studentsSchema = mongoose.Schema(
       type: Array,
       required: true,
     },
+    iltesScore: {
+      type: String,
+    },
     qualified: {
       type: Boolean,
       required: true,
