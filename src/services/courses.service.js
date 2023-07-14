@@ -77,10 +77,7 @@ const deleteCourseById = async (courseId) => {
 const searchCourse = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
-  const courses = await Courses.paginate(
-    { $and: [{ status: 'Paid', $or: [{ fullname: regex }, { phoneNumber: regex }, { email: regex }] }] },
-    options
-  );
+  const courses = await Courses.paginate({ name: regex }, options);
   return courses;
 };
 

@@ -13,3 +13,5 @@ module.exports.courseLevelController = require('./courseLevel.controller');
 module.exports.qualificationController = require('./qualification.controller');
 module.exports.disciplineController = require('./discipline.controller');
 module.exports.applicationController = require('./application.controller');
+module.exports.sponsorStudentController = require('./sponsorStudents.controller');
+module.exports.exibitionStudentController = require('./exibitionStudent.controller');

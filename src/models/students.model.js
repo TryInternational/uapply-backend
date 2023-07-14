@@ -7,6 +7,9 @@ const Prefrences = mongoose.Schema({
   studyDestinations: {
     type: String,
   },
+  courseDuration: {
+    type: Number,
+  },
   courseLevel: {
     type: String,
   },
@@ -91,10 +94,9 @@ const studentsSchema = mongoose.Schema(
       required: true,
       default: false,
     },
-    // profilePhotoUrl: {
-    //   type: String,
-    //   required: true,
-    // },
+    dob: {
+      type: Date,
+    },
     isClosed: {
       type: Boolean,
       default: false,
@@ -200,6 +202,12 @@ studentsSchema.plugin(paginate);
  * @param {string} password
  * @returns {Promise<boolean>}
  */
+
+studentsSchema.statics.isEmailTaken = async function (email, excludeUserId) {
+  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+  return !!user;
+};
+
 studentsSchema.methods.isPasswordMatch = async function (password) {
   const student = this;
   return bcrypt.compare(password, student.password);

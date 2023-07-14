@@ -13,3 +13,5 @@ module.exports.CourseLevels = require('./courseLevel.model');
 module.exports.Qualification = require('./qualification.model');
 module.exports.Discipline = require('./discipline.model');
 module.exports.Application = require('./application.model');
+module.exports.ExibitionStudent = require('./exibitionStudent.model');
+module.exports.SponsorStudent = require('./sponsorStudents.model');

@@ -13,8 +13,10 @@ const studentsRoute = require('./students.route');
 const countriesRoute = require('./countries.route');
 const rolesRoute = require('./role.route');
 const documentsRoute = require('./documents.route');
-const courseLevel = require('./courseLevel.route');
-const application = require('./application.route');
+const courseLevelRoute = require('./courseLevel.route');
+const applicationRoute = require('./application.route');
+const sponsorStudentsRoute = require('./sponsorStudents.route');
+const exibitionStudentRoute = require('./exibitionStudent.route');
 
 const router = express.Router();
 
@@ -22,6 +24,10 @@ const defaultRoutes = [
   {
     path: '/auth',
     route: authRoute,
+  },
+  {
+    path: '/exibitionStudent',
+    route: exibitionStudentRoute,
   },
   {
     path: '/studentAuth',
@@ -48,6 +54,10 @@ const defaultRoutes = [
     route: universityDetailsRoute,
   },
   {
+    path: '/sponsorStudents',
+    route: sponsorStudentsRoute,
+  },
+  {
     path: '/courseDetails',
     route: courseDetailsRoute,
   },
@@ -65,11 +75,11 @@ const defaultRoutes = [
   },
   {
     path: '/courseLevels',
-    route: courseLevel,
+    route: courseLevelRoute,
   },
   {
     path: '/application',
-    route: application,
+    route: applicationRoute,
   },
   {
     path: '/roles',

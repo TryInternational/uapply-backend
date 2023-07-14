@@ -16,3 +16,5 @@ module.exports.courseLevelService = require('./courseLevels.services');
 module.exports.qualificationService = require('./qualification.service');
 module.exports.disciplineService = require('./discipline.service');
 module.exports.applicationService = require('./application.service');
+module.exports.sponsorStudentService = require('./sponsorStudents.service');
+module.exports.exibitionStudentService = require('./exibitionStudent.service');
