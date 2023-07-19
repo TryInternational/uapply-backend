@@ -13,10 +13,10 @@ const { tokenTypes } = require('../config/tokens');
  */
 const loginUserWithEmailAndPassword = async (email, password) => {
   const student = await studentService.getStudentByEmail(email);
-
-  if (!student) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect Student email or password');
+  if (!student || !(await student.isPasswordMatch(password))) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
   }
+
   return student;
 };
 
@@ -61,7 +61,7 @@ const refreshAuth = async (refreshToken) => {
 const resetPassword = async (resetPasswordToken, newPassword) => {
   try {
     const resetPasswordTokenDoc = await tokenService.verifyToken(resetPasswordToken, tokenTypes.RESET_PASSWORD);
-    const student = await studentService.getStudentById(resetPasswordTokenDoc.student);
+    const student = await studentService.getStudentById(resetPasswordTokenDoc.user);
     if (!student) {
       throw new Error();
     }
