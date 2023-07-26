@@ -8,9 +8,9 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Students>}
  */
 const createStudent = async (studentBody) => {
-  if (await Students.isEmailTaken(studentBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  }
+  // if (await Students.isEmailTaken(studentBody.email)) {
+  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  // }
   return Students.create({ ...studentBody, phoneNo: studentBody.phoneNo.replace(/[+\s]/g, '') });
 };
 
