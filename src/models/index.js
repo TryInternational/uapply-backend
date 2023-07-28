@@ -15,3 +15,4 @@ module.exports.Discipline = require('./discipline.model');
 module.exports.Application = require('./application.model');
 module.exports.ExibitionStudent = require('./exibitionStudent.model');
 module.exports.SponsorStudent = require('./sponsorStudents.model');
+module.exports.News = require('./news.model');
