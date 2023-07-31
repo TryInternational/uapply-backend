@@ -3,66 +3,12 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
 
-const Prefrences = mongoose.Schema({
-  studyDestinations: {
-    type: String,
-  },
-  courseDuration: {
-    type: Number,
-  },
-  courseLevel: {
-    type: String,
-  },
-  courseSubjectIds: {
-    type: Array,
-  },
-  intakeYear: {
-    type: String,
-  },
-  intakeMonth: {
-    type: String,
-  },
-  budget: {
-    type: String,
-  },
-  budgetRange: {
-    type: String,
-  },
-  currency: {
-    type: String,
-  },
-  fundingSource: { type: String },
-  sponserName: {
-    type: String,
-  },
-  otherDetail: {
-    type: String,
-  },
-  needScholarship: {
-    type: Boolean,
-    default: false,
-  },
-  needPlacement: {
-    type: Boolean,
-    default: false,
-  },
-});
-
 const studentsSchema = mongoose.Schema(
   {
-    firstName: {
+    fullname: {
       type: String,
       required: true,
       trim: true,
-    },
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    gender: {
-      type: String,
-      enum: ['Male', 'Female', 'Others', 'Not Willing To Disclose'],
     },
     residence: {
       type: Object,
@@ -73,10 +19,15 @@ const studentsSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
-    motherTongue: {
-      type: String,
-    },
     cgpa: {
+      type: String,
+      trim: true,
+    },
+    engLevel: {
+      type: String,
+      trim: true,
+    },
+    iltesScore: {
       type: String,
       trim: true,
     },
@@ -88,31 +39,10 @@ const studentsSchema = mongoose.Schema(
       type: Array,
       required: true,
     },
-    preference: Prefrences,
     qualified: {
       type: Boolean,
       required: true,
       default: false,
-    },
-    dob: {
-      type: Date,
-    },
-    isClosed: {
-      type: Boolean,
-      default: false,
-    },
-    shortlistedCourses: {
-      type: Array,
-    },
-    passportStatus: {
-      type: String,
-    },
-    visaRejected: {
-      type: Boolean,
-      default: false,
-    },
-    passportNo: {
-      type: String,
     },
     selectedUniversity: {
       type: Array,
@@ -122,21 +52,20 @@ const studentsSchema = mongoose.Schema(
       enum: ['New', 'Sent Whatsapp', 'Applied', 'Closed', 'Lost', 'Not Responding', 'Interested'],
       default: 'New',
     },
-    emergencyContact: {
-      type: Array,
-    },
-    // destination: {
-    //   type: Object,
-    // },
-    // degree: {
-    //   type: Object,
-    // },
-    // subjects: {
-    //   type: String,
-    // },
-    sourceOfFund: {
+    sponsored: {
       type: String,
-      enum: ['Other', 'Govt Sponsor', 'Help From Family', 'Personal Savings', 'Private Bank Loan', 'Require Scholarship'],
+    },
+    sponsoredBy: {
+      type: String,
+    },
+    destination: {
+      type: Object,
+    },
+    degree: {
+      type: Object,
+    },
+    subjects: {
+      type: String,
     },
     nationality: {
       type: Object,
@@ -202,12 +131,6 @@ studentsSchema.plugin(paginate);
  * @param {string} password
  * @returns {Promise<boolean>}
  */
-
-studentsSchema.statics.isEmailTaken = async function (email, excludeUserId) {
-  const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
-  return !!user;
-};
-
 studentsSchema.methods.isPasswordMatch = async function (password) {
   const student = this;
   return bcrypt.compare(password, student.password);
