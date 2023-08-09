@@ -18,6 +18,7 @@ const applicationRoute = require('./application.route');
 const sponsorStudentsRoute = require('./sponsorStudents.route');
 const exibitionStudentRoute = require('./exibitionStudent.route');
 const newsRoute = require('./news.route');
+const commentsRoute = require('./comments.route');
 
 const router = express.Router();
 
@@ -29,6 +30,10 @@ const defaultRoutes = [
   {
     path: '/exibitionStudent',
     route: exibitionStudentRoute,
+  },
+  {
+    path: '/comments',
+    route: commentsRoute,
   },
   {
     path: '/studentAuth',

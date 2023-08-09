@@ -60,6 +60,20 @@ const studentsSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
+    middleName: {
+      type: String,
+      trim: true,
+    },
+    backlogs: { type: Boolean },
+    educationGaps: { type: Boolean },
+    ieltsScore: {
+      type: String,
+      trim: true,
+    },
+    ieltsTaken: {
+      type: String,
+      enum: ['Yes', 'No', 'Waiting for results'],
+    },
     gender: {
       type: String,
       enum: ['Male', 'Female', 'Others', 'Not Willing To Disclose'],
