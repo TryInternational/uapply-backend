@@ -55,6 +55,11 @@ const studentsSchema = mongoose.Schema(
     sponsored: {
       type: String,
     },
+    source: {
+      type: String,
+      enum: ['ulearn', 'uapply'],
+      default: 'uapply',
+    },
     sponsoredBy: {
       type: String,
     },
