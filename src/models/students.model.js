@@ -60,6 +60,7 @@ const studentsSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
+    assignedTo: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User', autopopulate: true }],
     middleName: {
       type: String,
       trim: true,
@@ -139,15 +140,6 @@ const studentsSchema = mongoose.Schema(
     emergencyContact: {
       type: Array,
     },
-    // destination: {
-    //   type: Object,
-    // },
-    // degree: {
-    //   type: Object,
-    // },
-    // subjects: {
-    //   type: String,
-    // },
     sourceOfFund: {
       type: String,
       enum: ['Other', 'Govt Sponsor', 'Help From Family', 'Personal Savings', 'Private Bank Loan', 'Require Scholarship'],
