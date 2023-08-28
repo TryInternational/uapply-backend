@@ -79,6 +79,10 @@ const studentsSchema = mongoose.Schema(
       type: String,
       enum: ['Male', 'Female', 'Others', 'Not Willing To Disclose'],
     },
+    stage: {
+      type: String,
+      enum: ['NotApplied', 'Applied', 'Lost', 'Enrolled'],
+    },
     residence: {
       type: Object,
       required: true,
@@ -117,7 +121,7 @@ const studentsSchema = mongoose.Schema(
       default: false,
     },
     shortlistedCourses: {
-      type: Array,
+      type: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Courses' }],
     },
     passportStatus: {
       type: String,

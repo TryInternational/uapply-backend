@@ -11,7 +11,7 @@ const createStudent = catchAsync(async (req, res) => {
 });
 
 const getStudents = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status']);
+  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status', 'stage']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await studentsService.queryStudents(filter, options);
   res.send(result);
