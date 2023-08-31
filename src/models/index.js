@@ -17,3 +17,4 @@ module.exports.ExibitionStudent = require('./exibitionStudent.model');
 module.exports.SponsorStudent = require('./sponsorStudents.model');
 module.exports.News = require('./news.model');
 module.exports.Comments = require('./comments.modal');
+module.exports.Leads = require('./leads.model');

@@ -19,6 +19,7 @@ const sponsorStudentsRoute = require('./sponsorStudents.route');
 const exibitionStudentRoute = require('./exibitionStudent.route');
 const newsRoute = require('./news.route');
 const commentsRoute = require('./comments.route');
+const leadsRoute = require('./leads.route');
 
 const router = express.Router();
 
@@ -38,6 +39,10 @@ const defaultRoutes = [
   {
     path: '/studentAuth',
     route: studentAuthRoute,
+  },
+  {
+    path: '/leads',
+    route: leadsRoute,
   },
   {
     path: '/countries',

@@ -20,3 +20,4 @@ module.exports.sponsorStudentService = require('./sponsorStudents.service');
 module.exports.exibitionStudentService = require('./exibitionStudent.service');
 module.exports.newsService = require('./news.service');
 module.exports.commentsService = require('./comments.services');
+module.exports.leadsService = require('./leads.service');
