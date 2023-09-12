@@ -26,6 +26,8 @@ const envVarsSchema = Joi.object()
     SLACK_KEY: Joi.string().description('this is for slack'),
     SLACK_WEB_HOOK: Joi.string().description('Try slack web hook for uapply qualified users'),
     SLACK_WEB_HOOK_ULEARN: Joi.string().description('Ulearn slack web hook for uapply qualified users'),
+    PIXEL_ACCESS_TOKEN: Joi.string().description('Uapply pixel access token'),
+    PIXEL_ID: Joi.string().description('Uapply pixel id'),
   })
   .unknown();
 
@@ -68,5 +70,9 @@ module.exports = {
     slackApiKey: envVars.SLACK_KEY,
     slackWebHook: envVars.SLACK_WEB_HOOK,
     slackWebHookUlearn: envVars.SLACK_WEB_HOOK_ULEARN,
+  },
+  pixel: {
+    accessToken: envVars.PIXEL_ACCESS_TOKEN,
+    pixelId: envVars.PIXEL_ID,
   },
 };

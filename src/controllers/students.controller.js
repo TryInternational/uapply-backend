@@ -1,11 +1,22 @@
 /* eslint-disable no-nested-ternary */
 const httpStatus = require('http-status');
 const { default: axios } = require('axios');
+const bizSdk = require('facebook-nodejs-business-sdk');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { studentsService } = require('../services');
 const config = require('../config/config');
+
+const { EventRequest } = bizSdk;
+const { UserData } = bizSdk;
+const { ServerEvent } = bizSdk;
+
+const accesstoken = config.pixel.accessToken;
+const pixelid = config.pixel.pixelId;
+const api = bizSdk.FacebookAdsApi.init(accesstoken);
+
+const currentTimestamp = Math.floor(new Date() / 1000);
 
 const createStudent = catchAsync(async (req, res) => {
   const checkQualified =
@@ -42,12 +53,7 @@ const createStudent = catchAsync(async (req, res) => {
       },
     ],
   };
-  // const Tryslack = {
-  //   method: 'post',
-  //   url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
-  //   data: JSON.stringify(slackBody),
-  //   headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  // };
+
   const Ulearnslack = {
     method: 'post',
     url: `https://hooks.slack.com/services/${config.slack.slackWebHookUlearn}`,
@@ -57,6 +63,25 @@ const createStudent = catchAsync(async (req, res) => {
   if (process.env.APP_ENV === 'production' && qualified) {
     // await axios(Tryslack);
     await axios(Ulearnslack);
+
+    const userData = new UserData()
+      .setEmails([student.email])
+      .setPhones([student.phoneNo])
+      // It is recommended to send Client IP and User Agent for Conversions API Events.
+      .setClientIpAddress(req.connection.remoteAddress)
+      .setClientUserAgent(req.headers['user-agent'])
+      .setFbp('fb.1.1558571054389.1098115397')
+      .setFbc('fb.1.1554763741205.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890');
+
+    const serverEvent = new ServerEvent()
+      .setEventName('Qualified Lead')
+      .setEventTime(currentTimestamp)
+      .setUserData(userData)
+      .setActionSource('website');
+
+    const eventsData = [serverEvent];
+    const eventRequest = new EventRequest(accesstoken, pixelid).setEvents(eventsData);
+    await eventRequest.execute();
   }
 
   res.status(httpStatus.CREATED).send(student);
