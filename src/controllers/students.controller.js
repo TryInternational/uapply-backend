@@ -70,8 +70,8 @@ const createStudent = catchAsync(async (req, res) => {
       // It is recommended to send Client IP and User Agent for Conversions API Events.
       .setClientIpAddress(req.connection.remoteAddress)
       .setClientUserAgent(req.headers['user-agent'])
-      .setFbp('fb.1.1558571054389.1098115397')
-      .setFbc('fb.1.1554763741205.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890');
+      .setFbp('fb.1.{currentTimestamp}.1098115397') // ? test this.
+      .setFbc('fb.1.{currentTimestamp}.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890');
 
     const serverEvent = new ServerEvent()
       .setEventName('Qualified Lead')
