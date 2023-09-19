@@ -33,6 +33,7 @@ const applicationSchema = new Schema({
   intakeMonth: String,
   documents: { type: mongoose.SchemaTypes.ObjectId, ref: 'Documents' },
   course: { type: mongoose.SchemaTypes.ObjectId, ref: 'Courses', autopopulate: true },
+  institute: Object,
 });
 
 module.exports = mongoose.model('Application', applicationSchema);
