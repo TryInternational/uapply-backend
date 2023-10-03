@@ -82,6 +82,7 @@ const studentsSchema = mongoose.Schema(
     stage: {
       type: String,
       enum: ['NotApplied', 'Applied', 'Lost', 'Enrolled'],
+      default: 'NotApplied',
     },
     residence: {
       type: Object,
