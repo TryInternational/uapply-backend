@@ -48,6 +48,24 @@ const Prefrences = mongoose.Schema({
   },
 });
 
+const EmergencyContact = mongoose.Schema({
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+  },
+  relation: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+  emergencyContactNo: {
+    type: String,
+  },
+});
+
 const studentsSchema = mongoose.Schema(
   {
     firstName: {
@@ -143,7 +161,7 @@ const studentsSchema = mongoose.Schema(
       default: 'New',
     },
     emergencyContact: {
-      type: Array,
+      type: [EmergencyContact],
     },
     sourceOfFund: {
       type: String,
