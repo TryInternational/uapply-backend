@@ -95,13 +95,14 @@ const studentsSchema = mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ['Male', 'Female', 'Others', 'Not Willing To Disclose'],
+      enum: ['Male', 'Female', 'Others'],
     },
     stage: {
       type: String,
       enum: ['NotApplied', 'Applied', 'Lost', 'Enrolled'],
       default: 'NotApplied',
     },
+
     residence: {
       type: Object,
       required: true,
@@ -156,9 +157,9 @@ const studentsSchema = mongoose.Schema(
       type: Array,
     },
     status: {
-      type: String,
-      enum: ['New', 'Sent Whatsapp', 'Applied', 'Closed', 'Lost', 'Not Responding', 'Interested'],
-      default: 'New',
+      type: [String],
+      enum: ['Status 1', 'Status 2', 'Status 3', 'Status 4', 'Status 5'],
+      default: 'Status 1',
     },
     emergencyContact: {
       type: [EmergencyContact],
