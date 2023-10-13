@@ -28,6 +28,7 @@ const envVarsSchema = Joi.object()
     SLACK_WEB_HOOK_ULEARN: Joi.string().description('Ulearn slack web hook for uapply qualified users'),
     PIXEL_ACCESS_TOKEN: Joi.string().description('Uapply pixel access token'),
     PIXEL_ID: Joi.string().description('Uapply pixel id'),
+    PIXEL_ID_ULEARNABROAD: Joi.string().description('Ulearn abroad pixel id'),
   })
   .unknown();
 
@@ -74,5 +75,6 @@ module.exports = {
   pixel: {
     accessToken: envVars.PIXEL_ACCESS_TOKEN,
     pixelId: envVars.PIXEL_ID,
+    pixelUlearnId: envVars.PIXEL_ID_ULEARNABROAD,
   },
 };
