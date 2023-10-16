@@ -29,6 +29,7 @@ const envVarsSchema = Joi.object()
     PIXEL_ACCESS_TOKEN: Joi.string().description('Uapply pixel access token'),
     PIXEL_ID: Joi.string().description('Uapply pixel id'),
     PIXEL_ID_ULEARNABROAD: Joi.string().description('Ulearn abroad pixel id'),
+    PIXEL_ACCESS_TOKEN_ULEARNABROAD: Joi.string().description('Ulearn abroad pixel access token'),
   })
   .unknown();
 
@@ -76,5 +77,6 @@ module.exports = {
     accessToken: envVars.PIXEL_ACCESS_TOKEN,
     pixelId: envVars.PIXEL_ID,
     pixelUlearnId: envVars.PIXEL_ID_ULEARNABROAD,
+    ulearnAbroadPixelId: envVars.PIXEL_ACCESS_TOKEN_ULEARNABROAD,
   },
 };

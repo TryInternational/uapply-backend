@@ -14,7 +14,7 @@ const { ServerEvent } = bizSdk;
 
 const accesstoken = config.pixel.accessToken;
 const pixelid = config.pixel.pixelId;
-const { pixelidUlearn } = config.pixel;
+const { ulearnAbroadPixelId } = config.pixel;
 
 const currentTimestamp = Math.floor(new Date() / 1000);
 
@@ -81,7 +81,7 @@ const createStudent = catchAsync(async (req, res) => {
 
     const eventsData = [serverEvent];
     const eventRequest = new EventRequest(accesstoken, pixelid).setEvents(eventsData);
-    const eventRequestUlearn = new EventRequest(accesstoken, pixelidUlearn).setEvents(eventsData);
+    const eventRequestUlearn = new EventRequest(accesstoken, ulearnAbroadPixelId).setEvents(eventsData);
 
     if (student.source === 'ulearn') {
       await eventRequestUlearn.execute();
