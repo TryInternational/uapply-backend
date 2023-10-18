@@ -77,6 +77,6 @@ module.exports = {
     accessToken: envVars.PIXEL_ACCESS_TOKEN,
     pixelId: envVars.PIXEL_ID,
     pixelUlearnId: envVars.PIXEL_ID_ULEARNABROAD,
-    ulearnAbroadPixelId: envVars.PIXEL_ACCESS_TOKEN_ULEARNABROAD,
+    ulearnAbroadAccessToken: envVars.PIXEL_ACCESS_TOKEN_ULEARNABROAD,
   },
 };

@@ -12,9 +12,7 @@ const { EventRequest } = bizSdk;
 const { UserData } = bizSdk;
 const { ServerEvent } = bizSdk;
 
-const accesstoken = config.pixel.accessToken;
-const pixelid = config.pixel.pixelId;
-const { ulearnAbroadPixelId } = config.pixel;
+const { accessToken, ulearnAbroadAccessToken, pixelId, pixelUlearnId } = config.pixel;
 
 const currentTimestamp = Math.floor(new Date() / 1000);
 
@@ -70,8 +68,8 @@ const createStudent = catchAsync(async (req, res) => {
       // It is recommended to send Client IP and User Agent for Conversions API Events.
       .setClientIpAddress(req.connection.remoteAddress)
       .setClientUserAgent(req.headers['user-agent'])
-      .setFbp('fb.1.{currentTimestamp}.1098115397') // ? test this.
-      .setFbc('fb.1.{currentTimestamp}.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890');
+      .setFbp(`fb.1.${currentTimestamp}.1098115397`) // ? test this.
+      .setFbc(`fb.1.${currentTimestamp}.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890`);
 
     const serverEvent = new ServerEvent()
       .setEventName('Qualified Lead')
@@ -80,8 +78,9 @@ const createStudent = catchAsync(async (req, res) => {
       .setActionSource('website');
 
     const eventsData = [serverEvent];
-    const eventRequest = new EventRequest(accesstoken, pixelid).setEvents(eventsData);
-    const eventRequestUlearn = new EventRequest(accesstoken, ulearnAbroadPixelId).setEvents(eventsData);
+
+    const eventRequest = new EventRequest(accessToken, pixelId).setEvents(eventsData);
+    const eventRequestUlearn = new EventRequest(ulearnAbroadAccessToken, pixelUlearnId).setEvents(eventsData);
 
     if (student.source === 'ulearn') {
       await eventRequestUlearn.execute();
