@@ -16,6 +16,14 @@ const { accessToken, ulearnAbroadAccessToken, pixelId, pixelUlearnId } = config.
 
 const currentTimestamp = Math.floor(new Date() / 1000);
 
+function generateUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 const createStudent = catchAsync(async (req, res) => {
   const checkQualified =
     req.body.nationality.english_name === 'United States of America' ||
@@ -58,24 +66,25 @@ const createStudent = catchAsync(async (req, res) => {
     data: JSON.stringify(slackBody),
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
   };
-  if (process.env.APP_ENV === 'production' && qualified) {
+  if (qualified) {
     // await axios(Tryslack);
-    await axios(Ulearnslack);
+    // await axios(Ulearnslack);
+    const eventId = generateUUID();
 
     const userData = new UserData()
       .setEmails([student.email])
       .setPhones([student.phoneNo])
-      // It is recommended to send Client IP and User Agent for Conversions API Events.
       .setClientIpAddress(req.connection.remoteAddress)
-      .setClientUserAgent(req.headers['user-agent'])
-      .setFbp(`fb.1.${currentTimestamp}.1098115397`) // ? test this.
-      .setFbc(`fb.1.${currentTimestamp}.AbCdEfGhIjKlMnOpQrStUvWxYz1234567890`);
+      .setCountry(student.nationality.alpha2_code)
+      .setClientUserAgent(req.headers['user-agent']);
 
     const serverEvent = new ServerEvent()
       .setEventName('Qualified Lead')
       .setEventTime(currentTimestamp)
+      .setEventId(eventId)
       .setUserData(userData)
-      .setActionSource('website');
+      .setActionSource('website')
+      .setEventSourceUrl(student.webUrl);
 
     const eventsData = [serverEvent];
 
@@ -83,9 +92,19 @@ const createStudent = catchAsync(async (req, res) => {
     const eventRequestUlearn = new EventRequest(ulearnAbroadAccessToken, pixelUlearnId).setEvents(eventsData);
 
     if (student.source === 'ulearn') {
-      await eventRequestUlearn.execute();
+      try {
+        await eventRequestUlearn.execute();
+      } catch (error) {
+        console.log(error);
+      }
     } else {
-      await eventRequest.execute();
+      try {
+        console.log(serverEvent);
+        console.log(userData);
+        await eventRequest.execute();
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 
