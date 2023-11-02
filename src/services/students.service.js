@@ -83,7 +83,14 @@ const searchStudent = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
   const students = await Students.paginate(
-    { $and: [{ qualified: options.qualified, $or: [{ fullname: regex }, { phoneNo: regex }, { email: regex }] }] },
+    {
+      $and: [
+        {
+          qualified: options.qualified,
+          $or: [{ fullname: regex }, { phoneNo: regex }, { email: regex }, { webUrl: regex }],
+        },
+      ],
+    },
     options
   );
   return students;

@@ -1,3 +1,6 @@
+/* eslint-disable one-var */
+/* eslint-disable no-bitwise */
+/* eslint-disable no-var */
 /* eslint-disable no-nested-ternary */
 const httpStatus = require('http-status');
 const { default: axios } = require('axios');
@@ -66,9 +69,9 @@ const createStudent = catchAsync(async (req, res) => {
     data: JSON.stringify(slackBody),
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
   };
-  if (qualified) {
+  if (process.env.APP_ENV === 'production' && qualified) {
     // await axios(Tryslack);
-    // await axios(Ulearnslack);
+    await axios(Ulearnslack);
     const eventId = generateUUID();
 
     const userData = new UserData()
@@ -99,8 +102,6 @@ const createStudent = catchAsync(async (req, res) => {
       }
     } else {
       try {
-        console.log(serverEvent);
-        console.log(userData);
         await eventRequest.execute();
       } catch (error) {
         console.log(error);
@@ -113,7 +114,8 @@ const createStudent = catchAsync(async (req, res) => {
 
 const getStudents = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
+
   const result = await studentsService.queryStudents(filter, options);
   res.send(result);
 });
@@ -154,7 +156,7 @@ const getStudentsByMonths = catchAsync(async (req, res) => {
   res.send(result);
 });
 const searchStudents = catchAsync(async (req, res) => {
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified', { searchString: req.params.text }]);
   const results = await studentsService.searchStudent(req.params.text, options);
   res.status(200).send(results);
 });
