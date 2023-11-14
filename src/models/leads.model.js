@@ -55,9 +55,14 @@ const leadsSchema = mongoose.Schema(
     sponsored: {
       type: String,
     },
+    webUrl: {
+      type: String,
+    },
+
     source: {
       type: String,
       enum: ['ulearn', 'uapply'],
+      default: 'uapply',
     },
     sponsoredBy: {
       type: String,

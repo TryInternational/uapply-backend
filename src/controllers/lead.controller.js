@@ -62,7 +62,7 @@ const createLead = catchAsync(async (req, res) => {
 
 const getLeads = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
   const result = await leadsService.queryLeads(filter, options);
   res.send(result);
 });
@@ -103,7 +103,7 @@ const getLeadsByMonths = catchAsync(async (req, res) => {
   res.send(result);
 });
 const searchLeads = catchAsync(async (req, res) => {
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified', { searchString: req.params.text }]);
   const results = await leadsService.searchLead(req.params.text, options);
   res.status(200).send(results);
 });
