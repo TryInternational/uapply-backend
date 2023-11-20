@@ -113,16 +113,15 @@ const createStudent = catchAsync(async (req, res) => {
 });
 
 const getStudents = catchAsync(async (req, res) => {
-  const dateFilter = {
-    dateField: {
-      $gte: req.query.startDate,
-      $lte: req.query.endDate,
-    },
-  };
-
   const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl'], dateFilter);
+  if (req.query.startDate && req.query.endDate) {
+    filter.createdAt = {
+      $gte: new Date(req.query.startDate),
+      $lte: new Date(req.query.endDate),
+    };
+  }
 
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
   const result = await studentsService.queryStudents(filter, options);
   res.send(result);
 });
