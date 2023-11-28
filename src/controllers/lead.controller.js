@@ -74,9 +74,21 @@ const getLead = catchAsync(async (req, res) => {
   }
   res.send(lead);
 });
-
 const updateLead = catchAsync(async (req, res) => {
   const lead = await leadsService.updateLeadById(req.params.leadId, req.body);
+  res.send(lead);
+});
+
+const getTop5ByContry = catchAsync(async (req, res) => {
+  const lead = await leadsService.getTop5ByContries({
+    ...req.query,
+  });
+  res.send(lead);
+});
+const getTop5ByDegrees = catchAsync(async (req, res) => {
+  const lead = await leadsService.getTop5ByDegree({
+    ...req.query,
+  });
   res.send(lead);
 });
 
@@ -116,4 +128,6 @@ module.exports = {
   deleteLead,
   searchLeads,
   getLeadsByMonths,
+  getTop5ByContry,
+  getTop5ByDegrees,
 };

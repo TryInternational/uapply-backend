@@ -28,6 +28,81 @@ const queryLeads = async (filter, options) => {
   return lead;
 };
 
+const getTop5ByContries = async (data) => {
+  const matchQuery = {
+    qualified: true,
+  };
+
+  // Check if qualification status is provided and add it to the match query
+  if (data.status) {
+    matchQuery.status = data.status;
+  }
+
+  if (data.startDate) {
+    matchQuery.createdAt = {
+      $gte: new Date(data.startDate), // Filter by start date
+      $lte: new Date(data.endDate), // Filter by end date
+    };
+  }
+
+  const aggregationPipeline = [
+    {
+      $match: matchQuery,
+    },
+    {
+      $group: {
+        _id: '$nationality.english_name', // Grouping by country name
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { count: -1 }, // Sort by count in descending order
+    },
+    {
+      $limit: 5, // Limit to top 5 countries
+    },
+  ];
+
+  const result = await Leads.aggregate(aggregationPipeline);
+
+  return result;
+};
+
+const getTop5ByDegree = async (data) => {
+  const matchQuery = {
+    qualified: true,
+  };
+
+  if (data.startDate) {
+    matchQuery.createdAt = {
+      $gte: new Date(data.startDate), // Filter by start date
+      $lte: new Date(data.endDate), // Filter by end date
+    };
+  }
+
+  const aggregationPipeline = [
+    {
+      $match: matchQuery,
+    },
+    {
+      $group: {
+        _id: '$degree.en_name', // Grouping by country name
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { count: -1 }, // Sort by count in descending order
+    },
+    {
+      $limit: 5, // Limit to top 5 countries
+    },
+  ];
+
+  const result = await Leads.aggregate(aggregationPipeline);
+
+  return result;
+};
+
 /**
  * Get student by id
  * @param {ObjectId} id
@@ -97,4 +172,6 @@ module.exports = {
   updateLeadById,
   deleteLeadById,
   searchLead,
+  getTop5ByContries,
+  getTop5ByDegree,
 };

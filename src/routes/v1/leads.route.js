@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.route('/').post(leadController.createLead).get(leadController.getLeads);
 router.route('/months').get(leadController.getLeadsByMonths);
+router.route('/country').get(leadController.getTop5ByContry);
+router.route('/degree').get(leadController.getTop5ByDegrees);
 
 router
   .route('/:leadId')
