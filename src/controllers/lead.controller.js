@@ -61,7 +61,7 @@ const createLead = catchAsync(async (req, res) => {
 });
 
 const getLeads = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status']);
+  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status', 'source']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
   const result = await leadsService.queryLeads(filter, options);
   res.send(result);
@@ -96,22 +96,30 @@ const deleteLead = catchAsync(async (req, res) => {
   await leadsService.deleteLeadById(req.params.leadId);
   res.status(httpStatus.NO_CONTENT).send();
 });
+
 const getLeadsByMonths = catchAsync(async (req, res) => {
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
-  const result = await leadsService.queryLeads(
-    {
-      $and: [
-        {
-          createdAt: {
-            $gte: req.query.startDate,
-            $lte: req.query.endDate,
-          },
+  const queryFilters = {
+    $and: [
+      {
+        createdAt: {
+          $gte: req.query.startDate,
+          $lte: req.query.endDate,
         },
-        { qualified: req.query.qualified },
-      ],
-    },
-    options
-  );
+      },
+      { qualified: req.query.qualified },
+    ],
+  };
+
+  // Add filters for status and source if they are present in the request query
+  if (req.query.status) {
+    queryFilters.$and.push({ status: req.query.status });
+  }
+  if (req.query.source) {
+    queryFilters.$and.push({ source: req.query.source });
+  }
+
+  const result = await leadsService.queryLeads(queryFilters, options);
   res.send(result);
 });
 const searchLeads = catchAsync(async (req, res) => {

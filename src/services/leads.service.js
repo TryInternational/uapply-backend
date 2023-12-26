@@ -52,6 +52,7 @@ const getTop5ByContries = async (data) => {
     {
       $group: {
         _id: '$nationality.english_name', // Grouping by country name
+        countryCode: { $first: '$nationality.alpha2_code' },
         count: { $sum: 1 },
       },
     },

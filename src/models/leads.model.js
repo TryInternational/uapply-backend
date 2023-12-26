@@ -49,7 +49,7 @@ const leadsSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['New', 'Sent Whatsapp', 'Applied', 'Closed', 'Lost', 'Not Responding', 'Interested'],
+      enum: ['New', 'Sent Whatsapp', 'Applied'],
       default: 'New',
     },
     sponsored: {
