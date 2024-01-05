@@ -20,6 +20,11 @@ const documentsSchema = mongoose.Schema(
       ref: 'Students',
       autopopulate: true,
     },
+    applicationId: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Application',
+      autopopulate: true,
+    },
     tag: {
       type: Object,
     },

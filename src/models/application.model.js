@@ -16,6 +16,7 @@ const applicationSchema = new Schema({
         status: String,
         phaseState: String,
         isCurrent: Boolean,
+        isPrevious: Boolean,
         createdDate: Date,
         subApplicationPhase: [
           {
