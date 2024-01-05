@@ -21,3 +21,4 @@ module.exports.exibitionStudentService = require('./exibitionStudent.service');
 module.exports.newsService = require('./news.service');
 module.exports.commentsService = require('./comments.services');
 module.exports.leadsService = require('./leads.service');
+module.exports.schoolService = require('./school.service');

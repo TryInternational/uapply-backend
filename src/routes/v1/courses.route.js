@@ -4,7 +4,7 @@ const coursesController = require('../../controllers/courses.controller');
 
 const router = express.Router();
 
-// router.post('/', coursesController.createCourse);
+router.post('/', coursesController.createCourse);
 // router.post('/:bookingId/sendClassLink', validate(bookingValidation.updateBooking), coursesController.sendClassLink);
 
 router.route('/').get(coursesController.getCourses);

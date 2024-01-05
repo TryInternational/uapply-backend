@@ -19,7 +19,7 @@ const getCourses = catchAsync(async (req, res) => {
   let locations;
   let attendanceTypes;
   let courseLevel;
-  let institution;
+  let institutionSlug;
   let intakeMonths;
   let courseDurationValues;
   let subjects;
@@ -38,7 +38,9 @@ const getCourses = catchAsync(async (req, res) => {
     courseLevel = req.query.courseLevel;
   }
   if (req.query.institution) {
-    institution = req.query.institution;
+    institutionSlug = {
+      $in: req.query.institution.split(','),
+    };
   }
   if (req.query.courseDurationValues) {
     courseDurationValues = {
@@ -60,7 +62,7 @@ const getCourses = catchAsync(async (req, res) => {
   }
   const filter = {
     courseLevel,
-    institution,
+    institutionSlug,
     locations,
     attendanceTypes,
     intakeMonths,

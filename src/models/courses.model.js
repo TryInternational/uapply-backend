@@ -10,7 +10,7 @@ const coursesSchema = mongoose.Schema(
     },
     courseId: {
       type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Coupon',
+      ref: '',
     },
     name: {
       type: String,
