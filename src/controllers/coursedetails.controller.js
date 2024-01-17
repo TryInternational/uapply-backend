@@ -19,17 +19,13 @@ const createCourseDetail = catchAsync(async (req, res) => {
 });
 
 const getCourseDetails = catchAsync(async (req, res) => {
-  // await publishMessage();
-
   const filter = pick(req.query, ['name', 'status', 'stage', 'level', 'course', 'duration', 'ageGroup', 'optionType']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await courseDetailsService.queryCourseDetails(filter, options);
   res.send(result);
 });
 const getCourseDetailsByRef = catchAsync(async (req, res) => {
-  // await publishMessage();
-
-  const result = await courseDetailsService.queryCourseDetails(req.query.courseRefId);
+  const result = await courseDetailsService.getCourseDetailsByRef(req.params.courseRefId);
   res.send(result);
 });
 

@@ -8,10 +8,6 @@ const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const { countriesService } = require('../services');
-// const { fatoorah } = require('../thirdparty');
-// const { DateToString } = require('../utils/Common');
-// const { PubSub } = require('@google-cloud/pubsub');
-// const pubSubClient = new PubSub();
 
 const createCountry = catchAsync(async (req, res) => {
   const country = await countriesService.createCountry(req.body);

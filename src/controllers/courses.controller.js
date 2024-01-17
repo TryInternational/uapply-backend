@@ -1,12 +1,7 @@
-/* eslint-disable no-return-assign */
-/* eslint-disable eqeqeq */
-/* eslint-disable array-callback-return */
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
-
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-
 const { coursesService } = require('../services');
 // const { fatoorah } = require('../thirdparty');
 // const { DateToString } = require('../utils/Common');
@@ -24,7 +19,7 @@ const getCourses = catchAsync(async (req, res) => {
   let locations;
   let attendanceTypes;
   let courseLevel;
-  let institution;
+  let institutionSlug;
   let intakeMonths;
   let courseDurationValues;
   let subjects;
@@ -43,7 +38,9 @@ const getCourses = catchAsync(async (req, res) => {
     courseLevel = req.query.courseLevel;
   }
   if (req.query.institution) {
-    institution = req.query.institution;
+    institutionSlug = {
+      $in: req.query.institution.split(','),
+    };
   }
   if (req.query.courseDurationValues) {
     courseDurationValues = {
@@ -65,7 +62,7 @@ const getCourses = catchAsync(async (req, res) => {
   }
   const filter = {
     courseLevel,
-    institution,
+    institutionSlug,
     locations,
     attendanceTypes,
     intakeMonths,
@@ -81,7 +78,6 @@ const getCourses = catchAsync(async (req, res) => {
 
 const getCourse = catchAsync(async (req, res) => {
   const course = await coursesService.getCourseById(req.params.courseId);
-
   if (!course) {
     throw new ApiError(httpStatus.NOT_FOUND, 'course not found');
   }

@@ -1,73 +1,37 @@
 /* eslint-disable no-nested-ternary */
 const httpStatus = require('http-status');
-const { default: axios } = require('axios');
+const moment = require('moment');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { studentsService } = require('../services');
-const config = require('../config/config');
+const { Students } = require('../models');
 
 const createStudent = catchAsync(async (req, res) => {
-  const checkQualified =
-    req.body.nationality.english_name === 'United States of America' ||
-    req.body.nationality.english_name === 'Australia' ||
-    req.body.nationality.english_name === 'Oman' ||
-    req.body.nationality.english_name === 'France' ||
-    req.body.nationality.english_name === 'Spain' ||
-    req.body.nationality.english_name === 'United Kingdom' ||
-    req.body.nationality.english_name === 'Qatar' ||
-    req.body.nationality.english_name === 'Kuwait' ||
-    req.body.nationality.english_name === 'Saudi Arabia' ||
-    req.body.nationality.english_name === 'United Arab Emirates' ||
-    req.body.nationality.english_name === 'Germany' ||
-    req.body.nationality.english_name === 'Bahrain';
+  const today = new Date();
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const qualified = (req.body.parentsIncome || checkQualified) && req.body.destination.en_name === 'UK';
-
-  // if (process.env.APP_ENV === 'production' && qualified) {
-  //   emailService.sendEmail('aamish@try.city', 'New Qualified User', 'New Qualifed user added');
-  // }
-  const student = await studentsService.createStudent({ qualified, ...req.body });
-  const slackBody = {
-    attachments: [
-      {
-        pretext: `*New qualified user ${student.fullname}*`,
-        text: `\nEmail - ${student.email}.\nPhone No - ${student.phoneNo}.\nNationality - ${
-          student.nationality.english_name
-        }.\nResidence - ${student.residence.english_name}.\nDegree- ${student.degree.en_name}.\nMajor - ${
-          student.subjects
-        }.\nGPA - ${student.cgpa}.\nCountry travelled - ${
-          student.countriesTraveled.toString() || 'N/A'
-        }.\nIncome above $30,000 - ${
-          student.parentsIncome === 'true' ? 'Yes' : student.parentsIncome === 'false' ? 'No' : 'N/A'
-        }.\nSchool study in - ${student.previousSchool || 'N/A'}`,
-        color: '#fd3e60',
-      },
-    ],
+  // Filter to count students created today
+  const todayFilter = {
+    createdAt: {
+      $gte: startOfToday,
+      $lt: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
+    },
   };
-
-  const Tryslack = {
-    method: 'post',
-    url: `https://hooks.slack.com/services/${config.slack.slackWebHook}`,
-    data: JSON.stringify(slackBody),
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  };
-  const Ulearnslack = {
-    method: 'post',
-    url: `https://hooks.slack.com/services/${config.slack.slackWebHookUlearn}`,
-    data: JSON.stringify(slackBody),
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  };
-  if (process.env.APP_ENV === 'production' && qualified) {
-    await axios(Tryslack);
-    await axios(Ulearnslack);
-  }
-
+  let studentCount;
+  await Students.countDocuments(todayFilter, (countErr, count) => {
+    if (countErr) {
+      return;
+    }
+    studentCount = count;
+  });
+  const body = { ...req.body, refrenceNo: `${moment(new Date()).format('DDMMYY')}-000${studentCount}` };
+  const student = await studentsService.createStudent(body);
   res.status(httpStatus.CREATED).send(student);
 });
 
 const getStudents = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status']);
+  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status', 'stage']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await studentsService.queryStudents(filter, options);
   res.send(result);

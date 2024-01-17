@@ -11,8 +11,8 @@ router.route('/months').get(studentController.getStudentsByMonths);
 
 router
   .route('/:studentId')
-  .get(auth('getUsers'), studentController.getStudent)
-  .patch(auth('manageUsers'), studentController.updateStudent)
+  .get(studentController.getStudent)
+  .patch(studentController.updateStudent)
   .delete(auth('manageUsers'), studentController.deleteStudent);
 router.route('/search/:text').get(studentController.searchStudents);
 

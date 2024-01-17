@@ -31,6 +31,7 @@ const queryCountries = async (filter, options) => {
  * @returns {Promise<User>}
  */
 const getCountryById = async (id) => {
+  console.log(id);
   return Countries.findById(id);
 };
 

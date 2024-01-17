@@ -19,7 +19,7 @@ router
   .patch(coursedetailsController.updateCourseDetail)
   .delete(coursedetailsController.deleteCourseDetail);
 
-router.route('/:courseId').get(coursedetailsController.getCourseDetail);
+router.route('/course/:courseId').get(coursedetailsController.getCourseDetail);
 
 // router.post('/confirm', coursedetailsController.confirm);
 // router.post('/execute', coursedetailsController.execute);

@@ -8,6 +8,9 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Students>}
  */
 const createStudent = async (studentBody) => {
+  if (await Students.isEmailTaken(studentBody.email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  }
   return Students.create(studentBody);
 };
 
@@ -79,11 +82,11 @@ const deleteStudentById = async (studentId) => {
 const searchStudent = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
-  const bookings = await Students.paginate(
-    { $and: [{ qualified: options.qualified, $or: [{ fullname: regex }, { phoneNumber: regex }, { email: regex }] }] },
+  const students = await Students.paginate(
+    { $and: [{ qualified: options.qualified, $or: [{ fullname: regex }, { phoneNo: regex }, { email: regex }] }] },
     options
   );
-  return bookings;
+  return students;
 };
 
 module.exports = {

@@ -36,7 +36,8 @@ const getCourseDetailsByRef = async (courseRefId) => {
  * @returns {Promise<User>}
  */
 const getCourseDetailsById = async (id) => {
-  return CourseDetails.findById(id);
+  console.log(id);
+  return CourseDetails.find({ id });
 };
 const getCourseDetails = async () => {
   return CourseDetails.find();
