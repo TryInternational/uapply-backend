@@ -6,6 +6,8 @@ const createUser = {
     email: Joi.string().required().email(),
     password: Joi.string().required().custom(password),
     name: Joi.string().required(),
+    slackMemberId: Joi.string(),
+    avatar: Joi.string(),
     role: Joi.required().custom(objectId),
   }),
 };
@@ -14,6 +16,8 @@ const getUsers = {
   query: Joi.object().keys({
     name: Joi.string(),
     role: Joi.string(),
+    avatar: Joi.string(),
+    slackMemberId: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -33,6 +37,8 @@ const updateUser = {
   body: Joi.object()
     .keys({
       email: Joi.string().email(),
+      avatar: Joi.string(),
+      slackMemberId: Joi.string(),
       password: Joi.string().custom(password),
       name: Joi.string(),
     })

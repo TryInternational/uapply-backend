@@ -22,6 +22,12 @@ const userSchema = mongoose.Schema(
         }
       },
     },
+    slackMemberId: {
+      type: String,
+    },
+    avatar: {
+      type: String,
+    },
     password: {
       type: String,
       required: true,
