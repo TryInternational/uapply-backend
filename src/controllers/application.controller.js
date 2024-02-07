@@ -13,16 +13,8 @@ const { applicationService } = require('../services');
 // const { DateToString } = require('../utils/Common');
 // const { PubSub } = require('@google-cloud/pubsub');
 // const pubSubClient = new   PubSub();
-function generateUniqueId() {
-  const randomNumbers = Math.floor(Math.random() * 1000000000)
-    .toString()
-    .padStart(9, '0');
-  const uniqueId = `A-${randomNumbers}`;
-  return uniqueId;
-}
 
 const createApplication = catchAsync(async (req, res) => {
-  const applicationId = await generateUniqueId();
   const startDate = new Date();
   const stages = [
     {
@@ -112,7 +104,6 @@ const createApplication = catchAsync(async (req, res) => {
 
   const application = await applicationService.createApplication({
     ...req.body,
-    applicationId,
     portalApplicationStatus: { applicationPhases: stages },
     startDate,
   });

@@ -25,7 +25,7 @@ const createStudent = catchAsync(async (req, res) => {
     }
     studentCount = count;
   });
-  const body = { ...req.body, refrenceNo: `${moment(new Date()).format('DDMMYY')}-000${studentCount}` };
+  const body = { ...req.body, refrenceNo: `${moment(new Date()).format('DDMMYY')}-000${studentCount + 1}` };
   const student = await studentsService.createStudent(body);
   res.status(httpStatus.CREATED).send(student);
 });
@@ -73,7 +73,7 @@ const getStudentsByMonths = catchAsync(async (req, res) => {
   res.send(result);
 });
 const searchStudents = catchAsync(async (req, res) => {
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'stage']);
   const results = await studentsService.searchStudent(req.params.text, options);
   res.status(200).send(results);
 });
