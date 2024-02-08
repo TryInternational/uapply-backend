@@ -21,6 +21,7 @@ const newsRoute = require('./news.route');
 const commentsRoute = require('./comments.route');
 const leadsRoute = require('./leads.route');
 const schoolRoute = require('./school.routes');
+const feesRoute = require('./fees.route');
 
 const router = express.Router();
 
@@ -108,6 +109,10 @@ const defaultRoutes = [
   {
     path: '/docs',
     route: docsRoute,
+  },
+  {
+    path: '/fees',
+    route: feesRoute,
   },
 ];
 

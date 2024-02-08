@@ -17,3 +17,4 @@ module.exports.sponsorStudentController = require('./sponsorStudents.controller'
 module.exports.exibitionStudentController = require('./exibitionStudent.controller');
 module.exports.newsController = require('./news.controller');
 module.exports.schoolController = require('./school.controller');
+module.exports.feesController = require('./fees.controller');

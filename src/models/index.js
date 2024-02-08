@@ -19,3 +19,4 @@ module.exports.News = require('./news.model');
 module.exports.Comments = require('./comments.modal');
 module.exports.Leads = require('./leads.model');
 module.exports.School = require('./school.model');
+module.exports.Fees = require('./fees.model');
