@@ -78,7 +78,13 @@ const studentsSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    assignedTo: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User', autopopulate: true }],
+    assignedTo: [
+      {
+        user: { type: mongoose.SchemaTypes.ObjectId, ref: 'User', autopopulate: true },
+        role: { type: String, required: true },
+      },
+    ],
+
     middleName: {
       type: String,
       trim: true,

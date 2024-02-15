@@ -12,11 +12,9 @@ const catchAsync = require('../utils/catchAsync');
 const { commentsService, userService } = require('../services');
 const { getStudentById } = require('../services/students.service');
 
-const tagUserInComment = catchAsync(async (req, res) => {
+const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
   try {
-    const { commentId } = req.params;
-    const { userIdToTag } = req.body;
-
+    console.log('innn', commentId, 'user', userIdToTag);
     const comment = await commentsService.getCommentById(commentId);
 
     if (!comment) {
@@ -35,7 +33,7 @@ const tagUserInComment = catchAsync(async (req, res) => {
 
     comment.taggedUsers.push(userToTag._id);
     await comment.save();
-
+    console.log('inn', comment);
     return res.status(200).json({ success: true, message: 'User tagged successfully' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Internal Server Error' });
@@ -45,7 +43,7 @@ const tagUserInComment = catchAsync(async (req, res) => {
 const createComment = catchAsync(async (req, res) => {
   const commentData = await commentsService.createComments(req.body);
   const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
-  const SLACK_TOKEN = 'xoxb-960538020068-6594623975793-PfNJ3psxK1VglBc0hCkcY2Tv';
+  const SLACK_TOKEN = 'xoxb-960538020068-6594623975793-Ye7Lkswb8u0DmVY0CLAc1GNV';
 
   const stdnt = await getStudentById(commentData.studentId);
   const sendSlackNotification = async (memberId, text, comment, student) => {
@@ -100,12 +98,9 @@ const createComment = catchAsync(async (req, res) => {
       console.error('Error sending Slack notification:', error.message);
     }
   };
-
   if (req.body.mentions.length) {
     req.body.mentions.map(async (z) => {
-      tagUserInComment(commentData._id, {
-        userIdToTag: z.id,
-      });
+      tagUserInComment(commentData._id, z.id);
 
       // if (process.env.APP_ENV === 'production') {
       // await axios(Tryslack);
@@ -113,7 +108,6 @@ const createComment = catchAsync(async (req, res) => {
       // }
     });
   }
-
   res.status(httpStatus.CREATED).send(commentData);
 });
 
