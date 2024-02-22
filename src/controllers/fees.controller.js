@@ -10,7 +10,7 @@ const createFees = catchAsync(async (req, res) => {
 });
 
 const getFees = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'slug', 'status']);
+  const filter = pick(req.query, ['name', 'slug', 'feeType']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await feesService.queryFees(filter, options);
   res.send(result);

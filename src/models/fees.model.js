@@ -3,20 +3,14 @@ const { toJSON, paginate } = require('./plugins');
 
 const feesSchema = mongoose.Schema(
   {
-    description: {
+    tag: {
+      type: Object,
+    },
+    feeType: {
       type: String,
+      enum: ['ielts-booking', 'office-fees', 'student-visa'],
     },
-    amount: {
-      type: Number,
-    },
-    salesPerson: {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Users',
-    },
-    type: {
-      type: Array,
-    },
-    createdMonth: {
+    createdDate: {
       type: Date,
     },
   },

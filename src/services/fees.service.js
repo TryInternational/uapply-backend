@@ -40,13 +40,27 @@ const getFeesById = async (id) => {
 const getAmounts = async () => {
   const monthlySums = await Fees.aggregate([
     {
+      $addFields: {
+        month: { $month: '$createdDate' }, // Extract month from createdDate
+        year: { $year: '$createdDate' }, // Extract year from createdDate
+      },
+    },
+    {
       $group: {
-        _id: { $month: '$createdMonth' },
-        totalAmount: { $sum: '$amount' },
+        _id: { feeType: '$feeType', month: '$month', year: '$year' },
+        totalAmount: { $sum: { $toInt: '$tag.amount' } }, // Convert amount to integer and sum
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        feeType: '$_id.feeType',
+        month: '$_id.month',
+        year: '$_id.year',
+        totalAmount: 1,
       },
     },
   ]);
-  console.log('inn');
 
   return monthlySums;
 };

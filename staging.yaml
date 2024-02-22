@@ -1,5 +1,5 @@
 service: uapply-staging-api
-runtime: nodejs16
+runtime: nodejs14
 instance_class: B1
 # runtime: custom
 # env: flex
@@ -15,7 +15,7 @@ instance_class: B1
 #   memory_gb: 1
 #   disk_size_gb: 10
 env_variables:
-  APP_ENV: "staging"
+  APP_ENV: 'staging'
 # # inbound_services:
 # #   - warmup
 # automatic_scaling:
