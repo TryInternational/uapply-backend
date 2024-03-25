@@ -21,7 +21,7 @@ const executePayment = async ({
   Language = 'AR',
 }) => {
   const apiUrl = `${config.host}/payments`;
-
+  console.log(apiUrl);
   const payload = {
     PaymentMethodId,
     CustomerName,

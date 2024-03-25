@@ -20,3 +20,5 @@ module.exports.Comments = require('./comments.modal');
 module.exports.Leads = require('./leads.model');
 module.exports.School = require('./school.model');
 module.exports.Fees = require('./fees.model');
+module.exports.Booking = require('./booking.model');
+module.exports.Payment = require('./payment.model');

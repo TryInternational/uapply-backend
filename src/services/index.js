@@ -23,3 +23,5 @@ module.exports.commentsService = require('./comments.services');
 module.exports.leadsService = require('./leads.service');
 module.exports.schoolService = require('./school.service');
 module.exports.feesService = require('./fees.service');
+module.exports.bookingService = require('./booking.service');
+module.exports.paymentService = require('./payment.service');
