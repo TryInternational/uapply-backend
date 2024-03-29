@@ -31,7 +31,6 @@ const createBooking = catchAsync(async (req, res) => {
 
   const payment = await paymentService.createPayment(paymentPayload);
 
-  console.log(payment);
   booking.paymentId = payment._id;
 
   await booking.save();
@@ -52,13 +51,11 @@ const createBooking = catchAsync(async (req, res) => {
       },
     ],
   };
-  console.log('booking', transactionPayload);
-
+  console.log(transactionPayload);
   const transaction = await fatoorah.executePayment(transactionPayload);
-  console.log('transaction', transaction);
-
   payment.transactionId = transaction.InvoiceId;
   payment.orderNo = booking.orderNo;
+  console.log(transaction);
   await payment.save();
   res.status(httpStatus.CREATED).send({ paymentUrl: transaction.PaymentURL, orderNo: booking.orderNo });
 });

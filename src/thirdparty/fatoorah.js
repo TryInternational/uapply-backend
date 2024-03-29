@@ -34,7 +34,7 @@ const executePayment = async ({
     CallBackUrl: `${apiUrl}/redirect/confirm`,
     ErrorUrl: `${apiUrl}/redirect/error`,
   };
-
+  console.log(payload);
   const resp = await api.post('/ExecutePayment', payload);
   return resp.data.Data;
 };

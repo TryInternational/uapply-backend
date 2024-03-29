@@ -1,5 +1,5 @@
 service: uapply-staging-api
-runtime: nodejs14
+runtime: nodejs18
 instance_class: B1
 # runtime: custom
 # env: flex
