@@ -7,10 +7,9 @@ const bookingController = require('../../controllers/booking.controller');
 const router = express.Router();
 
 router.post('/', validate(bookingValidation.createBooking), bookingController.createBooking);
-// router.post('/:bookingId/sendClassLink', validate(bookingValidation.updateBooking), bookingController.sendClassLink);
+router.route('/unavailable-dates').get(bookingController.getBookedDates);
 
 router.route('/').get(validate(bookingValidation.getBookings), bookingController.getBookings);
-// router.route(auth('/getBookingByEmail/:email')).get(bookingController.getBookingByEmail);
 router.route('/months').get(validate(bookingValidation.getBookings), bookingController.getBookingByMonths);
 
 router.route('/:type/export').get(validate(bookingValidation.getBookings), bookingController.exportFile);

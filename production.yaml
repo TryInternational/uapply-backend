@@ -1,5 +1,5 @@
 service: uapply-api
-runtime: nodejs
+runtime: nodejs18
 instance_class: F2
 # runtime: custom
 # env: flex

@@ -57,13 +57,11 @@ const requestRefund = catchAsync(async (req, res) => {
 });
 
 const confirm = catchAsync(async (req, res) => {
-  console.log(req.query);
   const transaction = await fatoorah.getPaymentStatus(req.query.paymentId);
   if (!transaction) {
     return res.redirect(`${config.website}/booking/failed?id=${null}`);
   }
   const payment = await paymentService.getPaymentByTxnId(transaction.InvoiceId);
-  console.log('payment', payment);
   if (!payment) {
     return res.redirect(`${config.website}/booking/failed?id=${null}`);
   }
@@ -72,61 +70,17 @@ const confirm = catchAsync(async (req, res) => {
 
   payment.status = transaction.InvoiceStatus;
   payment.meta = transaction;
-  booking.status = transaction.InvoiceStatus;
+  booking.status = transaction.InvoiceStatus === 'Paid' ? 'booked' : 'cancelled';
+
   await payment.save();
   await booking.save();
   if (transaction.InvoiceStatus === 'Paid') {
-    // const paymentImg =
-    //   payment.paymentMode === 'KNET'
-    //     ? 'https://storage.googleapis.com/destination_ulearn/courses/Frame%201680.png'
-    //     : 'https://storage.googleapis.com/destination_ulearn/courses/mastercard.png';
-
-    // TODO: ADD context for email
-    // const context = {
-    //   ...booking.toObject(),
-    //   createdAt: moment(new Date(booking.createdAt)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-    //   orderNo: booking.orderNo,
-    //   paymentMode: payment.paymentMode,
-    //   paymentModeImg: paymentImg,
-
-    //   totalPrice: booking.price,
-
-    //   currency: 'KWD',
-    //   discount: false,
-    //   email: booking.email,
-    //   endDate: moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-    //   startDate: moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-    //   time: booking.localTime,
-
-    //   year: moment().year(),
-    // };
-
-    // const payload = {
-    //   'Order #': `W${booking.orderNo}`,
-    //   'Date of Booking': moment(booking.createdAt).tz('Asia/Kuwait').format('MMM DD YYYY [at] hh:mm a'),
-    //   'Start Date': moment(new Date(booking.courseStartDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-    //   'End Date': moment(new Date(booking.courseEndDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-    //   'Full Name': booking.fullname,
-    //   'Mobile #': booking.phoneNumber,
-
-    //   Email: booking.email,
-
-    //   'Original Amount(KD)': booking.price,
-    //   'Amount Paid': booking.price,
-    //   'Payment Method': payment.paymentMode,
-    // };
-
-    // await googlesheet.addRow(config.googlesheet.booking, payload);
-    // await emailService.sendReceipt(booking.email, context);
-
     return res.redirect(`${config.website}/booking/success?id=${booking._id}`);
   }
 
   if (transaction.InvoiceStatus !== 'Paid') {
     return res.redirect(`${config.website}/booking/failed?id=${booking.id}`);
   }
-
-  // await emailService.sendReceipt('elasoshi@gmail.com');
 });
 const getPayment = catchAsync(async (req, res) => {
   const payment = await paymentService.getPaymentById(req.params.paymentId);

@@ -8,15 +8,40 @@ const { firestore } = require('../thirdparty/firebase');
  * @param {Object} bookingBody
  * @returns {Promise<Booking>}
  */
+
+async function checkAvailability(startDate, endDate) {
+  const bookings = await Booking.find({
+    $or: [{ startDate: { $lte: endDate }, endDate: { $gte: startDate } }],
+    status: 'booked',
+  });
+
+  return bookings.length === 0;
+}
+
 const createBooking = async (bookingBody) => {
-  try {
-    const booking = await Booking.create(bookingBody);
-    return booking;
-  } catch (error) {
-    console.log(error);
+  const availability = await checkAvailability(bookingBody.startDate, bookingBody.endDate);
+  if (!availability) {
+    throw new ApiError('Selected dates are not available.');
   }
+  const newBooking = await Booking.create(bookingBody);
+  return newBooking;
 };
 
+async function getBookedDates() {
+  const bookings = await Booking.find({ status: 'booked' });
+  let bookedDates = [];
+  bookings.forEach((booking) => {
+    // Assuming you want to include both the start and end date in the range
+    const currentDate = new Date(booking.startDate);
+    while (currentDate <= booking.endDate) {
+      bookedDates.push(currentDate.toISOString().split('T')[0]); // Format to 'YYYY-MM-DD'
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+  });
+  // Remove duplicates if any
+  bookedDates = [...new Set(bookedDates)];
+  return bookedDates;
+}
 /**
  * Query for bookings
  * @param {Object} _filter - Mongo filter
@@ -95,4 +120,5 @@ module.exports = {
   emailQuery,
   getBookings,
   searchBooking,
+  getBookedDates,
 };

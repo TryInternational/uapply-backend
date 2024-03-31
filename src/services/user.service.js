@@ -27,7 +27,10 @@ const queryUsers = async (filter, options) => {
   const users = await User.paginate(filter, options);
   return users;
 };
-
+const getUsers = async () => {
+  const users = await User.find();
+  return users;
+};
 /**
  * Get user by id
  * @param {ObjectId} id
@@ -86,4 +89,5 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  getUsers,
 };

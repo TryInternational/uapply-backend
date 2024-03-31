@@ -13,11 +13,17 @@ const bookingSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    status: { type: String, enum: ['booked', 'pending', 'cancelled'], default: 'pending' },
+
     paymentId: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Payment',
     },
     countryCode: {
+      type: String,
+      trim: true,
+    },
+    modeOfPayment: {
       type: String,
       trim: true,
     },
