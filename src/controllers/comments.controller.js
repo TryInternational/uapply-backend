@@ -14,7 +14,6 @@ const { getStudentById } = require('../services/students.service');
 
 const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
   try {
-    console.log('innn', commentId, 'user', userIdToTag);
     const comment = await commentsService.getCommentById(commentId);
 
     if (!comment) {
@@ -33,7 +32,6 @@ const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
 
     comment.taggedUsers.push(userToTag._id);
     await comment.save();
-    console.log('inn', comment);
     return res.status(200).json({ success: true, message: 'User tagged successfully' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Internal Server Error' });

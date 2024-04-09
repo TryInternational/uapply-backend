@@ -61,7 +61,21 @@ const createLead = catchAsync(async (req, res) => {
 });
 
 const getLeads = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status', 'source']);
+  let filter = pick(req.query, [
+    'name',
+    'destination.en_name',
+    'role',
+    'qualified',
+    'degree',
+    'nationality',
+    'residence',
+    'status',
+    'source',
+  ]);
+  if (req.query.destination && req.query.destination.en_name) {
+    filter = { 'destination.en_name': req.query.destination.en_name };
+  }
+
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
   const result = await leadsService.queryLeads(filter, options);
   res.send(result);
@@ -99,7 +113,7 @@ const deleteLead = catchAsync(async (req, res) => {
 
 const getLeadsByMonths = catchAsync(async (req, res) => {
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
-  const queryFilters = {
+  let queryFilters = {
     $and: [
       {
         createdAt: {
@@ -118,7 +132,19 @@ const getLeadsByMonths = catchAsync(async (req, res) => {
   if (req.query.source) {
     queryFilters.$and.push({ source: req.query.source });
   }
-
+  if (req.query.destination) {
+    queryFilters = {
+      $and: [
+        {
+          createdAt: {
+            $gte: req.query.startDate,
+            $lte: req.query.endDate,
+          },
+        },
+        { 'destination.en_name': req.query.destination.en_name },
+      ],
+    };
+  }
   const result = await leadsService.queryLeads(queryFilters, options);
   res.send(result);
 });
