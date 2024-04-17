@@ -173,8 +173,7 @@ const studentsSchema = mongoose.Schema(
     },
     status: {
       type: [String],
-      enum: ['Status 1', 'Status 2', 'Status 3', 'Status 4', 'Status 5'],
-      default: 'Status 1',
+      enum: ['Missing documents', 'Missing ielts'],
     },
     emergencyContact: {
       type: [EmergencyContact],
