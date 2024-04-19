@@ -11,6 +11,7 @@ const catchAsync = require('../utils/catchAsync');
 
 const { commentsService, userService } = require('../services');
 const { getStudentById } = require('../services/students.service');
+const config = require('../config/config');
 
 const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
   try {
@@ -41,7 +42,7 @@ const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
 const createComment = catchAsync(async (req, res) => {
   const commentData = await commentsService.createComments(req.body);
   const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
-  const SLACK_TOKEN = 'xoxb-960538020068-6986992668836-PUjjm3oCGL0yBPNu9ob51dfB';
+  const SLACK_TOKEN = config.slack.slackNotification;
 
   const stdnt = await getStudentById(commentData.studentId);
   const sendSlackNotification = async (memberId, text, comment, student) => {
