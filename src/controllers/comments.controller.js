@@ -41,13 +41,14 @@ const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
 
 const createComment = catchAsync(async (req, res) => {
   const commentData = await commentsService.createComments(req.body);
+  const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
   const SLACK_TOKEN = config.slack.slackNotification;
 
   const stdnt = await getStudentById(commentData.studentId);
   const sendSlackNotification = async (memberId, text, comment, student) => {
     try {
       const response = await axios.post(
-        'https://slack.com/api/chat.postMessage',
+        SLACK_API_URL,
         {
           channel: memberId,
           blocks: [
