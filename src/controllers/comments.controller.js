@@ -41,7 +41,7 @@ const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
 const createComment = catchAsync(async (req, res) => {
   const commentData = await commentsService.createComments(req.body);
   const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
-  const SLACK_TOKEN = 'xoxb-960538020068-6594623975793-Ye7Lkswb8u0DmVY0CLAc1GNV';
+  const SLACK_TOKEN = 'xoxb-960538020068-6986992668836-PUjjm3oCGL0yBPNu9ob51dfB';
 
   const stdnt = await getStudentById(commentData.studentId);
   const sendSlackNotification = async (memberId, text, comment, student) => {
