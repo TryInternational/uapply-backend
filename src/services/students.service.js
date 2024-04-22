@@ -53,16 +53,22 @@ const getStudentByEmail = async (email) => {
  * @returns {Promise<Students>}
  */
 const updateStudentById = async (studentId, updateBody) => {
-  const student = await getStudentById(studentId);
-  if (!student) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Students not found');
+  try {
+    const student = await getStudentById(studentId);
+    if (!student) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Students not found');
+    }
+    // if (updateBody.email && (await Students.isEmailTaken(updateBody.email, studentId))) {
+    //   throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    // }
+    Object.assign(student, updateBody);
+    await student.save();
+
+    return student;
+  } catch (error) {
+    console.error('Error saving student:', error);
+    // Handle the error appropriately
   }
-  // if (updateBody.email && (await Students.isEmailTaken(updateBody.email, studentId))) {
-  //   throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
-  // }
-  Object.assign(student, updateBody);
-  await student.save();
-  return student;
 };
 
 /**
