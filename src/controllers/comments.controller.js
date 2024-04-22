@@ -11,7 +11,6 @@ const catchAsync = require('../utils/catchAsync');
 
 const { commentsService, userService } = require('../services');
 const { getStudentById } = require('../services/students.service');
-const config = require('../config/config');
 
 const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
   try {
