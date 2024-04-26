@@ -31,6 +31,7 @@ const envVarsSchema = Joi.object()
     SLACK_WEB_HOOK: Joi.string().description('Try slack web hook for uapply qualified users'),
     SLACK_WEB_HOOK_ULEARN: Joi.string().description('Ulearn slack web hook for uapply qualified users'),
     SLACK_NOTIFICATION: Joi.string().description('Uapply slack app token'),
+    SLACK_ALERT: Joi.string().description('Uapply alert on new application'),
   })
   .unknown();
 
@@ -95,5 +96,6 @@ module.exports = {
     slackWebHook: envVars.SLACK_WEB_HOOK,
     slackWebHookUlearn: envVars.SLACK_WEB_HOOK_ULEARN,
     slackNotification: envVars.SLACK_NOTIFICATION,
+    slackApplicationAlert: envVars.SLACK_ALERT,
   },
 };

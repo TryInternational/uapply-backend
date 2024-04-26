@@ -4,11 +4,13 @@
 /* eslint-disable array-callback-return */
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
+const axios = require('axios');
 
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const { applicationService } = require('../services');
+const config = require('../config/config');
 // const { fatoorah } = require('../thirdparty');
 // const { DateToString } = require('../utils/Common');
 // const { PubSub } = require('@google-cloud/pubsub');
@@ -107,7 +109,24 @@ const createApplication = catchAsync(async (req, res) => {
     portalApplicationStatus: { applicationPhases: stages },
     startDate,
   });
-
+  const slackBody = {
+    attachments: [
+      {
+        pretext: `*New application for ${application.institute.name}*`,
+        text: `\nApplication Id - ${application.applicationId}.\nCourse Level - ${application.courseLevel}.\nIntake Month - ${application.intakeMonth}.\nIntake Year - ${application.intakeYear}.\n`,
+        color: '#fd3e60',
+      },
+    ],
+  };
+  const Ulearnslack = {
+    method: 'post',
+    url: `https://hooks.slack.com/services/${config.slack.slackApplicationAlert}`,
+    data: JSON.stringify(slackBody),
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+  };
+  if (process.env.APP_ENV === 'production') {
+    await axios(Ulearnslack);
+  }
   res.status(httpStatus.CREATED).send(application);
 });
 
