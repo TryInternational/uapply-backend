@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const httpStatus = require('http-status');
 const { Fees } = require('../models');
 const ApiError = require('../utils/ApiError');
@@ -36,8 +37,8 @@ const queryFees = async (filter, options) => {
 const getFeesById = async (id) => {
   return Fees.findById(id);
 };
-
 const getAmounts = async () => {
+  // Perform initial aggregation to get sums for existing months
   const monthlySums = await Fees.aggregate([
     {
       $addFields: {
@@ -62,7 +63,31 @@ const getAmounts = async () => {
     },
   ]);
 
-  return monthlySums;
+  // Generate an array of all possible months (1 to 12)
+  const allMonths = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  // Create a map to store existing sums for quick lookup
+  const sumMap = new Map();
+  monthlySums.forEach((item) => {
+    const key = `${item.feeType}-${item.year}-${item.month}`;
+    sumMap.set(key, item.totalAmount);
+  });
+
+  // Create an array to hold the final result
+  const result = [];
+
+  // Iterate through all possible combinations of feeType, year, and month
+  for (const feeType of [...new Set(monthlySums.map((item) => item.feeType))]) {
+    for (const year of [...new Set(monthlySums.map((item) => item.year))]) {
+      for (const month of allMonths) {
+        const key = `${feeType}-${year}-${month}`;
+        const totalAmount = sumMap.get(key) || 0; // If sum exists, use it; otherwise, default to 0
+        result.push({ feeType, year, month, totalAmount });
+      }
+    }
+  }
+
+  return result;
 };
 
 /**

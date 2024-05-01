@@ -21,3 +21,4 @@ module.exports.feesController = require('./fees.controller');
 module.exports.bookingController = require('./booking.controller');
 module.exports.paymentController = require('./payment.controller');
 module.exports.appliedStudentController = require('./appliedStudent.conntroller');
+module.exports.quotesController = require('./quotes.controller');

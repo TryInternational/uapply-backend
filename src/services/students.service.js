@@ -88,24 +88,42 @@ const deleteStudentById = async (studentId) => {
 const searchStudent = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
-  const students = await Students.paginate(
-    {
-      $and: [
-        {
-          stage: options.stage,
-          $or: [
-            { firstName: regex },
-            { lastName: regex },
-            { middleName: regex },
-            { phoneNo: regex },
-            { email: regex },
-            { refrenceNo: regex },
-          ],
-        },
-      ],
-    },
-    options
-  );
+  let students;
+  if (options.stage) {
+    students = await Students.paginate(
+      {
+        $and: [
+          {
+            stage: options.stage,
+            $or: [
+              { firstName: regex },
+              { lastName: regex },
+              { middleName: regex },
+              { phoneNo: regex },
+              { email: regex },
+              { refrenceNo: regex },
+            ],
+          },
+        ],
+      },
+      options
+    );
+  } else {
+    students = await Students.paginate(
+      {
+        $or: [
+          { firstName: regex },
+          { lastName: regex },
+          { middleName: regex },
+          { phoneNo: regex },
+          { email: regex },
+          { refrenceNo: regex },
+        ],
+      },
+      options
+    );
+  }
+
   return students;
 };
 
