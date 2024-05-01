@@ -38,7 +38,6 @@ const getFeesById = async (id) => {
   return Fees.findById(id);
 };
 const getAmounts = async () => {
-  // Perform initial aggregation to get sums for existing months
   const monthlySums = await Fees.aggregate([
     {
       $addFields: {
