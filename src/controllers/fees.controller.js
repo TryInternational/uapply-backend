@@ -25,7 +25,7 @@ const getFeesById = catchAsync(async (req, res) => {
 });
 
 const updateFees = catchAsync(async (req, res) => {
-  const std = await feesService.updateExibitionStudentsById(req.params.id, req.body);
+  const std = await feesService.updateFeesById(req.params.id, req.body);
   res.send(std);
 });
 
