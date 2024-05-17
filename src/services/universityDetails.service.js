@@ -25,7 +25,10 @@ const queryUniversitiesDetails = async (filter, options) => {
   const university = await UniversityDetails.paginate(filter, options);
   return university;
 };
-
+const getUniversitiesDetailsByRef = async (universityRefId) => {
+  const uni = await UniversityDetails.find({ slug: universityRefId });
+  return uni;
+};
 /**
  * @param {ObjectId} id
  * @returns {Promise<User>}
@@ -85,4 +88,5 @@ module.exports = {
   deleteUniversitiesDetailsById,
   getUniversitiesDetailsById,
   searchUniversitiesDetails,
+  getUniversitiesDetailsByRef,
 };

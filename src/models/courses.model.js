@@ -43,6 +43,9 @@ const coursesSchema = mongoose.Schema(
     currency: {
       type: String,
     },
+    provider: {
+      type: String,
+    },
     institutionSlug: {
       type: String,
     },

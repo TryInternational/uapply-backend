@@ -29,6 +29,11 @@ const getCourseDetailsByRef = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const getCourseDetailsByInstitute = catchAsync(async (req, res) => {
+  const result = await courseDetailsService.getCourseDetailsByUniversity(req.params.institute);
+  res.send(result);
+});
+
 const getCourseDetail = catchAsync(async (req, res) => {
   const course = await courseDetailsService.getCourseDetailsById(req.params.courseId);
 
@@ -63,4 +68,5 @@ module.exports = {
   updateCourseDetail,
   searchCoursesDetail,
   getCourseDetailsByRef,
+  getCourseDetailsByInstitute,
 };

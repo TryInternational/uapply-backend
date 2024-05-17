@@ -72,6 +72,7 @@ const getCourses = catchAsync(async (req, res) => {
   };
   Object.keys(filter).forEach((key) => (filter[key] === undefined ? delete filter[key] : {}));
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
+  console.log(filter);
   const result = await coursesService.queryCourses(filter, options);
   res.send(result);
 });

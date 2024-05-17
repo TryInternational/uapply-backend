@@ -11,6 +11,7 @@ router.route('/').get(universityDetailsController.getUniversitiesDetails);
 // router.route(auth('/getBookingByEmail/:email')).get(universityDetailsController.getBookingByEmail);
 
 router.route('/search/:text').get(universityDetailsController.searchUniversitiesDetails);
+router.route('/:universityRefId').get(universityDetailsController.getUniversityDetailsByRef);
 
 router
   .route('/:uniId')

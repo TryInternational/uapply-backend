@@ -31,6 +31,11 @@ const getCourseDetailsByRef = async (courseRefId) => {
   return courses;
 };
 
+const getCourseDetailsByUniversity = async (institute) => {
+  const courses = await CourseDetails.findOne({ 'institution.slug': institute });
+  return courses;
+};
+
 /**
  * @param {ObjectId} id
  * @returns {Promise<User>}
@@ -98,4 +103,5 @@ module.exports = {
   getCourseDetails,
   searchCourseDetails,
   getCourseDetailsByRef,
+  getCourseDetailsByUniversity,
 };

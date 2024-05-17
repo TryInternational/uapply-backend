@@ -36,7 +36,10 @@ const getUniversityDetails = catchAsync(async (req, res) => {
   }
   res.send(uni);
 });
-
+const getUniversityDetailsByRef = catchAsync(async (req, res) => {
+  const result = await universitiesDetailsService.getUniversitiesDetailsByRef(req.params.universityRefId);
+  res.send(result);
+});
 const updateUniversityDetail = catchAsync(async (req, res) => {
   const uni = await universitiesDetailsService.updateUniversitiesDetailsById(req.params.uniId, req.body);
   res.send(uni);
@@ -61,4 +64,5 @@ module.exports = {
   deleteUniversityDetail,
   updateUniversityDetail,
   searchUniversitiesDetails,
+  getUniversityDetailsByRef,
 };

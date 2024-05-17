@@ -9,6 +9,7 @@ router.post('/', coursedetailsController.createCourseDetail);
 
 router.route('/').get(coursedetailsController.getCourseDetails);
 router.route('/:courseRefId').get(coursedetailsController.getCourseDetailsByRef);
+router.route('/institute/:institute').get(coursedetailsController.getCourseDetailsByInstitute);
 
 // router.route(auth('/getBookingByEmail/:email')).get(coursedetailsController.getBookingByEmail);
 
