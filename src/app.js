@@ -53,6 +53,21 @@ if (config.env === 'production') {
 // v1 api routes
 app.use('/v1', routes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  if (err instanceof ApiError) {
+    res.status(err.statusCode).json({
+      message: err.message,
+      statusCode: err.statusCode,
+    });
+  } else {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+      message: 'Internal Server Error',
+      statusCode: httpStatus.INTERNAL_SERVER_ERROR,
+    });
+  }
+});
+
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
