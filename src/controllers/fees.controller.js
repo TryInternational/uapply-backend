@@ -11,6 +11,11 @@ const createFees = catchAsync(async (req, res) => {
 
 const getFees = catchAsync(async (req, res) => {
   const filter = pick(req.query, ['name', 'slug', 'feeType']);
+  if (req.query.user) {
+    const salesPersons = Array.isArray(req.query.user) ? req.query.user : req.query.user.split(',');
+
+    filter['tag.salesPerson'] = { $in: salesPersons };
+  }
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await feesService.queryFees(filter, options);
   res.send(result);
@@ -38,11 +43,17 @@ const deleteFees = catchAsync(async (req, res) => {
   await feesService.deleteFeesById(req.params.id);
   res.status(httpStatus.NO_CONTENT).send();
 });
+const searchFees = catchAsync(async (req, res) => {
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified', { searchString: req.params.text }]);
+  const results = await feesService.searchFees(req.params.text, options);
+  res.status(200).send(results);
+});
 
 module.exports = {
   getFeesById,
   getFees,
   updateFees,
+  searchFees,
   deleteFees,
   createFees,
   getAmountPermonth,

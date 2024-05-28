@@ -37,6 +37,7 @@ const queryFees = async (filter, options) => {
 const getFeesById = async (id) => {
   return Fees.findById(id);
 };
+
 const getAmounts = async () => {
   const monthlySums = await Fees.aggregate([
     {
@@ -75,16 +76,19 @@ const getAmounts = async () => {
   // Create an array to hold the final result
   const result = [];
 
-  // Iterate through all possible combinations of feeType, year, and month
-  for (const feeType of [...new Set(monthlySums.map((item) => item.feeType))]) {
-    for (const year of [...new Set(monthlySums.map((item) => item.year))]) {
-      for (const month of allMonths) {
+  // Extract unique feeType and year values, filtering out any null or undefined years
+  const uniqueFeeTypes = [...new Set(monthlySums.map((item) => item.feeType))];
+  const uniqueYears = [...new Set(monthlySums.map((item) => item.year).filter((year) => year != null))];
+
+  uniqueFeeTypes.forEach((feeType) => {
+    uniqueYears.forEach((year) => {
+      allMonths.forEach((month) => {
         const key = `${feeType}-${year}-${month}`;
         const totalAmount = sumMap.get(key) || 0; // If sum exists, use it; otherwise, default to 0
         result.push({ feeType, year, month, totalAmount });
-      }
-    }
-  }
+      });
+    });
+  });
 
   return result;
 };
@@ -105,6 +109,12 @@ const updateFeesById = async (id, updateBody) => {
   return fees;
 };
 
+const searchFees = async (text, options) => {
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  const regex = new RegExp(text, 'i');
+  const courses = await Fees.paginate({ 'tag.fullName': regex }, options);
+  return courses;
+};
 /**
  * Delete role by id
  * @param {ObjectId} roleId
@@ -126,4 +136,5 @@ module.exports = {
   updateFeesById,
   deleteFeesById,
   getAmounts,
+  searchFees,
 };

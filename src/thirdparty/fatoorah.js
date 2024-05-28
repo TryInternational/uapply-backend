@@ -21,7 +21,6 @@ const executePayment = async ({
   Language = 'AR',
 }) => {
   const apiUrl = `${config.host}/payments`;
-  console.log(apiUrl);
   const payload = {
     PaymentMethodId,
     CustomerName,
@@ -34,7 +33,7 @@ const executePayment = async ({
     CallBackUrl: `${apiUrl}/redirect/confirm`,
     ErrorUrl: `${apiUrl}/redirect/error`,
   };
-  console.log(payload);
+
   const resp = await api.post('/ExecutePayment', payload);
   return resp.data.Data;
 };

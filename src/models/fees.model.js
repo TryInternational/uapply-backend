@@ -8,7 +8,7 @@ const feesSchema = mongoose.Schema(
     },
     feeType: {
       type: String,
-      enum: ['ielts-booking', 'office-fees', 'student-visa'],
+      enum: ['ielts-booking', 'office-fees', 'student-visa', 'english-self-funded'],
     },
     createdDate: {
       type: Date,
