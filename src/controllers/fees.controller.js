@@ -49,8 +49,29 @@ const searchFees = catchAsync(async (req, res) => {
   res.status(200).send(results);
 });
 
+const getSalesData = catchAsync(async (req, res) => {
+  try {
+    const { feeType } = req.query;
+    let groupByField;
+
+    if (feeType === 'office-fees') {
+      groupByField = 'tag.salesPerson';
+    } else if (feeType === 'ielts-booking' || feeType === 'student-visa') {
+      groupByField = 'tag.incharge';
+    } else {
+      return res.status(400).send('Invalid feeType');
+    }
+
+    const leaderboard = await feesService.getSales(feeType, groupByField);
+    res.json(leaderboard);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 module.exports = {
   getFeesById,
+  getSalesData,
   getFees,
   updateFees,
   searchFees,

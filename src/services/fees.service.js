@@ -128,7 +128,35 @@ const deleteFeesById = async (id) => {
   await student.remove();
   return student;
 };
+const getSales = async (feeType, groupByField) => {
+  const matchStage = {
+    $match: {
+      feeType,
+      ...(feeType === 'office-fees' && { 'tag.salesPerson': { $ne: null, $ne: '' } }),
+    },
+  };
 
+  const groupStage = {
+    $group: {
+      _id: `$${groupByField}`,
+      totalAmount: { $sum: '$tag.amount' },
+      bookings: { $sum: 1 },
+    },
+  };
+
+  const sortStage = { $sort: { totalAmount: -1 } };
+  const limitStage = { $limit: 10 };
+  const projectStage = {
+    $project: {
+      'tag.salesPerson': '$_id',
+      totalAmount: 1,
+      bookings: 1,
+      _id: 0,
+    },
+  };
+
+  return Fees.aggregate([matchStage, groupStage, sortStage, limitStage, projectStage]);
+};
 module.exports = {
   createFees,
   queryFees,
@@ -137,4 +165,5 @@ module.exports = {
   deleteFeesById,
   getAmounts,
   searchFees,
+  getSales,
 };

@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.route('/').post(feesController.createFees);
 
+router.route('/sales').get(feesController.getSalesData);
+
 router.route('/').get(feesController.getFees);
 
 router.route('/months').get(feesController.getAmountPermonth);
