@@ -52,13 +52,15 @@ const createBooking = catchAsync(async (req, res) => {
         },
       ],
     };
+
     const transaction = await fatoorah.executePayment(transactionPayload);
+
     payment.transactionId = transaction.InvoiceId;
     payment.orderNo = booking.orderNo;
     await payment.save();
     res.status(httpStatus.CREATED).send({ paymentUrl: transaction.PaymentURL, orderNo: booking.orderNo });
   } catch (error) {
-    res.status(500).send(error.statusCode);
+    res.status(500).send(error);
   }
 });
 

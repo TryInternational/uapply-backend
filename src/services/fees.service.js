@@ -128,35 +128,63 @@ const deleteFeesById = async (id) => {
   await student.remove();
   return student;
 };
-const getSales = async (feeType, groupByField) => {
+const getSales = async (feeType, groupByFields, startDate, endDate) => {
   const matchStage = {
     $match: {
       feeType,
       ...(feeType === 'office-fees' && { 'tag.salesPerson': { $ne: null, $ne: '' } }),
+      createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) }, // Add date range filter
     },
   };
 
-  const groupStage = {
-    $group: {
-      _id: `$${groupByField}`,
-      totalAmount: { $sum: '$tag.amount' },
-      bookings: { $sum: 1 },
-    },
-  };
+  let groupStage;
+  if (feeType === 'english-self-funded') {
+    groupStage = {
+      $group: {
+        _id: {
+          accountManager: '$tag.accountManager',
+          operation: '$tag.operation',
+          salesPerson: '$tag.salesPerson',
+        },
+        totalAmount: { $sum: '$tag.amount' },
+        bookings: { $sum: 1 },
+      },
+    };
+  } else {
+    groupStage = {
+      $group: {
+        _id: `$${groupByFields[0]}`,
+        totalAmount: { $sum: '$tag.amount' },
+        bookings: { $sum: 1 },
+      },
+    };
+  }
 
   const sortStage = { $sort: { totalAmount: -1 } };
   const limitStage = { $limit: 10 };
   const projectStage = {
     $project: {
-      'tag.salesPerson': '$_id',
+      accountManager: '$_id.accountManager',
+      operation: '$_id.operation',
+      salesPerson: '$_id.salesPerson',
       totalAmount: 1,
       bookings: 1,
       _id: 0,
     },
   };
 
+  if (feeType !== 'english-self-funded') {
+    projectStage.$project = {
+      [groupByFields[0]]: '$_id',
+      totalAmount: 1,
+      bookings: 1,
+      _id: 0,
+    };
+  }
+
   return Fees.aggregate([matchStage, groupStage, sortStage, limitStage, projectStage]);
 };
+
 module.exports = {
   createFees,
   queryFees,

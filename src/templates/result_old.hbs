@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700&display=swap"
+        rel="stylesheet" />
+    <title>Result</title>
+    <style>
+        .container {
+            width: 464px;
+            margin: auto;
+        }
+
+        body,
+        html,
+        #wrapper {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        #wrapper {
+            display: table;
+        }
+
+        #main {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .icon-con {
+            border: 1px solid #E8E9F5;
+            box-sizing: border-box;
+            border-radius: 8px;
+            padding: 60px 0;
+            width: 464px;
+            position: relative;
+        }
+
+        .top-section {
+            display: block;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .level-text {
+            font-style: normal;
+            font-family: Cairo;
+            font-weight: bold;
+            font-size: 14px;
+            color: #191C1F;
+        }
+
+        .top-section .text {
+            font-family: Cairo;
+            font-style: normal;
+            text-align: left;
+            font-weight: 600;
+            font-size: 24px;
+            color: #191c1f;
+        }
+
+        .top-section .subtext {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            color: #191C1F;
+        }
+
+        .mid-section {
+            background: rgba(232, 233, 245, 0.25);
+            border: 1px solid #e8e9f5;
+            box-sizing: border-box;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .end-section {
+            display: block;
+            background: rgba(232, 233, 245, 0.25);
+            border: 1px solid #e8e9f5;
+            box-sizing: border-box;
+            border-radius: 4px;
+            margin-top: 16px;
+        }
+
+        .con {
+            border-bottom: 1px solid #e8e9f5;
+        }
+
+        .bluetext {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 14px;
+            color: #35A7FF;
+        }
+
+        .con .text {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: normal;
+            text-align: left;
+            font-size: 14px;
+            color: #191c1f;
+        }
+
+        .coupon-section {
+            padding: 12px 0;
+            width: 100%;
+            border: 1px dashed #fd3e60;
+            border-radius: 4px;
+        }
+
+        .border-container {
+            background: #ffffff;
+            border: 1px solid #35a7ff;
+            box-sizing: border-box;
+            border-radius: 8px;
+            display: block;
+            align-items: center;
+            padding: 40px 0;
+        }
+
+        .complete-icon-container {
+            position: relative;
+        }
+
+        .headertext {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 21px;
+            color: #191c1f;
+        }
+
+        .con .subtext {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: normal;
+            text-align: right;
+            font-size: 14px;
+            color: #6b6c7f;
+        }
+
+        .discounted-price-line {
+            position: relative;
+            right: -19px;
+            top: 16px;
+            width: 13px;
+            height: 1.52px;
+            background: #fd3e60;
+            transform: matrix(-3.71, 0.7, 0.71, 0.71, 0, 0);
+        }
+
+        .button-blue {
+            height: 52px;
+            background: #35a7ff;
+            border-radius: 8px;
+            color: #fff;
+            margin-top: 16px;
+            width: 159px;
+            border: none;
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .subtext {
+            font-family: Cairo;
+            font-style: normal;
+            text-align: right;
+            font-weight: normal;
+            font-size: 14px;
+            color: #6b6c7f;
+        }
+
+        .discounted-price {
+            font-family: Cairo;
+            /* position: relative;
+        top: 34px;
+        left: -10px; */
+            font-style: normal;
+            font-weight: normal;
+            font-size: 18px;
+            color: #333333;
+        }
+
+        .amount {
+            font-style: normal;
+            font-family: Cairo;
+            font-weight: normal;
+            font-size: 48px;
+            line-height: 48px;
+            color: #191c1f;
+            position: relative;
+            top: 21px;
+            left: 34px;
+        }
+
+        .gethelp {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #191c1f;
+        }
+
+        .colorText {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 14px;
+            text-align: right;
+            line-height: 21px;
+            color: #fd3e60;
+        }
+
+        .pricingtext {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 14px;
+            color: #191c1f;
+        }
+
+        .kd {
+            font-family: Cairo;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 16px;
+            color: #191c1f;
+        }
+
+        .price-section {
+            padding: 16px 0;
+        }
+
+        .even-list {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            display: table;
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .el-item {
+            display: table-cell;
+            text-align: center;
+            padding: 12px 24px;
+            vertical-align: middle;
+        }
+
+        .footer {
+            padding: 48px 0;
+            border-top: 1px solid #e8e9f5;
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                width: 100% !important;
+            }
+
+            .icon-con {
+                min-width: 350px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="main">
+            <div class="container">
+                <table style="width: 100%;">
+                    <tr>
+                        <td class="top-section">
+                            <a target="_blank" href="https://ulearn.study/">
+                                <img src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FLogo%20Blue.png?alt=media&token=40f166a3-a34b-40d4-8abf-31c2663486fd"
+                                    alt="img" width="125px" height="32px" style="padding: 40px 0 32px 0;" />
+                            </a>
+                            <div style="display: block;">
+                                <p class="text" style="text-align: center; margin: 0;">
+                                    {{name}} اهلاً
+                                </p>
+                                <p class="subtext" style="text-align: center; margin: 0; font-size: 16px;">
+                                    درجة الاختبار موجودة في الأسفل
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="complete-icon-container">
+                        <td class="top-section" style="margin: 40px 0 0 0 ;position: relative;">
+                            <div class="icon-con">
+                                <img width="200px"
+                                    src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2Fundraw_agree_8pb9%201%20(1).png?alt=media&token=496d47c3-3e4d-4784-91ea-3c68968caed3"
+                                    alt="icon" />
+                                <div style="background: rgba(232, 233, 245, 0.25);
+                position: absolute;
+            bottom: 0; width: 100%;">
+                                    <span class="level-text">{{level}}</span>
+                                </div>
+                            </div>
+                        </td>
+                    <tr>
+                    <tr>
+                        <td class="top-section" style="display: block;">
+                            <p class="text"
+                                style="text-align: center; margin: 0;margin-top: 40px; margin-bottom: 16px; direction: rtl;">
+                                شكراً لاكمالكم اختبار مستوى اللغة الإنجليزية مع يوليرن. </p>
+                            <p class="bluetext"
+                                style="text-align: center; margin: 0;margin-bottom: 16px;direction: rtl;">مستواك في
+                                {{detail}}</p>
+                            <div style=" margin: 0;width: 464px;padding-bottom: 48px; margin: auto">
+                                <p class="subtext" style="text-align: center;">
+                                    الخطوة التالية هي
+                                    التسجيل بالدورة المناسبة لك. من الممكن التسجيل من خلال
+                                    <a class="bluetext" target="_blank" style="text-decoration: none;"
+                                        href="https://ulearn.study/"> الموقع الالكتروني</a>
+                                    او عن طريق التواصل على هذا الرقم <br /> <a class="bluetext"
+                                        style="text-decoration: none;" target="_blank" href="https://wa.me/96598759691">
+                                        98759691 (965+)</a>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    <td class="footer">
+                        <ul class="even-list">
+                            <li class="el-item" style="text-align: left;">
+                                <a target="_blank" href="https://www.facebook.com/ulearnkw">
+                                    <img src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FFacebook.png?alt=media&token=69422d5c-90bb-4039-841d-cf6f3fd5b5a6"
+                                        alt="icon" width="24px" height="24px" style="margin-right: 16px;" />
+                                </a>
+                                <a target="_blank" href="https://twitter.com/ulearnstudy">
+                                    <img src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FTwitter.png?alt=media&token=f6dff4c4-0430-4c9a-8712-cb97c22dda98"
+                                        alt="icon" width="24px" height="24px" style="margin-right: 16px;" /></a>
+                                <a target="_blank" href="https://www.instagram.com/ulearn.study/">
+                                    <img width="24px" height="24px"
+                                        src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FInstagram.png?alt=media&token=e8653b86-9f6f-4ed2-a0d6-ebcfad53d366"
+                                        alt="icon" />
+                            </li></a>
+                            <li class="el-item" style="text-align: right;">
+                                <span class="gethelp">Get Help</span>
+                                <span class="subtext">Made with ❤️ © 2020 ULEARN</span>
+                            </li>
+                        </ul>
+                    </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

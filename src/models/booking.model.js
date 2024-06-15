@@ -14,7 +14,7 @@ const bookingSchema = new mongoose.Schema(
       lowercase: true,
     },
     status: { type: String, enum: ['booked', 'pending', 'cancelled'], default: 'pending' },
-
+    alternatePhoneNo: { type: String, required: true },
     paymentId: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Payment',
@@ -23,14 +23,33 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    notes: {
+      type: String,
+      trim: true,
+    },
+    packageType: {
+      type: String,
+      trim: true,
+    },
+    alternateCountryCode: {
+      type: String,
+      trim: true,
+    },
+    signature: {
+      type: String,
+      trim: true,
+      required: true,
+    },
+    civilId: {
+      type: String,
+      trim: true,
+      required: true,
+    },
     modeOfPayment: {
       type: String,
       trim: true,
     },
-    guest: {
-      adult: { type: Number, required: true },
-      children: { type: Number, required: true },
-    },
+
     price: { type: Number, required: true },
     startDate: { type: Date, default: Date.now },
     endDate: { type: Date, default: Date.now },

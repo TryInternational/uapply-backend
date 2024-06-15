@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700&display=swap" rel="stylesheet" />
+  <title>Booking</title>
+  <style>
+    .container {
+      width: 616px;
+      margin: auto;
+    }
+
+    body,
+    html,
+    #wrapper {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      font-family: 'Cairo';
+      background-color: #F2F6FB
+    }
+
+    #wrapper {
+      display: table;
+    }
+
+    #main {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .headertext {
+      font-family: 'Cairo';
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 28px;
+      text-align: right;
+      color: #1E2432;
+      text-align: right;
+      direction: rtl;
+    }
+
+    .last-section-text {
+      font-style: normal;
+      font-weight: bold;
+      font-size: 21px;
+      line-height: 27px;
+      letter-spacing:
+        -0.656526px;
+      padding-top: 12px;
+      color: #1E2432;
+      font-family: 'Cairo';
+    }
+
+    .subtext {
+      font-family: 'Cairo';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 28px;
+      direction: rtl;
+      text-align: right;
+      color: #1E2432;
+    }
+
+    .even-list {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      display: table;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .el-item {
+      display: table-cell;
+      font-family: 'Cairo';
+      text-align: right;
+      vertical-align: middle;
+    }
+
+    .level-con {
+      background: #C0E1FB;
+      width: 100%;
+      border: 1px solid #6ABAF9;
+      box-sizing: border-box;
+      border-radius: 16px;
+      padding: 0px 30px;
+    }
+
+    .next-level-con {
+      background: #FFF2D8;
+      border: 1px solid #FED78B;
+      box-sizing: border-box;
+      border-radius: 16px;
+      padding: 0px 30px;
+    }
+
+    .footer {
+      padding: 48px 0;
+      border-top: 1px solid #e8e9f5;
+    }
+
+    .contact-us {
+      font-family: 'Cairo'
+    }
+
+    .badgeText {
+      float: left;
+      padding-top: 32px;
+      padding-left: 25px;
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 28px;
+      text-align: center;
+      color: #000000;
+
+    }
+
+    .top-img {
+      height: 200px
+    }
+
+    @media (max-width: 992px) {
+      .container {
+        width: 100% !important;
+      }
+
+      .top-img {
+        height: 140px
+      }
+
+      .footer {
+        padding: 40px 15px;
+
+      }
+
+      .badgeText {
+        float: left;
+        padding-top: 31px;
+        padding-left: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="main">
+      <div class="container">
+        <table style="width: 100%;">
+          <tr>
+            <td class="top-section">
+              <img src="https://cdn.ulearn.study/courses/Logo.png" alt="img"
+                style="padding: 40px 0 32px 0; width: 124.57px;height: 32px;" />
+              <div style="display: block;">
+                {{#if italian}}
+                <img class="top-img" width="100%" src="https://cdn.ulearn.study/courses/hero-min%20(1).png" alt="img" />
+                {{else}} {{#if french}}
+                <img class="top-img" width="100%" src="https://cdn.ulearn.study/French%20PT%20Audio/hero.png" alt="img" />
+                {{else}}  {{#if spanish}}
+                <img class="top-img" width="100%" src="https://cdn.ulearn.study/Spanish%20PT%20Test/hero.png" alt="img" />
+                {{else}}
+                <img class="top-img" width="100%" src="https://cdn.ulearn.study/courses/hero-min.png" alt="img" />
+                {{/if}}
+                {{/if}}
+                {{/if}}
+
+              </div>
+            </td>
+          </tr>
+          <tr style="background: #FFFFFF;
+">
+            <td style=" border: 1px solid #EAE9F2;
+            border-top-right-radius: 16px; border-top-left-radius: 16px;
+                
+                ">
+              <div style=" padding: 30px;" class="headertext"><b> أهلا {{name}}! 👋</b></div>
+               {{#if italian}}
+              <div style=" padding-right: 30px;" class="subtext">
+                نشكركم على اختياركم اختبار مستوى اللغة الايطالية مع يوليرن لقد أنهيت اختبار المستوى.
+                 </div>
+                 {{else}} {{#if french}}
+                   <div style=" padding-right: 30px;" class="subtext"> 
+                    نشكركم على اختياركم اختبار مستوى اللغة الفرنسية مع يوليرن لقد أنهيت اختبار المستوى.
+                   </div>
+                  {{else}}  {{#if spanish}}
+                   <div style=" padding-right: 30px;" class="subtext"> 
+                      نشكركم على اختياركم اختبار مستوى اللغة الاسبانية مع يوليرن لقد أنهيت اختبار المستوى.
+                   </div>
+                  {{else}}  
+                   <div style=" padding-right: 30px;" class="subtext">نشكركم على اختياركم اختبار مستوى
+                اللغة الانجليزية مع
+                يوليرن. لقد أنهيت اختبار
+                المستوى. </div>
+                 {{/if}}
+                {{/if}}
+                {{/if}}
+              </br>
+              <ul class='even-list con'>
+                <div style=" padding-right: 30px;padding-bottom: 23px" dir="rtl" class="subtext">مستواك في اللغة: <b>
+                    {{levelText}} (المستوى
+                    {{level}} من أصل
+                    {{totalLevel}}) </b></div>
+
+              </ul>
+              <div style=" padding:0 30px;">
+                <div class="level-con">
+                  <ul style="padding-left: 0">
+                    <div
+                      style="float: left;background-position: center center; background-size: cover; background-image: url('https://cdn.ulearn.study/courses/branch.38%203.png');width:70px; height:70px">
+
+                      <div class="badgeText" style="color:#696969">{{badgeText}}</div>
+                    </div>
+                    <div>
+                      <div class="headertext" style="padding-bottom: 7px">
+                        الطلاب في هذا المستوى:
+                      </div>
+                      {{#each desc_ar}}
+                      <li class="subtext">{{this}}</li>
+                      {{/each}}
+
+                      </li>
+                    </div>
+                  </ul>
+                </div>
+                {{#if nextBadgeText}}
+                <div class="next-level-con" style="margin-top: 24px">
+                  <ul style="padding-left: 0">
+                    <div
+                      style="float: left;background-position: center center; background-size: cover; background-image: url('https://cdn.ulearn.study/courses/branch.38%203.png');width:70px; height:70px">
+
+                      <div class="badgeText" style="color:#696969">{{nextBadgeText}}</div>
+                    </div>
+
+                    <div>
+                      <div class="headertext" style="padding-bottom: 7px">
+                        الطلاب في المستوى القادم:
+                      </div>
+                      {{#each nextLevel}}
+                      <li class="subtext">{{this}}</li>
+                      {{/each}}
+                    </div>
+
+                  </ul>
+                </div>
+                {{/if}}
+
+                <a href="ulearn.study" target="_blank" style="padding-top: 15px;">
+                  <div>
+                    <img style="border-radius:8px" width="100%"
+                      src="https://cdn.ulearn.study/courses/Frame%2033905-min.png" alt="img" />
+                  </div>
+                </a>
+              </div>
+
+
+            </td>
+          </tr>
+
+
+
+          <tr>
+
+            <td style="text-align: center; padding: 0 30px;
+            ">
+              <img style='width: 37.15px;
+            height: 32px;padding-top: 24px' src='https://cdn.ulearn.study/courses/Group%20303.png' alt='img' />
+              <div style='display: block;'>
+
+                <span class='last-section-text'>عندك سؤال؟ </span>
+                <div class='contact-us' style='display: block; text-align: center;'>يسعدنا مساعدتك،
+                  تواصل معنا
+                  <b><a class='contact-us' href='https://wa.me/96598759691'>
+                      98759691 (965+)
+                    </a></b></div>
+              </div>
+              <div class='contact-us' style='text-align:left'>
+                <p style='font-style: normal;
+            font-weight: normal;
+            font-size: 12px;
+            line-height: 16px;
+            
+            color: rgba(30, 36, 50, 0.6);
+            '>This email was sent to you as a registered member of ulearn.com. To update your emails preferences
+                  click
+                  here. Use of the service and website is subject to our Terms of Use and Privacy
+                  Statement.
+                </p>
+                <p style='font-style: normal;
+              font-weight: normal;
+              font-size: 12px;
+              line-height: 16px;
+              
+              color: rgba(30, 36, 50, 0.6);
+              '>© {{year}} Ulearn. All rights reserved</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              <ul class="even-list">
+                <li style="font-family: 'Cairo';vertical-align: middle; display: table-cell; text-align:left;width: 100%;">
+                  <a target="_blank" href="https://www.facebook.com/ulearnkw">
+                    <img style="width: 24px; height: 24px;" src="https://cdn.ulearn.study/courses/Facebook.png"
+                      alt="icon" style="margin-right: 16px;" />
+                  </a>
+                  <a target="_blank" href="https://www.instagram.com/ulearn.study/">
+                    <img style="width: 24px; height: 24px;" src="https://cdn.ulearn.study/courses/Instagram.png"
+                      alt="icon" style="margin-right: 16px;" /></a>
+                  <a target="_blank" href="https://twitter.com/ulearnstudy">
+                    <img src="https://cdn.ulearn.study/courses/Twitter.png" alt="icon"
+                      style="width: 24px; height: 24px;" />
+                  </a>
+                </li>
+                <li class="el-item" style=" text-align: right;width: 100%;">
+                  <a style="text-align: right;" target="_blank" href="https://www.ulearn.study/"><span class="gethelp"
+                    style="display: block;">www.ulearn.study</span></a>
+                  <span class="subtext">Made with ❤️ © {{year}}, ULEARN</span>
+                </li>
+
+              </ul>
+            </td>
+          </tr>
+
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

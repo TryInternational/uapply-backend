@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="color-scheme" content="light">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700&display=swap" rel="stylesheet" />
+  <title>Booking</title>
+  <style>
+    .container {
+      width: 621px;
+      margin: auto;
+    }
+
+    body,
+    html,
+    #wrapper {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background-color: #F2F6FB
+    }
+
+    #wrapper {
+      display: table;
+    }
+
+    #main {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .headertext {
+      font-family: 'Cairo';
+      font-style: normal;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 28px;
+      text-align: right;
+      color: #1E2432;
+      text-align: right;
+      direction: rtl;
+    }
+
+    .last-section-text {
+      font-style: normal;
+      font-weight: bold;
+      font-size: 21px;
+      line-height: 27px;
+      letter-spacing:
+        -0.656526px;
+      padding-top: 12px;
+      color: #1E2432;
+      font-family: 'Cairo';
+    }
+
+    li::marker {
+      text-indent: 10px !important;
+
+    }
+
+    .contact-us {
+      font-family: 'DM Sans';
+      font-style: normal;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 28px;
+      /* identical to box height, or 175% */
+
+
+      color: #1E2432;
+    }
+
+    .subtext {
+      font-family: 'Cairo';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 28px;
+      direction: rtl;
+      text-align: right;
+      color: #1E2432;
+    }
+
+    li::marker {
+      font-family: 'Cairo';
+      font-style: normal;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 28px;
+      direction: rtl;
+      text-align: right;
+      color: #1E2432;
+    }
+
+    li {
+      list-style-position: outside;
+    }
+
+    .even-list {
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      display: table;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    .el-item {
+      display: table-cell;
+      font-family: 'Cairo';
+      text-align: right;
+    }
+
+    .footer {
+      padding: 48px 0;
+      border-top: 1px solid #e8e9f5;
+    }
+
+    .link-text {
+      font-family: 'Cairo';
+      font-style: normal;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 30px;
+      text-align: right;
+      color: #299CF7;
+      text-decoration: none;
+    }
+
+    .main-img {
+      width: 548px;
+      height: 228px
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .darkmode {
+        background-color: #1e1e1e !important;
+      }
+
+      .darkmode p {
+        color: #ffffff !important;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .container {
+        width: 100% !important;
+      }
+
+      .main-img {
+        width: 100%;
+        height: 165px;
+
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="wrapper">
+    <div id="main">
+      <div class="container">
+        <table style="width: 100%;">
+          <tr>
+            <td class="top-section">
+              <img src="https://cdn.ulearn.study/courses/Logo.png" alt="img"
+                style="padding: 40px 0 32px 0; width: 124.57px;height: 32px;" />
+              <div style="display: block;">
+                <img class="main-img" src="https://cdn.ulearn.study/courses/Group%2033722-min.png" alt="img" />
+              </div>
+            </td>
+          </tr>
+          <tr style="background: #FFFFFF;
+">
+            <td style=" border: 1px solid #EAE9F2;
+            border-radius: 16px;
+                 padding: 30px;
+                ">
+              <div class="headertext"><b> أهلا {{name}}! 👋</b></div>
+              <div class="subtext"> نشكركم على اختياركم يوليرن ونتمنى لكم تجربة دراسية مفيدة وممتعة. ستجد تفاصيل
+                الدخول إلى الدورة بالأسفل:</span>
+
+              </div>
+              <div style="margin-top: 45px">
+                <div style="width: 10%; float: right;
+                  ">
+                  <img width="48px" height="48px" src="https://cdn.ulearn.study/courses/52.png" alt="icon" />
+
+                </div>
+                <div style="width: 86%;">
+                  <div class="headertext">تفاصيل الدورة: </div>
+
+                  <ul class='even-list con'>
+                    <li class='el-item subtext'>{{course}}</li>
+                    <li class='el-item subtext'>نوع الدورة:</li>
+                  </ul>
+                  <ul class='even-list con'>
+                    <li class='el-item subtext'>{{courseType}}</li>
+                    <li class='el-item subtext'>نوع الدراسة:</li>
+                  </ul>
+                  <ul class='even-list con'>
+                    <li class='el-item subtext'>{{startDate}}</li>
+                    <li class='el-item subtext'>موعد بداية الدورة:</li>
+                  </ul>
+
+                  <ul class='even-list con'>
+                    <li class='el-item subtext'>{{endDate}}</li>
+                    <li class='el-item subtext'>موعد نهاية الدورة:</li>
+                  </ul>
+
+
+                  <ul class='even-list con'>
+                    <li class='el-item subtext'>{{time}}</li>
+                    <li class='el-item subtext'>الأيام والوقت:</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div style="margin-top: 45px">
+                <div style="width: 10%; float: right;
+                    ">
+                  <img width="48px" height="48px" src="https://cdn.ulearn.study/courses/welcome-Icon3.png" alt="icon" />
+
+                </div>
+                <div style="width: 86%;">
+                  <div class="headertext">خطوات الانضمام للحصص:</div>
+
+                  <ol style="direction: rtl;padding-right: 14px;">
+                    <li>
+                      <div class='subtext'> تنزيل برنامج زوم على جهازك</div>
+                    </li>
+                    {{#if tutorialLink}}
+                    <li>
+                      <div class='subtext'> مشاهدة الفيديو
+                        الارشادي:
+                        <a href={{tutorialLink}} class="link-text">
+                          اضغط هنا</a>
+                      </div>
+                    </li> {{/if}}
+                    {{#if classLink}}
+                    <li>
+                      <div class=' subtext'> الدخول على الرابط التالي: <a href={{classLink}} class="link-text">
+                          اضغط هنا</a>
+                      </div>
+                    </li>
+                    {{#if classUser}}
+                    <ul class='even-list con'>
+                      <li class=' subtext'> اسم المستخدم: <span class="link-text">
+                          {{classUser}}</span>
+                      </li>
+                    </ul>
+                    {{/if}}
+                    {{#if classPassword}}
+                    <ul class='even-list con'>
+                      <li class=' subtext'> كلمة السر: <span class="link-text">
+                          {{classPassword}} </span>
+                      </li>
+                    </ul>
+                    {{/if}}
+                    {{/if}}
+                  </ol>
+                </div>
+
+              </div>
+
+              {{#if material}}
+              <div style="margin-top: 45px">
+                <div style="width: 10%; float: right;
+                      ">
+                  <img width="48px" height="48px" src="https://cdn.ulearn.study/courses/Icon2.png" alt="icon" />
+
+                </div>
+
+                <div style="width: 86%;">
+                  <div class="headertext">المواد الالكترونية الخاصة بالدورة:</div>
+                  <ol style="direction: rtl;padding-right: 14px; ">
+
+                    {{#if courseTutorialLink}}
+                    <li>
+                      <div class='subtext'> مشاهدة الفيديو الارشادي: <a href={{courseTutorialLink}} class="link-text">
+                          اضغط هنا</a></div>
+                    </li>
+                    {{/if}}
+                    {{#if materialLink}}
+                    <li>
+                      <div class='subtext'>للحصول على المواد الالكترونية الدخول على الرابط التالي: <a
+                          href={{materialLink}} class="link-text">
+                          اضغط هنا</a></div>
+                    </li>
+                    {{/if}}
+                    {{#if ebookLink}}
+                    <li>
+                      <div class='subtext'> للحصول على الكتاب الدخول على الرابط التالي: <a href={{ebookLink}}
+                          class="link-text">
+                          اضغط هنا</a> </div>
+                    </li>
+                    {{/if}}
+                  </ol>
+                </div>
+              </div>
+              {{/if}}
+
+
+              <div style="margin-top: 45px">
+                <div style="width: 10%; float: right;
+                        ">
+                  <img width="48px" height="48px" src="https://cdn.ulearn.study/courses/Icon.png" alt="icon" />
+
+                </div>
+                <div style="width: 86%;">
+                  <div class="headertext">معلومات هامة:</div>
+
+                  <ul class='even-list con'>
+                    <li class='el-item subtext'>لن يتم تعويض أي حصة إذا لم يتم إعلامنا بالرغبة بتأجيلها قبل 24 ساعة على
+                      الأقل من موعد الحصة
+
+                    </li>
+                  </ul>
+
+                </div>
+
+              </div>
+
+              <div class="headertext" style="padding: 50px 0 20px 0">
+                شكرا على اختياركم يوليرن ونتمنى لكم رحلة تعلم ممتعة! 👋
+              </div>
+            </td>
+          </tr>
+          <tr>
+
+            <td style="text-align: center; padding: 20px 15px">
+              <img style='width: 37.15px;
+      height: 32px;padding-top: 24px' src='https://cdn.ulearn.study/courses/Group%20303.png' alt='img' />
+              <div style='display: block;'>
+
+                <span class='last-section-text'>عندك سؤال؟ </span>
+                <span style='display: block; text-align: center;font-family: Cairo;'>
+                  <img style="vertical-align: middle;width: 25px; height: 25px;"
+                    src="https://storage.googleapis.com/destination_ulearn/courses/WhatsApp_Logo_1%201.png"
+                    alt="icon" />
+                  <b><a class='contact-us' href='https://wa.me/96598759691'>
+                      (+965) 98759691
+                    </a></b></span>
+              </div>
+              <div style='text-align:left'>
+                <p style='font-style: normal;
+      font-weight: normal;
+      font-size: 12px;
+      line-height: 16px;font-family: Cairo;
+      
+      color: rgba(30, 36, 50, 0.6);
+      '>This email was sent to you as a registered member of ulearn.com. To update your emails preferences
+                  click
+                  here. Use of the service and website is subject to our Terms of Use and Privacy
+                  Statement.
+                </p>
+                <p style='font-style: normal;
+        font-weight: normal;
+        font-size: 12px;font-family: Cairo; line-height: 16px; color: rgba(30, 36, 50, 0.6); '>© {{year}} Ulearn. All
+                  rights reserved</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              <ul class="even-list">
+                <li class="el-item" style="text-align: left;width: 100%;">
+                  <a target="_blank" href="https://www.facebook.com/ulearnkw">
+                    <img style="width: 24px; height: 24px;" src="https://cdn.ulearn.study/courses/Facebook.png"
+                      alt="icon" style="margin-right: 16px;" />
+                  </a>
+                  <a target="_blank" href="https://www.instagram.com/ulearn.study/">
+                    <img style="width: 24px; height: 24px;" src="https://cdn.ulearn.study/courses/Instagram.png"
+                      alt="icon" style="margin-right: 16px;" /></a>
+                  <a target="_blank" href="https://twitter.com/ulearnstudy">
+                    <img src="https://cdn.ulearn.study/courses/Twitter.png" alt="icon"
+                      style="width: 24px; height: 24px;" />
+                  </a>
+                </li>
+                <li class="el-item" style=" text-align: right;width: 100%;font-family: ' Cairo';">
+                  <a target="_blank" href="https://www.ulearn.study/" <span class="gethelp"
+                    style="display: block;   font-family: Cairo;">www.ulearn.study</span></a>
+                  <span class="subtext">Made with ❤️ © {{year}}, ULEARN</span>
+                </li>
+
+              </ul>
+            </td>
+          </tr>
+
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

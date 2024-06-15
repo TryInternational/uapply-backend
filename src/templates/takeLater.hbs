@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700&display=swap"
+      rel="stylesheet" />
+    <title>Ulearn | Test Later</title>
+    <style>
+      .container {
+        width: 800px;
+        margin: auto;
+      }
+      body,
+      html,
+      #wrapper {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+      #wrapper {
+        display: table;
+      }
+      #main {
+        display: table-cell;
+        vertical-align: middle;
+        text-align: center;
+      }
+      .icon-con {
+        border: 1px solid #E8E9F5;
+        box-sizing: border-box;
+        border-radius: 8px;
+        padding: 60px 0;
+        width: 464px;
+        border-bottom: none;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        position: relative;
+      }
+      .top-section {
+        display: block;
+        justify-content: center;
+        align-items: center;
+      }
+      .level-text {
+        font-style: normal;
+        font-family: Cairo;
+        font-weight: bold;
+        font-size: 14px;
+        color: #191C1F;
+      }
+      .result-con {
+        background: rgba(232, 233, 245, 0.25);
+        width: 464px;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+      }
+      .top-section .text {
+        font-family: Cairo;
+        font-style: normal;
+        text-align: left;
+        font-weight: 600;
+        font-size: 24px;
+        color: #191c1f;
+      }
+      .top-section .subtext {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        color: #191C1F;
+      }
+      .mid-section {
+        background: rgba(232, 233, 245, 0.25);
+        border: 1px solid #e8e9f5;
+        box-sizing: border-box;
+        border-radius: 4px;
+        display: block;
+      }
+      .end-section {
+        display: block;
+        background: rgba(232, 233, 245, 0.25);
+        border: 1px solid #e8e9f5;
+        box-sizing: border-box;
+        border-radius: 4px;
+        margin-top: 16px;
+      }
+      .con {
+        border-bottom: 1px solid #e8e9f5;
+      }
+      .box {
+        background: rgba(232, 233, 245, 0.25);
+        border: 1px solid #E8E9F5;
+        box-sizing: border-box;
+        border-radius: 4px;
+        margin: 40px 0 40px 0;
+        padding: 32px;
+        border-top: 4.12px solid #299CF7;
+      }
+      .con .text {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: normal;
+        text-align: left;
+        font-size: 14px;
+        color: #191c1f;
+      }
+      .coupon-section {
+        padding: 12px 0;
+        width: 100%;
+        border: 1px dashed #fd3e60;
+        border-radius: 4px;
+      }
+      .border-container {
+        background: #ffffff;
+        border: 1px solid #35a7ff;
+        box-sizing: border-box;
+        border-radius: 8px;
+        display: block;
+        align-items: center;
+        padding: 40px 0;
+      }
+      .complete-icon-container {
+        position: relative;
+      }
+      .headertext {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 21px;
+        color: #191c1f;
+      }
+      .con .subtext {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: normal;
+        text-align: right;
+        font-size: 14px;
+        color: #6b6c7f;
+      }
+      .button-blue {
+        height: 52px;
+        background: #35a7ff;
+        border-radius: 8px;
+        color: #fff;
+        margin: 30px;
+        width: 159px;
+        border: none;
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .subtext {
+        font-family: Cairo;
+        font-style: normal;
+        text-align: right;
+        font-weight: normal;
+        font-size: 10px;
+        color: #6b6c7f;
+      }
+      .discounted-price {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 18px;
+        color: #333333;
+      }
+      .amount {
+        font-style: normal;
+        font-family: Cairo;
+        font-weight: normal;
+        font-size: 48px;
+        line-height: 48px;
+        color: #191c1f;
+        position: relative;
+        top: 21px;
+        left: 34px;
+      }
+      .gethelp {
+        font-family: Cairo;
+        font-style: normal;
+        text-decoration: underline;
+        font-weight: 600;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #191c1f;
+      }
+      .colorText {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: right;
+        line-height: 21px;
+        color: #fd3e60;
+      }
+      .pricingtext {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 14px;
+        color: #191c1f;
+      }
+      .kd {
+        font-family: Cairo;
+        font-style: normal;
+        font-weight: 600;
+        font-size: 16px;
+        color: #191c1f;
+      }
+      .price-section {
+        padding: 16px 0;
+      }
+      .even-list {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+      }
+      .el-item {
+        display: table-cell;
+        text-align: center;
+        padding: 12px 24px;
+        vertical-align: middle;
+      }
+      .footer {
+        padding: 48px 0;
+        border-top: 1px solid #e8e9f5;
+      }
+      @media (max-width: 992px) {
+        .container {
+          width: 100% !important;
+        }
+        .result-con {
+          width: 100% !important;
+        }
+        .icon-con {
+          min-width: 350px;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="main">
+        <div class="container">
+          <table style="width: 100%;">
+            <tr>
+              <td class="top-section" align="center">
+                <a target="_blank" href="https://ulearn.study/">
+                  <img
+                    src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FLogo%20Blue.png?alt=media&token=40f166a3-a34b-40d4-8abf-31c2663486fd"
+                    alt="img" width="125px" height="32px" style="padding: 40px 0 32px 0;" />
+                </a>
+                <div style="display: block;">
+                  <div style="display:inline-block">
+                    <div class="text" style="text-align: center; margin: 0; direction:rtl;font-size: 32px;">
+                      هل أنت جاهز للاختبار؟</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr class="complete-icon-container">
+               <td valign="bottom" class="top-section" style="margin: 40px 0 0 0 ;position: relative;" align="center">
+                 
+                     {{#if type.isTeen}}
+                 <img width="200px"
+                    src="https://firebasestorage.googleapis.com/v0/b/digital-vim-270607.appspot.com/o/undraw_selection_92i4%201.png?alt=media&token=2eb293f0-3b5e-4ab6-84b3-f23b183777d6"
+                    alt="icon" />
+                    {{else}} {{#if type.isAdult}}
+                      <img width="200px"
+                                        src="https://firebasestorage.googleapis.com/v0/b/digital-vim-270607.appspot.com/o/undraw_exams_g4ow%201.png?alt=media&token=a39b74fe-6316-49a6-b7bc-b3590a53a8eb"
+                                        alt="icon" />
+                    {{else}}
+                      <img width="200px"
+                                        src="https://firebasestorage.googleapis.com/v0/b/digital-vim-270607.appspot.com/o/undraw_Email_campaign_re_m6k5%201.png?alt=media&token=c63de89b-e1b2-4176-9298-9bdf14b8a2a5"
+                                        alt="icon" />
+                    {{/if}}{{/if}}
+               </td>
+            
+
+            <tr>
+            <tr>
+              <td class="top-section" style="display: block;border-bottom: 1px solid #e8e9f5;text-align: center;">
+                <div class="text"
+                  style="text-align: center; margin: 0;margin-top: 40px; margin-bottom: 16px; direction: rtl;font-size: 16px;">
+                   <b>أهلا {{name}}</b>,
+                  <br />
+                  <p style="margin-top: 5px;margin-bottom: 0;">
+                    هذا الايميل مرسل لتذكيرك بموعد اختبار مستواك باللغة الانجليزية
+                  </p>
+                  <br />
+                  <b style="margin-top: 70px">اضغط هنا للذهاب للاختبار، بالتوفيق!
+                  </b>
+                  <br />
+                 
+
+
+                  {{#if type.isTeen}}
+  <a href= "https://www.ulearn.study/placement/index?type=11-15" >
+                    <button class="button-blue">
+                      اختبر الآن
+                    </button>
+                  </a>
+{{else}} {{#if type.isAdult}}
+ <a href= "https://www.ulearn.study/placement/index?type=16" >
+                    <button class="button-blue">
+                      اختبر الآن
+                    </button>
+                  </a>
+{{else}}
+  <a href= "https://www.ulearn.study/placement/index?type=10-6" >
+                    <button class="button-blue">
+                      اختبر الآن
+                    </button>
+                  </a>
+{{/if}}{{/if}}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="top-section" style="display: block;">
+                <div class="box">
+                  <img
+                    src="https://firebasestorage.googleapis.com/v0/b/digital-vim-270607.appspot.com/o/Group%20303.png?alt=media&token=9cd55e51-a864-48b1-a66c-b1f2c22dfbc9"
+                    alt="chat icon">
+                  <br />
+                  <br />
+                  <b style="font-size: 21px;">
+                    عندك سؤال؟ </b>
+                  <br />
+                  <p style="font-size: 14px;line-height: 28px;">
+                    <a class="subtext" href="https://wa.me/96598588891" style="text-decoration: none;">
+                      <img style="margin-bottom: -7px;"
+                        src="https://firebasestorage.googleapis.com/v0/b/digital-vim-270607.appspot.com/o/whatsapp.png?alt=media&token=4acdd6bc-0b61-4711-ab38-513a6101a5f2"
+                        alt="icon" />
+                    </a> (+965) 98588891
+                    <span style="color: #676767;" class="subtext">
+                      يسعدنا مساعدتك، تواصل معنا
+                    </span>
+                  </p>
+                </div>
+              </td>
+            </tr>
+            <td class="footer">
+              <ul class="even-list">
+                <li class="el-item" style="text-align: left;">
+                  <a target="_blank" href="https://www.facebook.com/ulearnkw" style="text-decoration:none">
+                    <img
+                      src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FFacebook.png?alt=media&token=69422d5c-90bb-4039-841d-cf6f3fd5b5a6"
+                      alt="icon" width="24px" height="24px" style="margin-right: 16px;" />
+                  </a>
+                  <a target="_blank" href="https://twitter.com/ulearnstudy" style="text-decoration:none">
+                    <img
+                      src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FTwitter.png?alt=media&token=f6dff4c4-0430-4c9a-8712-cb97c22dda98"
+                      alt="icon" width="24px" height="24px" style="margin-right: 16px;" /></a>
+                  <a target="_blank" href="https://www.instagram.com/ulearn.study/" style="text-decoration:none">
+                    <img width="24px" height="24px"
+                      src="https://firebasestorage.googleapis.com/v0/b/me-blog-4449a.appspot.com/o/image%2FInstagram.png?alt=media&token=e8653b86-9f6f-4ed2-a0d6-ebcfad53d366"
+                      alt="icon" />
+                </li></a>
+                <li class="el-item" style="text-align: right;">
+                  <a href="https://ulearn.study/kw" class="gethelp">www.ulearn.study</a><br />
+                  <span class="subtext">Made with ❤️ © 2020 ULEARN</span>
+                </li>
+              </ul>
+            </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

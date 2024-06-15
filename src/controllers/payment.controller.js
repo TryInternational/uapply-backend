@@ -71,10 +71,31 @@ const confirm = catchAsync(async (req, res) => {
   payment.status = transaction.InvoiceStatus;
   payment.meta = transaction;
   booking.status = transaction.InvoiceStatus === 'Paid' ? 'booked' : 'cancelled';
+  const paymentImg =
+    payment.paymentMode === 'KNET'
+      ? 'https://storage.googleapis.com/destination_ulearn/courses/Frame%201680.png'
+      : 'https://storage.googleapis.com/destination_ulearn/courses/mastercard.png';
 
   await payment.save();
   await booking.save();
   if (transaction.InvoiceStatus === 'Paid') {
+    const context = {
+      fullname: booking.fullname,
+      email: booking.email,
+      paymentMode: payment.paymentMode,
+      paymentModeImg: paymentImg,
+      price: booking.price,
+      year: moment().year(),
+      packageType: booking.packageType,
+      startDate: moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+      endDate: moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+      signature: booking.signature,
+      civilId: booking.civilId,
+      today: new Date().toLocaleDateString(),
+    };
+
+    await emailService.sendReceipt(booking.email, context);
+
     return res.redirect(`${config.website}/booking/success?id=${booking._id}`);
   }
 

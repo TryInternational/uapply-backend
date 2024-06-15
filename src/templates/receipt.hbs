@@ -1,0 +1,201 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; } .email-container { width:
+      100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #ddd; box-shadow: 0 2px 4px
+      rgba(0, 0, 0, 0.1); } .header { background-color: #9d8772; color: #ffffff; text-align: center; padding: 20px 0; }
+      .header img { max-width: 150px; margin-bottom: 10px; } .content { padding: 20px; color: #333333; line-height: 1.6; }
+      .content a { color: #9d8772; text-decoration: none; } .content a:hover { text-decoration: underline; } .footer {
+      margin-top: 20px; text-align: center; font-size: 12px; color: #777777; padding: 10px 0; border-top: 1px solid #dddddd;
+      } .contract { margin-top: 20px; font-size: 14px; color: #333333; } .contract p { margin-bottom: 10px; }
+      .contract-arabic { direction: rtl; text-align: right; } table { width: 100%; border-collapse: collapse; margin-top:
+      20px; } th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; } th { background-color: #f2f2f2; }
+    </style>
+    <title>Welcome to AR Beach House</title>
+  </head>
+  <body>
+    <div class='email-container'>
+      <div class='header'>
+        <img
+          src='https://storage.googleapis.com/ar-beach-house/WhatsApp%20Image%202024-06-12%20at%206.50.23%20PM.jpeg'
+          alt='AR Beach House Logo'
+        />
+        <h1>Welcome to AR Beach House!</h1>
+      </div>
+      <div class='content'>
+        <p>Dear {{fullname}},</p>
+        <p>Thank you for booking your stay at AR Beach House! We're thrilled to have you.</p>
+        <table>
+          <tr>
+            <th colspan='2' style='background-color: #9d8772; color: white; padding: 10px;'>Booking Details</th>
+          </tr>
+          <tr>
+            <td>Email:</td>
+            <td>{{email}}</td>
+          </tr>
+          <tr>
+            <td>Price:</td>
+            <td>${{price}}</td>
+          </tr>
+          <tr>
+            <td>Payment Mode:</td>
+            <td>{{paymentMode}}</td>
+          </tr>
+          <tr>
+            <td>Package Type:</td>
+            <td>{{packageType}}</td>
+          </tr>
+          <tr>
+            <td>Check-in Date:</td>
+            <td>{{startDate}}</td>
+          </tr>
+          <tr>
+            <td>Check-out Date:</td>
+            <td>{{endDate}}</td>
+          </tr>
+        </table>
+        <p>For your convenience, please find the location of the beach house
+          <a href='https://maps.app.goo.gl/qHE2m7upyYJugPLg6?g_st=com.google.maps.preview.copy' target='_blank'>here</a>.</p>
+        <p>For any assistance during your stay, please contact our House Keeper at
+          <a class='contact-us' href='https://wa.me/96569922356'>+96569922356.</a></p>
+        <p>We wish you a wonderful and relaxing stay at our beach house!</p>
+        <p>Best regards,<br />AR Beach House Team</p>
+        <div class='contract'>
+          <h2>AR Beach House Rental Contract</h2>
+          <p>This contract was made on (date) between:</p>
+          <p>First Party: AR Beach House owner, hereinafter referred to as "the Lessor."
+            <br />
+            Second Party:
+            {{fullname}}
+            holding the civil ID number
+            {{civilId}}, hereinafter referred to as "the Lessee."</p>
+          <p>By virtue of this contract, the first party leases to the second party the property located in Ahmadi
+            Governorate, Sabah Al Ahmad Sea City, Phase 5, Plot 3587. For a period starting from
+            {{startDate}}
+            and ending on
+            {{endDate}}, subject to the following conditions:</p>
+          <p>1. The duration of this contract is limited by mutual agreement, and the terms agreed upon are binding on both
+            parties.</p>
+          <p>2. The first party, as the owner, leases the property to the second party, as the lessee, for the contract
+            duration and under the terms agreed upon.</p>
+          <p>3. The second party agrees to pay an amount of
+            {{price}}
+            as short term rent, in addition to a security deposit of 200 Kuwaiti Dinars, due upon reservation.</p>
+          <p>4. This contract is valid from the date of arrival until the date of departure, with check-in after 3:00 PM and
+            check-out by 3:00 PM at the latest.</p>
+          <p>5. Failure to vacate the property on time will incur a penalty of 25 KD for each hour of delay, deducted from
+            the security deposit.</p>
+          <p>6. Under no circumstances may the lessee stay in the property after the contract period has ended.</p>
+          <p>7. The lessee is not allowed to sublease the property covered by this contract to others; otherwise, the
+            contract will be null and void.</p>
+          <p>8. The lessee commits to maintaining the property and using it for the purpose it was rented for, and not for
+            any other activity.</p>
+          <p>9. The lessee must use the property as agreed in the contract and must treat it as their own property,
+            maintaining its cleanliness inside and out. If violated, the owner has the right to terminate the contract and
+            charge for damages.</p>
+          <p>10. The lessee agrees not to throw dirt or waste into the swimming pool and not to bring any type of animals or
+            birds, whether tame or wild, inside the property or in any of its external spaces. Smoking is also prohibited in
+            any indoor facility. Violations will result in contract termination and damage costs will be borne by the lessee.</p>
+          <p>11. The lessee must return the property with all its facilities, decorations, furniture, and equipment intact.
+            Removing any property items is prohibited.</p>
+          <p>12. The second party
+            {{fullname}}
+            agrees to use the property for families only, in accordance with the law, and not to hold noisy parties. The
+            lessee also agrees to maintain good relations with neighbors and not cause them any disturbance. If this clause
+            is breached, the first party has the right to evict the second party from the property, with the lessee still
+            responsible for the days spent on the property. The lessee cannot claim a refund.</p>
+          <p>13. The lessee agrees to inform the owner in case of any malfunction in the sanitary or electrical appliances so
+            that the owner can repair them.</p>
+          <p>14. The lessee and their companions are fully responsible for any accidents or injuries, including drowning or
+            death, that occur within the property, and the owner is fully absolved of any liability.</p>
+          <p>15. Cancellation policy: If the lessee leaves the property before the contract ends, they are responsible for
+            paying the full rent. A 50% deduction applies for cancellations made one week before the contract start date, and
+            a 30% deduction for cancellations made two weeks before the start date. If canceled more than two weeks before,
+            the full amount will be refunded.</p>
+          <p>16. The security deposit is due upon signing the contract and will be refunded at the end of the contract within
+            48 hours to 14 days, after deducting repair costs for any damages.</p>
+          <p>17. The lessee agrees to maintain the cleanliness and integrity of the property and all its contents. The lessee
+            is responsible for any damages resulting from misuse and must repair them at their own expense if the damage
+            exceeds the security deposit.</p>
+          <p>18. In case of a dispute regarding this contract, Kuwaiti courts have jurisdiction.</p>
+          <p>19. If the second party
+            {{fullname}}
+            breaches any condition of this contract or any legal provisions, the contract will be automatically terminated
+            and legally null without notice or court order. The second party's occupancy will be considered illegal, and
+            expedited eviction proceedings will apply.</p>
+          <p>This contract is made in two electronic copies, one for each party.</p>
+          <p>First Party (Owner)</p>
+          <img src='' />
+          <p>Second Party (Lessee)</p>
+          <img src={{signature}} />
+
+          <div class='contract-arabic'>
+            <h2>عقد تأجير بيت الشاطئ AR</h2>
+            <p>تم إبرام هذا العقد بتاريخ {{today}} بين:</p>
+            <p>الطرف الأول: مالك بيت الشاطئ AR، ويشار إليه فيما بعد بـ "المؤجر".
+              <br />
+              الطرف الثاني:
+              {{fullname}}
+              حامل الرقم المدني
+              {{civilId}}، ويشار إليه فيما بعد بـ "المستأجر".</p>
+            <p>بموجب هذا العقد، يقوم الطرف الأول بتأجير الطرف الثاني العقار الكائن في محافظة الأحمدي، مدينة صباح الأحمد
+              البحرية، المرحلة 5، قطعة 3587. لمدة تبدأ من
+              {{startDate}}
+              وتنتهي في
+              {{endDate}}، وذلك وفقاً للشروط التالية:</p>
+            <p>1. مدة هذا العقد محددة بالاتفاق المتبادل، والشروط المتفق عليها ملزمة للطرفين.</p>
+            <p>2. يؤجر الطرف الأول بصفته مالكاً العقار للطرف الثاني بصفته مستأجراً خلال مدة العقد وبموجب الشروط المتفق عليها.</p>
+            <p>3. يوافق الطرف الثاني على دفع مبلغ
+              {{price}}
+              كإيجار قصير الأجل، بالإضافة إلى وديعة تأمينية بقيمة 200 دينار كويتي، تُدفع عند الحجز.</p>
+            <p>4. يسري هذا العقد من تاريخ الوصول حتى تاريخ المغادرة، مع تسجيل الدخول بعد الساعة 3:00 مساءً وتسجيل المغادرة في
+              موعد أقصاه الساعة 3:00 مساءً.</p>
+            <p>5. سيتحمل المستأجر غرامة قدرها 25 دينار كويتي عن كل ساعة تأخير في إخلاء العقار، تُخصم من وديعة التأمين.</p>
+            <p>6. لا يجوز للمستأجر البقاء في العقار بعد انتهاء مدة العقد تحت أي ظرف.</p>
+            <p>7. لا يحق للمستأجر تأجير العقار المغطى بهذا العقد للآخرين؛ وإلا فسيكون العقد لاغياً وباطلاً.</p>
+            <p>8. يلتزم المستأجر بالحفاظ على العقار واستخدامه للغرض الذي تم تأجيره من أجله، وعدم استخدامه لأي نشاط آخر.</p>
+            <p>9. يجب على المستأجر استخدام العقار وفقاً لما تم الاتفاق عليه في العقد، ويجب عليه الحفاظ على نظافته من الداخل
+              والخارج. في حالة الانتهاك، يحق للمالك إنهاء العقد وتحميل المستأجر تكاليف الأضرار.</p>
+            <p>10. يوافق المستأجر على عدم إلقاء الأوساخ أو النفايات في حوض السباحة وعدم إحضار أي نوع من الحيوانات أو الطيور،
+              سواء كانت أليفة أو برية، داخل العقار أو في أي من المساحات الخارجية. يُحظر التدخين أيضاً في أي مرفق داخلي. ستؤدي
+              الانتهاكات إلى إنهاء العقد وتحمل المستأجر تكاليف الأضرار.</p>
+            <p>11. يجب على المستأجر إعادة العقار بجميع مرافقه وديكوراته وأثاثه ومعداته سليمة. يُحظر إزالة أي من عناصر
+              الملكية.</p>
+            <p>12. يوافق الطرف الثاني
+              {{fullname}}
+              على استخدام العقار للعائلات فقط، وفقاً للقانون، وعدم إقامة الحفلات الصاخبة.; كما يوافق المستأجر على الحفاظ على
+              علاقات جيدة مع الجيران وعدم التسبب في أي إزعاج لهم. في حالة انتهاك هذا البند، يحق للطرف الأول طرد الطرف الثاني
+              من العقار، مع استمرار مسؤولية المستأجر عن الأيام التي قضاها في العقار. لا يمكن للمستأجر المطالبة باسترداد
+              الأموال.</p>
+            <p>13. يوافق المستأجر على إبلاغ المالك في حالة حدوث أي خلل في الأجهزة الصحية أو الكهربائية حتى يتمكن المالك من
+              إصلاحها.</p>
+            <p>14. المستأجر ومرافقيه مسؤولون بالكامل عن أي حوادث أو إصابات، بما في ذلك الغرق أو الوفاة، التي تحدث داخل
+              العقار، ويُعفى المالك من أي مسؤولية.</p>
+            <p>15. سياسة الإلغاء: إذا غادر المستأجر العقار قبل انتهاء العقد، فهو مسؤول عن دفع الإيجار الكامل. يُطبق خصم بنسبة
+              50٪ على الإلغاءات التي تتم قبل أسبوع واحد من تاريخ بدء العقد، وخصم بنسبة 30٪ على الإلغاءات التي تتم قبل أسبوعين
+              من تاريخ البدء. إذا تم الإلغاء قبل أكثر من أسبوعين، سيتم استرداد المبلغ بالكامل.</p>
+            <p>16. تستحق وديعة التأمين عند توقيع العقد، وسيتم ردها في نهاية العقد خلال 48 ساعة إلى 14 يوم، بعد خصم تكاليف
+              الإصلاح لأي أضرار.</p>
+            <p>17. يوافق المستأجر على الحفاظ على نظافة وسلامة العقار وجميع محتوياته. المستأجر مسؤول عن أي أضرار ناتجة عن سوء
+              الاستخدام ويجب عليه إصلاحها على نفقته الخاصة إذا تجاوزت الأضرار وديعة التأمين.</p>
+            <p>18. في حالة حدوث نزاع بخصوص هذا العقد، يكون للمحاكم الكويتية الاختصاص القضائي.</p>
+            <p>19. إذا خالف الطرف الثاني
+              {{fullname}}
+              أي شرط من شروط هذا العقد أو أي أحكام قانونية، سيتم إنهاء العقد تلقائيًا ويصبح لاغياً قانونياً دون إشعار أو أمر
+              محكمة. ستعتبر إقامة الطرف الثاني غير قانونية، وستنطبق إجراءات الإخلاء العاجلة.</p>
+            <p>تم إبرام هذا العقد في نسختين إلكترونيتين، واحدة لكل طرف.</p>
+            <p>الطرف الأول (المالك)</p>
+            <p>(توقيع المالك)</p>
+            <p>الطرف الثاني (المستأجر)</p>
+            <img src={{signature}} />
+          </div>
+        </div>
+      </div>
+      <div class='footer'>
+        <p>&copy; {{year}} TRY. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

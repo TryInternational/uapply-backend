@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700&display=swap"
+      rel="stylesheet" />
+	<title>Order List</title>
+	<style>
+		/* -------------------------------------
+			GLOBAL RESETS
+		------------------------------------- */
+
+		html {
+			font-family: Cairo;
+		}
+
+		table {
+			width: 100%;
+		}
+
+		table,
+		th,
+		td {
+			border: 1px solid lightgrey;
+			border-collapse: collapse;
+		}
+
+		th,
+		td {
+			padding: 2px 2px;
+		}
+
+		.header {
+			color: white;
+			background-color: black;
+			text-transform: uppercase;
+		}
+	</style>
+</head>
+
+<body class="">
+	<h1>{{name}}</h1>
+	<table>
+		<thead>
+			<tr>
+				{{#each array.[0]}}
+				<th class="header">{{@key}}</th>
+				{{/each}}
+			</tr>
+		</thead>
+		<tbody>
+			{{#each array}}
+			<tr>
+				{{#each this}}
+				<td>{{this}}</td>
+				{{/each}}
+			</tr>
+			{{/each}}
+		</tbody>
+	</table>
+
+</body>
+
+</html>

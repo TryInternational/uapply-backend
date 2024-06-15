@@ -5,13 +5,17 @@ const createBooking = {
   body: Joi.object().keys({
     fullname: Joi.string().required(),
     phoneNo: Joi.string().required(),
+    alternatePhoneNo: Joi.string().required(),
     email: Joi.string().required().email(),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
     modeOfPayment: Joi.string().required(),
-    guest: Joi.object().required(),
     price: Joi.number().required(),
     countryCode: Joi.string().required(),
+    alternateCountryCode: Joi.string().required(),
+    packageType: Joi.string().required(),
+    notes: Joi.string(),
+    civilId: Joi.string().required(),
   }),
 };
 

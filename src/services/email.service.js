@@ -1,4 +1,7 @@
 const nodemailer = require('nodemailer');
+const Handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
 const config = require('../config/config');
 const logger = require('../config/logger');
 
@@ -18,8 +21,12 @@ if (config.env !== 'test') {
  * @param {string} text
  * @returns {Promise}
  */
-const sendEmail = async (to, subject, text) => {
-  const msg = { from: config.email.from, to, subject, text };
+const sendEmail = async (to, subject, text, context, file, htmlString) => {
+  const source = htmlString || fs.readFileSync(path.join(__dirname, `../templates/${file}.hbs`), 'utf8');
+  // Create email generator
+  const template = Handlebars.compile(source);
+
+  const msg = { from: config.email.from, to, subject, text, html: template(context) };
   await transport.sendMail(msg);
 };
 
@@ -54,10 +61,18 @@ To verify your email, click on this link: ${verificationEmailUrl}
 If you did not create an account, then ignore this email.`;
   await sendEmail(to, subject, text);
 };
-
+const sendReceipt = async (to, context) => {
+  const subject = 'ملخص الشراء';
+  // replace this url with the link to the reset password page of your front-end app
+  // const resetPasswordUrl = `http://link-to-app/reset-password?token=${token}`;
+  const text = `شكراً على ثقتك
+  سعيدين بانضمامك لدورة اللغة`;
+  await sendEmail(to, subject, text, context, 'receipt');
+};
 module.exports = {
   transport,
   sendEmail,
   sendResetPasswordEmail,
   sendVerificationEmail,
+  sendReceipt,
 };

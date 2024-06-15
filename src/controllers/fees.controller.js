@@ -51,18 +51,26 @@ const searchFees = catchAsync(async (req, res) => {
 
 const getSalesData = catchAsync(async (req, res) => {
   try {
-    const { feeType } = req.query;
-    let groupByField;
+    const { feeType, startDate, endDate } = req.query;
+
+    // Validate startDate and endDate
+    if (!startDate || !endDate) {
+      return res.status(400).send('startDate and endDate are required');
+    }
+
+    let groupByFields = [];
 
     if (feeType === 'office-fees') {
-      groupByField = 'tag.salesPerson';
+      groupByFields = ['tag.salesPerson'];
     } else if (feeType === 'ielts-booking' || feeType === 'student-visa') {
-      groupByField = 'tag.incharge';
+      groupByFields = ['tag.incharge'];
+    } else if (feeType === 'english-self-funded') {
+      groupByFields = ['tag.accountManager', 'tag.operation', 'tag.salesPerson'];
     } else {
       return res.status(400).send('Invalid feeType');
     }
 
-    const leaderboard = await feesService.getSales(feeType, groupByField);
+    const leaderboard = await feesService.getSales(feeType, groupByFields, startDate, endDate);
     res.json(leaderboard);
   } catch (error) {
     res.status(500).send(error.message);
