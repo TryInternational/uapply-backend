@@ -16,6 +16,7 @@ const createBooking = {
     packageType: Joi.string().required(),
     notes: Joi.string(),
     civilId: Joi.string().required(),
+    signature: Joi.string().required(),
   }),
 };
 

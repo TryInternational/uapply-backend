@@ -13,4 +13,3 @@ const addRow = async (id, row) => {
 module.exports = {
   addRow,
 };
-// https://ulearn-staging-api-dot-digital-vim-270607.appspot.com/v1/payments/redirect/confirm?paymentId=100202024565809171&Id=100202024565809171

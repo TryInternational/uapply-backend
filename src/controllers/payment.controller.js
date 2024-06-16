@@ -93,8 +93,22 @@ const confirm = catchAsync(async (req, res) => {
       civilId: booking.civilId,
       today: new Date().toLocaleDateString(),
     };
+    const payload = {
+      'Date of Booking': moment(booking.createdAt).tz('Asia/Kuwait').format('MMM DD YYYY [at] hh:mm a'),
+      'Start Date': moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+      'End Date': moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+      'Full Name': booking.fullname,
+      'Phone Number': booking.phoneNo,
+      'Alternate Number': booking.alternatePhoneNo,
+      Email: booking.email,
+      Notes: booking.notes,
+      'Amount Paid': booking.price,
+      'Civil Id': booking.civilId,
+    };
 
     await emailService.sendReceipt(booking.email, context);
+
+    await googlesheet.addRow(config.googlesheet.booking, payload);
 
     return res.redirect(`${config.website}/booking/success?id=${booking._id}`);
   }

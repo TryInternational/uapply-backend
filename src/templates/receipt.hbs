@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td>Price:</td>
-            <td>${{price}}</td>
+            <td>{{price}} KWD</td>
           </tr>
           <tr>
             <td>Payment Mode:</td>
@@ -64,7 +64,7 @@
         <p>Best regards,<br />AR Beach House Team</p>
         <div class='contract'>
           <h2>AR Beach House Rental Contract</h2>
-          <p>This contract was made on (date) between:</p>
+          <p>This contract was made on {{today}} between:</p>
           <p>First Party: AR Beach House owner, hereinafter referred to as "the Lessor."
             <br />
             Second Party:
@@ -82,7 +82,7 @@
             duration and under the terms agreed upon.</p>
           <p>3. The second party agrees to pay an amount of
             {{price}}
-            as short term rent, in addition to a security deposit of 200 Kuwaiti Dinars, due upon reservation.</p>
+            KWD as short term rent, in addition to a security deposit of 200 Kuwaiti Dinars, due upon reservation.</p>
           <p>4. This contract is valid from the date of arrival until the date of departure, with check-in after 3:00 PM and
             check-out by 3:00 PM at the latest.</p>
           <p>5. Failure to vacate the property on time will incur a penalty of 25 KD for each hour of delay, deducted from
@@ -127,9 +127,14 @@
             expedited eviction proceedings will apply.</p>
           <p>This contract is made in two electronic copies, one for each party.</p>
           <p>First Party (Owner)</p>
-          <img src='' />
+          <img
+            width='100px'
+            height='70px'
+            src='https://storage.googleapis.com/ar-beach-house/WhatsApp%20Image%202024-06-12%20at%206.50.23%20PM.jpeg'
+            alt='AR Beach House Logo'
+          />
           <p>Second Party (Lessee)</p>
-          <img src={{signature}} />
+          <img width='150px' height='90px' src={{signature}} alt='Signature' />
 
           <div class='contract-arabic'>
             <h2>عقد تأجير بيت الشاطئ AR</h2>
@@ -149,7 +154,7 @@
             <p>2. يؤجر الطرف الأول بصفته مالكاً العقار للطرف الثاني بصفته مستأجراً خلال مدة العقد وبموجب الشروط المتفق عليها.</p>
             <p>3. يوافق الطرف الثاني على دفع مبلغ
               {{price}}
-              كإيجار قصير الأجل، بالإضافة إلى وديعة تأمينية بقيمة 200 دينار كويتي، تُدفع عند الحجز.</p>
+              KWD كإيجار قصير الأجل، بالإضافة إلى وديعة تأمينية بقيمة 200 دينار كويتي، تُدفع عند الحجز.</p>
             <p>4. يسري هذا العقد من تاريخ الوصول حتى تاريخ المغادرة، مع تسجيل الدخول بعد الساعة 3:00 مساءً وتسجيل المغادرة في
               موعد أقصاه الساعة 3:00 مساءً.</p>
             <p>5. سيتحمل المستأجر غرامة قدرها 25 دينار كويتي عن كل ساعة تأخير في إخلاء العقار، تُخصم من وديعة التأمين.</p>
@@ -187,9 +192,16 @@
               محكمة. ستعتبر إقامة الطرف الثاني غير قانونية، وستنطبق إجراءات الإخلاء العاجلة.</p>
             <p>تم إبرام هذا العقد في نسختين إلكترونيتين، واحدة لكل طرف.</p>
             <p>الطرف الأول (المالك)</p>
-            <p>(توقيع المالك)</p>
+            <img
+              width='100px'
+              height='70px'
+              src='https://storage.googleapis.com/ar-beach-house/WhatsApp%20Image%202024-06-12%20at%206.50.23%20PM.jpeg'
+              alt='AR Beach House Logo'
+            />
             <p>الطرف الثاني (المستأجر)</p>
-            <img src={{signature}} />
+
+            <img width='150px' height='90px' src={{signature}} alt='Signature' />
+
           </div>
         </div>
       </div>

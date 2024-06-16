@@ -70,6 +70,11 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  service: {
+    client_id: envVars.CLIENT_ID,
+    client_email: envVars.CLIENT_EMAIL,
+    private_key: envVars.PRIVATE_KEY.replace(/\\n/g, '\n'),
+  },
   fatoorah: {
     key: envVars.FATOORAH_KEY,
     url: envVars.FATOORAH_API,
