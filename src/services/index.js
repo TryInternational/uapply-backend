@@ -27,3 +27,4 @@ module.exports.bookingService = require('./booking.service');
 module.exports.paymentService = require('./payment.service');
 module.exports.appliedStudentService = require('./appliedStudent.service');
 module.exports.quotesService = require('./quotes.service');
+module.exports.englishLangSchoolService = require('./englishLangSchools.service');

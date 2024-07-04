@@ -12,6 +12,10 @@ router.route('/').get(feesController.getFees);
 
 router.route('/months').get(feesController.getAmountPermonth);
 
+router.route('/top-schools').get(feesController.topSchools);
+
+router.route('/top-cities').get(feesController.topCities);
+
 router.route('/search/:text').get(feesController.searchFees);
 
 router.route('/:id').patch(feesController.updateFees).delete(feesController.deleteFees);

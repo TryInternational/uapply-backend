@@ -77,6 +77,20 @@ const getSalesData = catchAsync(async (req, res) => {
   }
 });
 
+const topSchools = catchAsync(async (req, res) => {
+  const data = await feesService.getTopSchools({
+    ...req.query,
+  });
+  res.send(data);
+});
+
+const topCities = catchAsync(async (req, res) => {
+  const data = await feesService.getTopCities({
+    ...req.query,
+  });
+  res.send(data);
+});
+
 module.exports = {
   getFeesById,
   getSalesData,
@@ -86,4 +100,6 @@ module.exports = {
   deleteFees,
   createFees,
   getAmountPermonth,
+  topCities,
+  topSchools,
 };

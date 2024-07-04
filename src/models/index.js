@@ -24,3 +24,4 @@ module.exports.Booking = require('./booking.model');
 module.exports.Payment = require('./payment.model');
 module.exports.AppliedStudent = require('./appliedStudent.model');
 module.exports.Quotes = require('./quotes.model');
+module.exports.EnglishLangSchool = require('./englishLangSchools.model');
