@@ -23,6 +23,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    formOfPayment: {
+      type: String,
+      trim: true,
+    },
     notes: {
       type: String,
       trim: true,

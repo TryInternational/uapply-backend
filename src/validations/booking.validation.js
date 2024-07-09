@@ -9,7 +9,7 @@ const createBooking = {
     email: Joi.string().required().email(),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
-    modeOfPayment: Joi.string().required(),
+    modeOfPayment: Joi.string(),
     price: Joi.number().required(),
     countryCode: Joi.string().required(),
     alternateCountryCode: Joi.string().required(),
@@ -17,6 +17,7 @@ const createBooking = {
     notes: Joi.string(),
     civilId: Joi.string().required(),
     signature: Joi.string().required(),
+    formOfPayment: Joi.string().required(),
   }),
 };
 
@@ -39,7 +40,7 @@ const updateBooking = {
       email: Joi.string().required().email(),
       startDate: Joi.date().required(),
       endDate: Joi.date().required(),
-      modeOfPayment: Joi.string().required(),
+      modeOfPayment: Joi.string(),
     })
     .min(1),
 };

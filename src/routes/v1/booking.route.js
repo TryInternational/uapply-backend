@@ -18,7 +18,7 @@ router.route('/search/:text').get(bookingController.searchBookings);
 router
   .route('/:bookingId')
   .patch(bookingController.updateBooking)
-  .delete(auth('manageBookings'), validate(bookingValidation.deleteBooking), bookingController.deleteBooking);
+  .delete(validate(bookingValidation.deleteBooking), bookingController.deleteBooking);
 
 router.route('/:bookingId').get(validate(bookingValidation.getBooking), bookingController.getBooking);
 

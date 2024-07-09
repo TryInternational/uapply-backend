@@ -7,9 +7,10 @@ const moment = require('moment-timezone');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
-const { bookingService, paymentService } = require('../services');
-const { fatoorah } = require('../thirdparty');
+const { bookingService, paymentService, emailService } = require('../services');
+const { fatoorah, googlesheet } = require('../thirdparty');
 const { DateToString } = require('../utils/Common');
+const config = require('../config/config');
 
 const createBooking = catchAsync(async (req, res) => {
   try {
@@ -35,30 +36,65 @@ const createBooking = catchAsync(async (req, res) => {
     booking.paymentId = payment._id;
 
     await booking.save();
-    const transactionPayload = {
-      PaymentMethodId: 1,
-      CustomerName: req.body.fullname,
-      DisplayCurrencyIso: 'KWD',
-      MobileCountryCode: req.body.countryCode,
-      CustomerMobile: req.body.phoneNo,
-      CustomerEmail: req.body.email,
-      InvoiceValue: req.body.price,
-      CustomerReference: booking._id,
-      InvoiceItems: [
-        {
-          ItemName: 'Beach House',
-          Quantity: 1,
-          UnitPrice: req.body.price,
-        },
-      ],
-    };
+    if (req.body.formOfPayment === 'Cash') {
+      const context = {
+        fullname: booking.fullname,
+        email: booking.email,
+        paymentMode: payment.paymentMode,
+        paymentModeImg: '',
+        price: booking.price,
+        year: moment().year(),
+        packageType: booking.packageType,
+        startDate: moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+        endDate: moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+        signature: booking.signature,
+        civilId: booking.civilId,
+        today: new Date().toLocaleDateString(),
+      };
+      const payload = {
+        'Date of Booking': moment(booking.createdAt).tz('Asia/Kuwait').format('MMM DD YYYY [at] hh:mm a'),
+        'Start Date': moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+        'End Date': moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+        'Full Name': booking.fullname,
+        'Phone Number': booking.phoneNo,
+        'Alternate Number': booking.alternatePhoneNo,
+        Email: booking.email,
+        Notes: booking.notes,
+        'Amount Paid': booking.price,
+        'Civil Id': booking.civilId,
+      };
 
-    const transaction = await fatoorah.executePayment(transactionPayload);
+      await emailService.sendReceipt(booking.email, context);
+      booking.status = 'booked';
+      await booking.save();
+      await googlesheet.addRow(config.googlesheet.booking, payload);
+      res.status(httpStatus.CREATED).send({ orderNo: booking.orderNo });
+    } else {
+      const transactionPayload = {
+        PaymentMethodId: 1,
+        CustomerName: req.body.fullname,
+        DisplayCurrencyIso: 'KWD',
+        MobileCountryCode: req.body.countryCode,
+        CustomerMobile: req.body.phoneNo,
+        CustomerEmail: req.body.email,
+        InvoiceValue: req.body.price,
+        CustomerReference: booking._id,
+        InvoiceItems: [
+          {
+            ItemName: 'Beach House',
+            Quantity: 1,
+            UnitPrice: req.body.price,
+          },
+        ],
+      };
 
-    payment.transactionId = transaction.InvoiceId;
-    payment.orderNo = booking.orderNo;
-    await payment.save();
-    res.status(httpStatus.CREATED).send({ paymentUrl: transaction.PaymentURL, orderNo: booking.orderNo });
+      const transaction = await fatoorah.executePayment(transactionPayload);
+
+      payment.transactionId = transaction.InvoiceId;
+      payment.orderNo = booking.orderNo;
+      await payment.save();
+      res.status(httpStatus.CREATED).send({ paymentUrl: transaction.PaymentURL, orderNo: booking.orderNo });
+    }
   } catch (error) {
     res.status(500).send(error);
   }
@@ -67,7 +103,7 @@ const createBooking = catchAsync(async (req, res) => {
 const getBookings = catchAsync(async (req, res) => {
   // await publishMessage();
 
-  const filter = pick(req.query, ['name', 'status', 'stage', 'level', 'course', 'duration', 'ageGroup', 'optionType']);
+  const filter = pick(req.query, ['name', 'status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await bookingService.queryBookings(filter, options);
   res.send(result);
