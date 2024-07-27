@@ -165,6 +165,14 @@ const deleteApplication = catchAsync(async (req, res) => {
   await applicationService.deleteApplication(req.params.applicationId);
   res.status(httpStatus.NO_CONTENT).send();
 });
+const getApplicationsByPhase = async (req, res) => {
+  try {
+    const data = await applicationService.getApplicationsCountByPhase(req.query.startDate, req.query.endDate);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // const searchApplications = catchAsync(async (req, res) => {
 //   // const filter = pick(req.query, ['name', 'status', 'stage']);
@@ -173,6 +181,34 @@ const deleteApplication = catchAsync(async (req, res) => {
 //   res.status(200).send(results);
 // });
 
+const getTopUniversities = async (req, res) => {
+  try {
+    const universities = await applicationService.getTopUniversitiesByApplications(req.query.startDate, req.query.endDate);
+    res.send(universities);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+async function getEnrolledUniversities(req, res) {
+  try {
+    const application = await applicationService.getTopEnrolledUniversities(req.query.startDate, req.query.endDate);
+    res.send(application);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+const getApplicationsCountByMonth = catchAsync(async (req, res) => {
+  const data = await applicationService.getApplicationsCountByMonth();
+  res.status(200).json(data);
+});
+
+const getEnrolledApplicationsCountByMonth = catchAsync(async (req, res) => {
+  const data = await applicationService.getEnrolledApplicationsCountByMonth();
+  res.status(200).json(data);
+});
+
 module.exports = {
   createApplication,
   getApplications,
@@ -180,5 +216,10 @@ module.exports = {
   deleteApplication,
   updateApplication,
   getApplicationByStudentId,
+  getApplicationsByPhase,
+  getTopUniversities,
+  getEnrolledUniversities,
+  getApplicationsCountByMonth,
+  getEnrolledApplicationsCountByMonth,
   //   searchApplications,
 };

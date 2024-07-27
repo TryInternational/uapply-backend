@@ -78,12 +78,36 @@ const searchStudents = catchAsync(async (req, res) => {
   res.status(200).send(results);
 });
 
+const getTopStudentsByNationality = catchAsync(async (req, res) => {
+  try {
+    const topNationalities = await studentsService.getTopNationalities({
+      ...req.query,
+    });
+    res.send(topNationalities);
+  } catch (error) {
+    res.status(httpStatus.INTERNAL_SERVER_ERROR).send(error.message);
+  }
+});
+
+const getStudentCountByAssignedRole = async (req, res) => {
+  try {
+    const data = await studentsService.getCountByAssignedRole({
+      ...req.query,
+    });
+    res.status(200).send(data);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createStudent,
   getStudents,
   getStudent,
   updateStudent,
   deleteStudent,
+  getTopStudentsByNationality,
   searchStudents,
   getStudentsByMonths,
+  getStudentCountByAssignedRole,
 };

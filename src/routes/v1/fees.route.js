@@ -14,6 +14,12 @@ router.route('/months').get(feesController.getAmountPermonth);
 
 router.route('/top-schools').get(feesController.topSchools);
 
+router.route('/top-tests').get(feesController.topTests);
+
+router.route('/fees-dashboard-data').get(feesController.getDashboardData);
+
+router.route('/top-types').get(feesController.topTypes);
+
 router.route('/top-cities').get(feesController.topCities);
 
 router.route('/search/:text').get(feesController.searchFees);

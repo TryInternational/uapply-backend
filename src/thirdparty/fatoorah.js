@@ -45,7 +45,6 @@ const executePayment = async ({
  * @param {Number} InvoiceAmount
  */
 const initiatePayment = async ({ CurrencyIso, InvoiceAmount }) => {
-  // console.log( CurrencyIso, InvoiceAmount )
   const resp = await api.post('/InitiatePayment', {
     InvoiceAmount,
     CurrencyIso,

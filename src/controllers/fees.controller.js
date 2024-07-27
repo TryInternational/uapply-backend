@@ -62,8 +62,10 @@ const getSalesData = catchAsync(async (req, res) => {
 
     if (feeType === 'office-fees') {
       groupByFields = ['tag.salesPerson'];
-    } else if (feeType === 'ielts-booking' || feeType === 'student-visa') {
+    } else if (feeType === 'ielts-booking') {
       groupByFields = ['tag.incharge'];
+    } else if (feeType === 'student-visa') {
+      groupByFields = ['tag.incharge', 'tag.checkedBy'];
     } else if (feeType === 'english-self-funded') {
       groupByFields = ['tag.accountManager', 'tag.operation', 'tag.salesPerson'];
     } else {
@@ -84,9 +86,56 @@ const topSchools = catchAsync(async (req, res) => {
   res.send(data);
 });
 
+const topTypes = catchAsync(async (req, res) => {
+  const data = await feesService.getTopTypes({
+    ...req.query,
+  });
+  res.send(data);
+});
+
+const topTests = catchAsync(async (req, res) => {
+  const data = await feesService.getTopTests({
+    ...req.query,
+  });
+  res.send(data);
+});
+
 const topCities = catchAsync(async (req, res) => {
   const data = await feesService.getTopCities({
     ...req.query,
+  });
+  res.send(data);
+});
+
+const getDashboardData = catchAsync(async (req, res) => {
+  const { feeType, startDate, endDate } = req.query;
+
+  // Validate startDate and endDate
+  if (!startDate || !endDate) {
+    return res.status(400).send('startDate and endDate are required');
+  }
+
+  let groupByFields = [];
+
+  if (feeType === 'office-fees') {
+    groupByFields = ['tag.salesPerson'];
+  } else if (feeType === 'ielts-booking') {
+    groupByFields = ['tag.incharge'];
+  } else if (feeType === 'student-visa') {
+    groupByFields = ['tag.incharge', 'tag.checkedBy'];
+  } else if (feeType === 'english-self-funded') {
+    groupByFields = ['tag.accountManager', 'tag.operation', 'tag.salesPerson'];
+  } else {
+    return res.status(400).send('Invalid feeType');
+  }
+
+  const data = await feesService.getDashboardData({
+    data: {
+      feeType,
+      groupByFields,
+      startDate,
+      endDate,
+    },
   });
   res.send(data);
 });
@@ -102,4 +151,7 @@ module.exports = {
   getAmountPermonth,
   topCities,
   topSchools,
+  topTypes,
+  topTests,
+  getDashboardData,
 };

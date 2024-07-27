@@ -127,12 +127,168 @@ const searchStudent = async (text, options) => {
   return students;
 };
 
+const getTopNationalities = async ({ startDate, endDate }) => {
+  let query = {};
+
+  if (startDate && endDate) {
+    query = {
+      ...query,
+      createdAt: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+  }
+  const topNationalities = await Students.aggregate([
+    {
+      $match: { ...query, stage: 'Applied' },
+    },
+    {
+      $group: {
+        _id: '$nationality.english_name',
+        countryCode: { $first: '$nationality.alpha2_code' },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { count: -1 },
+    },
+    {
+      $limit: 10, // Change this value to get more or fewer top nationalities
+    },
+  ]);
+
+  return topNationalities;
+};
+
+const getCountByAssignedRole = async ({ startDate, endDate }) => {
+  try {
+    let query = {};
+
+    if (startDate && endDate) {
+      query = {
+        ...query,
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      };
+    }
+    const appliedPipeline = [
+      {
+        $match: { ...query, stage: 'Applied' },
+      },
+      {
+        $unwind: '$assignedTo',
+      },
+      {
+        $group: {
+          _id: {
+            role: '$assignedTo.role',
+            user: '$assignedTo.user',
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          role: '$_id.role',
+          count: '$count',
+          user: '$_id.user',
+        },
+      },
+    ];
+
+    const enrolledPipeline = [
+      {
+        $match: { ...query, stage: 'Enrolled' },
+      },
+      {
+        $unwind: '$assignedTo',
+      },
+      {
+        $group: {
+          _id: {
+            role: '$assignedTo.role',
+            user: '$assignedTo.user',
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          role: '$_id.role',
+          count: '$count',
+          user: '$_id.user',
+        },
+      },
+    ];
+
+    const appliedResults = await Students.aggregate(appliedPipeline).exec();
+    const enrolledResults = await Students.aggregate(enrolledPipeline).exec();
+
+    const combinedResults = {};
+
+    appliedResults.forEach((item) => {
+      const key = `${item.role}-${item.user}`;
+      combinedResults[key] = {
+        appliedCount: item.count,
+        enrolledCount: 0,
+        tag: {},
+        status: 'applied',
+        role: item.role,
+      };
+
+      if (item.role === 'account manager') {
+        combinedResults[key].tag.accountManager = item.user;
+      } else if (item.role === 'sales') {
+        combinedResults[key].tag.salesPerson = item.user;
+      } else if (item.role === 'operations') {
+        combinedResults[key].tag.operations = item.user;
+      }
+    });
+
+    enrolledResults.forEach((item) => {
+      const key = `${item.role}-${item.user}`;
+      if (combinedResults[key]) {
+        combinedResults[key].enrolledCount = item.count;
+        combinedResults[key].status = 'enrolled';
+      } else {
+        combinedResults[key] = {
+          appliedCount: 0,
+          enrolledCount: item.count,
+          tag: {},
+          status: 'enrolled',
+          role: item.role,
+        };
+
+        if (item.role === 'account manager') {
+          combinedResults[key].tag.accountManager = item.user;
+        } else if (item.role === 'sales') {
+          combinedResults[key].tag.salesPerson = item.user;
+        } else if (item.role === 'operations') {
+          combinedResults[key].tag.operations = item.user;
+        }
+      }
+    });
+
+    const finalResults = Object.values(combinedResults);
+    return finalResults;
+  } catch (error) {
+    throw new Error('Error getting role counts: ' + error.message);
+  }
+};
+
 module.exports = {
   createStudent,
   queryStudents,
   getStudentById,
   getStudentByEmail,
   updateStudentById,
+  getTopNationalities,
   deleteStudentById,
   searchStudent,
+  getCountByAssignedRole,
 };

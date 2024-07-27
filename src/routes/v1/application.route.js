@@ -10,7 +10,13 @@ router.post('/', applicationsController.createApplication);
 router.route('/').get(applicationsController.getApplications);
 // router.route(auth('/getBookingByEmail/:email')).get(applicationsController.getBookingByEmail);
 
-// router.route('/search/:text').get(applicationsController.searchCourses);
+router.route('/application-counts').get(applicationsController.getApplicationsByPhase);
+router.route('/application-counts-university').get(applicationsController.getTopUniversities);
+router.route('/application-enrolled-university').get(applicationsController.getEnrolledUniversities);
+
+router.route('/count-by-month').get(applicationsController.getApplicationsCountByMonth);
+
+router.route('/enrolled-count-by-month').get(applicationsController.getEnrolledApplicationsCountByMonth);
 
 router
   .route('/:applicationId')

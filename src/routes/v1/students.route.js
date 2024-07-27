@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.route('/').post(studentController.createStudent).get(studentController.getStudents);
 router.route('/months').get(studentController.getStudentsByMonths);
+router.route('/top-nationalities').get(studentController.getTopStudentsByNationality);
+router.route('/count').get(studentController.getStudentCountByAssignedRole);
 
 router
   .route('/:studentId')

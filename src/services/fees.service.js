@@ -130,6 +130,7 @@ const deleteFeesById = async (id) => {
   await student.remove();
   return student;
 };
+
 const getSales = async (feeType, groupByFields, startDate, endDate) => {
   const matchStage = {
     $match: {
@@ -139,9 +140,48 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
     },
   };
 
-  let groupStage;
-  if (feeType === 'english-self-funded') {
-    groupStage = {
+  const sortStage = { $sort: { totalAmount: -1 } };
+  const limitStage = { $limit: 10 };
+
+  const buildGroupStage = (groupByField) => ({
+    $group: {
+      _id: `$${groupByField}`,
+      totalAmount: { $sum: '$tag.amount' },
+      bookings: { $sum: 1 },
+      ...(feeType === 'english-self-funded' && { totalNoOfWeeks: { $sum: '$tag.noOfWeeks' } }),
+    },
+  });
+
+  const buildProjectStage = (groupByField) => ({
+    $project: {
+      [groupByField.replace(/\./g, '_')]: '$_id',
+      totalAmount: 1,
+      bookings: 1,
+      ...(feeType === 'english-self-funded' && { totalNoOfWeeks: 1 }),
+      _id: 0,
+    },
+  });
+
+  let pipelines;
+
+  if (feeType === 'student-visa') {
+    const inchargePipeline = [
+      matchStage,
+      { $group: { _id: { incharge: '$tag.incharge' }, totalAmount: { $sum: '$tag.amount' }, bookings: { $sum: 1 } } },
+      sortStage,
+      limitStage,
+      { $project: { incharge: '$_id.incharge', totalAmount: 1, bookings: 1, _id: 0 } },
+    ];
+    const checkedByPipeline = [
+      matchStage,
+      { $group: { _id: { checkedBy: '$tag.checkedBy' }, totalAmount: { $sum: '$tag.amount' }, bookings: { $sum: 1 } } },
+      sortStage,
+      limitStage,
+      { $project: { checkedBy: '$_id.checkedBy', totalAmount: 1, bookings: 1, _id: 0 } },
+    ];
+    pipelines = [inchargePipeline, checkedByPipeline];
+  } else if (feeType === 'english-self-funded') {
+    const groupStage = {
       $group: {
         _id: {
           accountManager: '$tag.accountManager',
@@ -153,40 +193,32 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
         totalNoOfWeeks: { $sum: '$tag.noOfWeeks' },
       },
     };
-  } else {
-    groupStage = {
-      $group: {
-        _id: `$${groupByFields[0]}`,
-        totalAmount: { $sum: '$tag.amount' },
-        bookings: { $sum: 1 },
+    const projectStage = {
+      $project: {
+        accountManager: '$_id.accountManager',
+        operation: '$_id.operation',
+        salesPerson: '$_id.salesPerson',
+        totalAmount: 1,
+        bookings: 1,
+        totalNoOfWeeks: 1,
+        _id: 0,
       },
     };
+    pipelines = [[matchStage, groupStage, sortStage, limitStage, projectStage]];
+  } else if (feeType === 'office-fees') {
+    const groupStage = buildGroupStage('tag.salesPerson');
+    const projectStage = buildProjectStage('tag.salesPerson');
+    pipelines = [[matchStage, groupStage, sortStage, limitStage, projectStage]];
+  } else {
+    const groupStage = buildGroupStage(groupByFields[0]);
+    const projectStage = buildProjectStage(groupByFields[0]);
+    pipelines = [[matchStage, groupStage, sortStage, limitStage, projectStage]];
   }
 
-  const sortStage = { $sort: { totalAmount: -1 } };
-  const limitStage = { $limit: 10 };
-  const projectStage = {
-    $project: {
-      accountManager: '$_id.accountManager',
-      operation: '$_id.operation',
-      salesPerson: '$_id.salesPerson',
-      totalAmount: 1,
-      bookings: 1,
-      totalNoOfWeeks: 1,
-      _id: 0,
-    },
-  };
+  const results = await Promise.all(pipelines.map((pipeline) => Fees.aggregate(pipeline)));
 
-  if (feeType !== 'english-self-funded') {
-    projectStage.$project = {
-      [groupByFields[0]]: '$_id',
-      totalAmount: 1,
-      bookings: 1,
-      _id: 0,
-    };
-  }
-
-  return Fees.aggregate([matchStage, groupStage, sortStage, limitStage, projectStage]);
+  // Flatten the results array if there are multiple pipelines
+  return results.flat();
 };
 
 const getTopSchools = async ({ startDate, endDate }) => {
@@ -204,6 +236,7 @@ const getTopSchools = async ({ startDate, endDate }) => {
 
   const topSchools = await Fees.aggregate([
     { $match: { ...query, 'tag.school': { $exists: true, $ne: null } } },
+    { $match: { 'tag.school': { $ne: '' } } }, // Add this line to filter out empty school IDs
     {
       $group: {
         _id: '$tag.school', // Adjust the field name as per your schema
@@ -211,14 +244,95 @@ const getTopSchools = async ({ startDate, endDate }) => {
         totalWeeks: { $sum: '$tag.noOfWeeks' }, // Adjust the field name if it's different
       },
     },
-    { $sort: { totalAmount: -1 } },
-    { $limit: 10 },
+    { $sort: { totalWeeks: -1 } }, // Changed from totalAmount to totalWeeks based on your field
+    { $limit: 3 },
   ]);
 
   return topSchools;
 };
 
-// Controller function to get top cities
+const getTopTypes = async ({ startDate, endDate }) => {
+  let query = {};
+
+  if (startDate && endDate) {
+    query = {
+      ...query,
+      createdDate: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+  }
+
+  const topTypes = await Fees.aggregate([
+    {
+      $match: { ...query, feeType: 'office-fees' },
+    },
+    { $match: { feeType: { $ne: '' } } }, // Add this line to filter out empty school IDs
+
+    {
+      $unwind: '$tag.type',
+    },
+    {
+      $group: {
+        _id: '$tag.type.value',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+    {
+      $limit: 3,
+    },
+  ]);
+
+  return topTypes;
+};
+
+const getTopTests = async ({ startDate, endDate }) => {
+  let query = {};
+
+  if (startDate && endDate) {
+    query = {
+      ...query,
+      createdDate: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+  }
+
+  const topTests = await Fees.aggregate([
+    {
+      $match: { ...query, feeType: 'ielts-booking' },
+    },
+    { $match: { feeType: { $ne: '' } } }, // Add this line to filter out empty school IDs
+
+    {
+      $unwind: '$tag.typeOfTest',
+    },
+    {
+      $group: {
+        _id: '$tag.typeOfTest',
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: {
+        count: -1,
+      },
+    },
+    {
+      $limit: 3,
+    },
+  ]);
+
+  return topTests;
+};
+
 const getTopCities = async ({ startDate, endDate }) => {
   let query = {};
 
@@ -234,6 +348,7 @@ const getTopCities = async ({ startDate, endDate }) => {
 
   const topCities = await Fees.aggregate([
     { $match: { ...query, 'tag.location': { $exists: true, $ne: null } } },
+    { $match: { 'tag.location': { $ne: '' } } }, // Add this line to filter out empty city IDs
     {
       $group: {
         _id: '$tag.location', // Adjust the field name as per your schema
@@ -242,11 +357,32 @@ const getTopCities = async ({ startDate, endDate }) => {
       },
     },
     { $sort: { numberOfStudents: -1 } },
-    { $limit: 10 },
+    { $limit: 3 },
   ]);
 
   return topCities;
 };
+
+const getDashboardData = async (data) => {
+  const amounts = await getAmounts();
+  const salesData = await getSales(data.feeType, data.groupByFields, data.startDate, data.endDate);
+
+  const topSchools = await getTopSchools(data.startDate, data.endDate);
+  const topTypes = await getTopTypes(data.startDate, data.endDate);
+
+  const topTests = await getTopTests(data.startDate, data.endDate);
+  const topCities = await getTopCities(data.startDate, data.endDate);
+
+  return {
+    amounts,
+    salesData,
+    topSchools,
+    topTypes,
+    topTests,
+    topCities,
+  };
+};
+
 module.exports = {
   createFees,
   queryFees,
@@ -258,4 +394,7 @@ module.exports = {
   getSales,
   getTopSchools,
   getTopCities,
+  getTopTypes,
+  getTopTests,
+  getDashboardData,
 };
