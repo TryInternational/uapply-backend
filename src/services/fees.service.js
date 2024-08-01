@@ -222,30 +222,42 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
 };
 
 const getTopSchools = async ({ startDate, endDate }) => {
-  let query = {};
+  const query = { 'tag.school': { $exists: true, $ne: null } };
 
   if (startDate && endDate) {
-    query = {
-      ...query,
-      createdDate: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
-      },
+    query.createdDate = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
     };
   }
 
   const topSchools = await Fees.aggregate([
-    { $match: { ...query, 'tag.school': { $exists: true, $ne: null } } },
-    { $match: { 'tag.school': { $ne: '' } } }, // Add this line to filter out empty school IDs
+    { $match: query }, // Apply the query filter
     {
       $group: {
-        _id: '$tag.school', // Adjust the field name as per your schema
-        numberOfStudents: { $sum: 1 },
-        totalWeeks: { $sum: '$tag.noOfWeeks' }, // Adjust the field name if it's different
+        _id: '$tag.school.name',
+        totalAmount: { $sum: '$tag.amount' },
+        totalWeeks: { $sum: '$tag.noOfWeeks' },
+        totalStudents: { $sum: 1 },
+        logo_url: { $first: '$tag.school.logo_url' },
       },
     },
-    { $sort: { totalWeeks: -1 } }, // Changed from totalAmount to totalWeeks based on your field
-    { $limit: 3 },
+    {
+      $sort: { totalAmount: -1 },
+    },
+    {
+      $project: {
+        _id: 0,
+        school: '$_id',
+        totalAmount: 1,
+        totalWeeks: 1,
+        totalStudents: 1,
+        logo_url: 1,
+      },
+    },
+    {
+      $limit: 3,
+    },
   ]);
 
   return topSchools;
@@ -365,17 +377,15 @@ const getTopCities = async ({ startDate, endDate }) => {
 
 const getDashboardData = async (data) => {
   const amounts = await getAmounts();
-  const salesData = await getSales(data.feeType, data.groupByFields, data.startDate, data.endDate);
 
-  const topSchools = await getTopSchools(data.startDate, data.endDate);
-  const topTypes = await getTopTypes(data.startDate, data.endDate);
+  const topSchools = await getTopSchools({ startDate: data.startDate, endDate: data.endDate });
+  const topTypes = await getTopTypes({ startDate: data.startDate, endDate: data.endDate });
 
-  const topTests = await getTopTests(data.startDate, data.endDate);
-  const topCities = await getTopCities(data.startDate, data.endDate);
+  const topTests = await getTopTests({ startDate: data.startDate, endDate: data.endDate });
+  const topCities = await getTopCities({ startDate: data.startDate, endDate: data.endDate });
 
   return {
     amounts,
-    salesData,
     topSchools,
     topTypes,
     topTests,

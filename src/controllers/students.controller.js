@@ -100,6 +100,20 @@ const getStudentCountByAssignedRole = async (req, res) => {
   }
 };
 
+const getDashboardStudentData = catchAsync(async (req, res) => {
+  const filterOptions = {
+    filter: pick(req.query, ['name', 'role', 'qualified', 'degree', 'nationality', 'residence', 'status', 'stage']),
+    options: pick(req.query, ['sortBy', 'limit', 'page']),
+  };
+
+  const dashboardData = await studentsService.getDashboardData({
+    startDate: req.query.startDate,
+    endDate: req.query.endDate,
+    filterOptions,
+  });
+  res.send(dashboardData);
+});
+
 module.exports = {
   createStudent,
   getStudents,
@@ -110,4 +124,5 @@ module.exports = {
   searchStudents,
   getStudentsByMonths,
   getStudentCountByAssignedRole,
+  getDashboardStudentData,
 };

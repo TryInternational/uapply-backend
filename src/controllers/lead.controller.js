@@ -154,6 +154,71 @@ const searchLeads = catchAsync(async (req, res) => {
   res.status(200).send(results);
 });
 
+const getLeadsCountByDates = async (filter) => {
+  const formattedFilter = {
+    ...filter,
+    startDate: filter.startDate,
+    endDate: filter.endDate,
+  };
+  const count = await leadsService.countLeads({
+    $and: [
+      { createdAt: { $gte: new Date(formattedFilter.startDate), $lte: new Date(formattedFilter.endDate) } },
+      { qualified: formattedFilter.qualified },
+      ...(formattedFilter.status ? [{ status: formattedFilter.status }] : []),
+      ...(formattedFilter.source ? [{ source: formattedFilter.source }] : []),
+      ...(formattedFilter.destination ? [{ 'destination.en_name': formattedFilter.destination }] : []),
+    ],
+  });
+  return count;
+};
+
+const getDashboardData = catchAsync(async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const [
+    studentsUlearnCount,
+    studentsUapplyCount,
+    studentsAppliedCount,
+    studentsClosedCount,
+    studentsNewCount,
+    studentsWaCount,
+    studentsOthersCount,
+    studentsUkCount,
+    top5ByCountry,
+    top5ByDegree,
+    qualifiedLeads,
+    unqualifiedLeads,
+  ] = await Promise.all([
+    getLeadsCountByDates({ qualified: true, source: 'ulearn', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, source: 'uapply', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, status: 'Applied', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, status: 'Closed', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, status: 'New', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, status: 'Sent Whatsapp', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, destination: 'Others', startDate, endDate }),
+    getLeadsCountByDates({ qualified: true, destination: 'UK', startDate, endDate }),
+    leadsService.getTop5ByContries({ startDate, endDate, qualified: true }),
+    leadsService.getTop5ByDegree({ startDate, endDate, qualified: true }),
+    getLeadsCountByDates({ qualified: true, startDate, endDate }),
+    getLeadsCountByDates({ qualified: false, startDate, endDate }),
+  ]);
+
+  res.status(200).send({
+    studentsUlearnCount,
+    studentsUapplyCount,
+    studentsAppliedCount,
+    studentsClosedCount,
+    studentsNewCount,
+    studentsWaCount,
+    studentsOthersCount,
+    studentsUkCount,
+    top5ByCountry,
+    top5ByDegree,
+    qualifiedLeads,
+    unqualifiedLeads,
+  });
+});
+
 module.exports = {
   createLead,
   getLeads,
@@ -164,4 +229,5 @@ module.exports = {
   getLeadsByMonths,
   getTop5ByContry,
   getTop5ByDegrees,
+  getDashboardData,
 };

@@ -11,6 +11,8 @@ router.route('/months').get(leadController.getLeadsByMonths);
 router.route('/country').get(leadController.getTop5ByContry);
 router.route('/degree').get(leadController.getTop5ByDegrees);
 
+router.route('/leads-dashboard-data').get(leadController.getDashboardData);
+
 router
   .route('/:leadId')
   .get(auth('getUsers'), leadController.getLead)

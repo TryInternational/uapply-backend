@@ -103,7 +103,7 @@ const createBooking = catchAsync(async (req, res) => {
 const getBookings = catchAsync(async (req, res) => {
   // await publishMessage();
 
-  const filter = pick(req.query, ['name', 'status', 'startDate']);
+  const filter = pick(req.query, ['name', 'status', 'startDate', 'endDate', 'packageType']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await bookingService.queryBookings(filter, options);
   res.send(result);
@@ -232,9 +232,18 @@ const exportFile = catchAsync(async (req, res) => {
 
 const searchBookings = catchAsync(async (req, res) => {
   // const filter = pick(req.query, ['name', 'status', 'stage']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', { searchString: req.params.text }]);
+
   const results = await bookingService.searchBooking(req.params.text, options);
   res.status(200).send(results);
+});
+const getTotalAmounts = catchAsync(async (req, res) => {
+  try {
+    const totalAmounts = await bookingService.getTotalAmounts();
+    res.json(totalAmounts);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 module.exports = {
@@ -248,4 +257,5 @@ module.exports = {
   searchBookings,
   getBookingByMonths,
   getBookedDates,
+  getTotalAmounts,
 };

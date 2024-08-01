@@ -155,6 +155,10 @@ const deleteLeadById = async (leadId) => {
   return lead;
 };
 
+const countLeads = async (filter) => {
+  return Leads.countDocuments(filter);
+};
+
 const searchLead = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
@@ -175,4 +179,5 @@ module.exports = {
   searchLead,
   getTop5ByContries,
   getTop5ByDegree,
+  countLeads,
 };

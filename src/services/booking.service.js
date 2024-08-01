@@ -52,7 +52,20 @@ async function getBookedDates() {
  * @returns {Promise<QueryResult>}
  */
 const queryBookings = async (filter, options) => {
-  const bookings = await Booking.paginate(filter, options);
+  const { startDate, endDate, ...otherFilters } = filter;
+
+  if (startDate && endDate) {
+    otherFilters.createdAt = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    };
+  }
+  Object.keys(otherFilters).forEach((key) => {
+    if (!otherFilters[key]) {
+      delete otherFilters[key];
+    }
+  });
+  const bookings = await Booking.paginate(otherFilters, options);
   return bookings;
 };
 
@@ -105,10 +118,41 @@ const searchBooking = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
   const bookings = await Booking.paginate(
-    { $and: [{ status: 'Paid', $or: [{ fullname: regex }, { phoneNumber: regex }, { email: regex }] }] },
+    { $or: [{ fullname: regex }, { phoneNo: regex }, { email: regex }, { civilId: regex }, { alternatePhoneNo: regex }] },
     options
   );
   return bookings;
+};
+
+const getTotalAmounts = async () => {
+  const bookings = await Booking.find({ status: 'booked' });
+
+  const totalAmountsByMonth = {};
+  let totalRentingAmount = 0;
+  let totalInsuranceAmount = 0;
+
+  bookings.forEach((booking) => {
+    const month = new Date(booking.createdAt).getMonth() + 1; // Month is 0-indexed, so add 1
+    const year = new Date(booking.createdAt).getFullYear();
+    const key = `${year}-${month}`;
+
+    if (!totalAmountsByMonth[key]) {
+      totalAmountsByMonth[key] = 0;
+    }
+
+    const rentingAmount = booking.price - 200;
+    const insuranceAmount = 200;
+
+    totalAmountsByMonth[key] += booking.price;
+    totalRentingAmount += rentingAmount;
+    totalInsuranceAmount += insuranceAmount;
+  });
+
+  return {
+    totalAmountsByMonth,
+    totalRentingAmount,
+    totalInsuranceAmount,
+  };
 };
 
 module.exports = {
@@ -121,4 +165,5 @@ module.exports = {
   getBookings,
   searchBooking,
   getBookedDates,
+  getTotalAmounts,
 };

@@ -277,7 +277,25 @@ const getCountByAssignedRole = async ({ startDate, endDate }) => {
     const finalResults = Object.values(combinedResults);
     return finalResults;
   } catch (error) {
-    throw new Error('Error getting role counts: ' + error.message);
+    throw new Error(`Error getting role counts: ${error.message}`);
+  }
+};
+
+const getDashboardData = async ({ startDate, endDate, filterOptions }) => {
+  try {
+    const [topNationalities, studentCountByRole, students] = await Promise.all([
+      getTopNationalities({ startDate, endDate }),
+      getCountByAssignedRole({ startDate, endDate }),
+      queryStudents(filterOptions.filter, filterOptions.options),
+    ]);
+
+    return {
+      topNationalities,
+      studentCountByRole,
+      students,
+    };
+  } catch (error) {
+    throw new Error(`Error fetching dashboard data: ${error.message}`);
   }
 };
 
@@ -291,4 +309,5 @@ module.exports = {
   deleteStudentById,
   searchStudent,
   getCountByAssignedRole,
+  getDashboardData,
 };

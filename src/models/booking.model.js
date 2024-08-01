@@ -23,6 +23,17 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    couponCode: {
+      type: String,
+      trim: true,
+    },
+    insuranceReturned: {
+      type: Boolean,
+      default: false,
+    },
+    blocked: {
+      type: Boolean,
+    },
     formOfPayment: {
       type: String,
       trim: true,
@@ -56,6 +67,7 @@ const bookingSchema = new mongoose.Schema(
 
     price: { type: Number, required: true },
     startDate: { type: Date, default: Date.now },
+    returnDate: { type: Date },
     endDate: { type: Date, default: Date.now },
     // userId: { type: mongoose.SchemaTypes.ObjectId, ref: 'Users', autopopulate: true },
   },

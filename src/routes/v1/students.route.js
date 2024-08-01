@@ -11,6 +11,8 @@ router.route('/months').get(studentController.getStudentsByMonths);
 router.route('/top-nationalities').get(studentController.getTopStudentsByNationality);
 router.route('/count').get(studentController.getStudentCountByAssignedRole);
 
+router.route('/student-dashboard-data').get(studentController.getDashboardStudentData);
+
 router
   .route('/:studentId')
   .get(studentController.getStudent)

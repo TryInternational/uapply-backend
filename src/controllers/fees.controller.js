@@ -108,34 +108,16 @@ const topCities = catchAsync(async (req, res) => {
 });
 
 const getDashboardData = catchAsync(async (req, res) => {
-  const { feeType, startDate, endDate } = req.query;
+  const { startDate, endDate } = req.query;
 
   // Validate startDate and endDate
   if (!startDate || !endDate) {
     return res.status(400).send('startDate and endDate are required');
   }
 
-  let groupByFields = [];
-
-  if (feeType === 'office-fees') {
-    groupByFields = ['tag.salesPerson'];
-  } else if (feeType === 'ielts-booking') {
-    groupByFields = ['tag.incharge'];
-  } else if (feeType === 'student-visa') {
-    groupByFields = ['tag.incharge', 'tag.checkedBy'];
-  } else if (feeType === 'english-self-funded') {
-    groupByFields = ['tag.accountManager', 'tag.operation', 'tag.salesPerson'];
-  } else {
-    return res.status(400).send('Invalid feeType');
-  }
-
   const data = await feesService.getDashboardData({
-    data: {
-      feeType,
-      groupByFields,
-      startDate,
-      endDate,
-    },
+    startDate,
+    endDate,
   });
   res.send(data);
 });

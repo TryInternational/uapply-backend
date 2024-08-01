@@ -11,14 +11,12 @@ router.route('/unavailable-dates').get(bookingController.getBookedDates);
 
 router.route('/').get(validate(bookingValidation.getBookings), bookingController.getBookings);
 router.route('/months').get(validate(bookingValidation.getBookings), bookingController.getBookingByMonths);
+router.route('/total-amounts').get(bookingController.getTotalAmounts);
 
 router.route('/:type/export').get(validate(bookingValidation.getBookings), bookingController.exportFile);
 router.route('/search/:text').get(bookingController.searchBookings);
 
-router
-  .route('/:bookingId')
-  .patch(bookingController.updateBooking)
-  .delete(validate(bookingValidation.deleteBooking), bookingController.deleteBooking);
+router.route('/:bookingId').patch(bookingController.updateBooking).delete(bookingController.deleteBooking);
 
 router.route('/:bookingId').get(validate(bookingValidation.getBooking), bookingController.getBooking);
 
