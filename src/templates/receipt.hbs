@@ -35,13 +35,17 @@
             <td>Email:</td>
             <td>{{email}}</td>
           </tr>
-          <tr>
-            <td>Price:</td>
+           <tr>
+            <td>Rent:</td>
             <td>{{price}} KWD</td>
           </tr>
           <tr>
+            <td>Insurance:</td>
+            <td>200 KWD</td>
+          </tr>
+          <tr>
             <td>Payment Mode:</td>
-            <td>{{paymentMode}}</td>
+            <td>{{paymentMode}} {{paymentMode == 'Free' ? '(Gift Option Included)' : ''}}</td>
           </tr>
           <tr>
             <td>Package Type:</td>

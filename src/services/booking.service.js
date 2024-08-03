@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 const { Booking } = require('../models');
 const ApiError = require('../utils/ApiError');
-const { firestore } = require('../thirdparty/firebase');
 
 /**
  * Create a booking
@@ -11,8 +10,13 @@ const { firestore } = require('../thirdparty/firebase');
 
 async function checkAvailability(startDate, endDate) {
   const bookings = await Booking.find({
-    $or: [{ startDate: { $lte: endDate }, endDate: { $gte: startDate } }],
-    status: 'booked',
+    $and: [
+      { status: 'booked' },
+      { blocked: false },
+      {
+        $or: [{ startDate: { $lte: endDate }, endDate: { $gte: startDate } }],
+      },
+    ],
   });
 
   return bookings.length === 0;
@@ -28,7 +32,9 @@ const createBooking = async (bookingBody) => {
 };
 
 async function getBookedDates() {
-  const bookings = await Booking.find({ status: 'booked' });
+  const bookings = await Booking.find({
+    $and: [{ status: 'booked' }, { blocked: false }],
+  });
   let bookedDates = [];
   bookings.forEach((booking) => {
     // Assuming you want to include both the start and end date in the range
@@ -117,6 +123,7 @@ const deleteBookingById = async (bookingId) => {
 const searchBooking = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
+
   const bookings = await Booking.paginate(
     { $or: [{ fullname: regex }, { phoneNo: regex }, { email: regex }, { civilId: regex }, { alternatePhoneNo: regex }] },
     options
@@ -125,7 +132,7 @@ const searchBooking = async (text, options) => {
 };
 
 const getTotalAmounts = async () => {
-  const bookings = await Booking.find({ status: 'booked' });
+  const bookings = await Booking.find({ status: 'booked', blocked: false });
 
   const totalAmountsByMonth = {};
   let totalRentingAmount = 0;

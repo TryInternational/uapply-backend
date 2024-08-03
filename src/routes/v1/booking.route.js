@@ -6,7 +6,7 @@ const bookingController = require('../../controllers/booking.controller');
 
 const router = express.Router();
 
-router.post('/', validate(bookingValidation.createBooking), bookingController.createBooking);
+router.post('/', bookingController.createBooking);
 router.route('/unavailable-dates').get(bookingController.getBookedDates);
 
 router.route('/').get(validate(bookingValidation.getBookings), bookingController.getBookings);

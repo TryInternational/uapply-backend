@@ -37,10 +37,6 @@ const updateBooking = {
     .keys({
       fullname: Joi.string().required(),
       phoneNumber: Joi.string().required(),
-      email: Joi.string().required().email(),
-      startDate: Joi.date().required(),
-      endDate: Joi.date().required(),
-      modeOfPayment: Joi.string(),
     })
     .min(1),
 };

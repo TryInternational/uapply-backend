@@ -23,6 +23,9 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    documents: {
+      type: Array,
+    },
     couponCode: {
       type: String,
       trim: true,
@@ -33,6 +36,7 @@ const bookingSchema = new mongoose.Schema(
     },
     blocked: {
       type: Boolean,
+      default: false,
     },
     formOfPayment: {
       type: String,
@@ -53,12 +57,12 @@ const bookingSchema = new mongoose.Schema(
     signature: {
       type: String,
       trim: true,
-      required: true,
+      // required: true,
     },
     civilId: {
       type: String,
       trim: true,
-      required: true,
+      // required: true,
     },
     modeOfPayment: {
       type: String,

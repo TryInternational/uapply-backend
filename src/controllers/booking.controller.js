@@ -36,13 +36,14 @@ const createBooking = catchAsync(async (req, res) => {
     booking.paymentId = payment._id;
 
     await booking.save();
-    if (req.body.formOfPayment === 'Cash') {
+
+    if (req.body.formOfPayment !== 'Payment Link') {
       const context = {
         fullname: booking.fullname,
         email: booking.email,
-        paymentMode: payment.paymentMode,
+        paymentMode: req.body.formOfPayment,
         paymentModeImg: '',
-        price: booking.price,
+        price: booking.price - 200,
         year: moment().year(),
         packageType: booking.packageType,
         startDate: moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
@@ -96,6 +97,7 @@ const createBooking = catchAsync(async (req, res) => {
       res.status(httpStatus.CREATED).send({ paymentUrl: transaction.PaymentURL, orderNo: booking.orderNo });
     }
   } catch (error) {
+    console.log(error);
     res.status(500).send(error);
   }
 });
@@ -103,7 +105,7 @@ const createBooking = catchAsync(async (req, res) => {
 const getBookings = catchAsync(async (req, res) => {
   // await publishMessage();
 
-  const filter = pick(req.query, ['name', 'status', 'startDate', 'endDate', 'packageType']);
+  const filter = pick(req.query, ['name', 'status', 'startDate', 'endDate', 'packageType', 'blocked']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await bookingService.queryBookings(filter, options);
   res.send(result);
@@ -232,9 +234,22 @@ const exportFile = catchAsync(async (req, res) => {
 
 const searchBookings = catchAsync(async (req, res) => {
   // const filter = pick(req.query, ['name', 'status', 'stage']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', { searchString: req.params.text }]);
+  const options = pick(req.query, [
+    'sortBy',
+    'limit',
+    'page',
+    'populate',
+    'status',
+    'blocked',
+    { searchString: req.params.text },
+  ]);
+
+  if (req.query.blocked !== undefined) {
+    options.blocked = req.query.blocked === 'true';
+  }
 
   const results = await bookingService.searchBooking(req.params.text, options);
+
   res.status(200).send(results);
 });
 const getTotalAmounts = catchAsync(async (req, res) => {
