@@ -41,7 +41,7 @@ const createBooking = catchAsync(async (req, res) => {
       const context = {
         fullname: booking.fullname,
         email: booking.email,
-        paymentMode: req.body.formOfPayment,
+        paymentMode: req.body.formOfPayment === 'Free' ? 'Gift Option Included' : req.body.formOfPayment,
         paymentModeImg: '',
         price: booking.price - 200,
         year: moment().year(),
