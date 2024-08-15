@@ -34,6 +34,7 @@ const applicationSchema = new Schema(
     courseLevel: String,
     managedBy: String,
     intakeYear: Number,
+    courseName: String,
     intakeMonth: String,
     documents: { type: mongoose.SchemaTypes.ObjectId, ref: 'Documents' },
     course: { type: mongoose.SchemaTypes.ObjectId, ref: 'Courses', autopopulate: true },

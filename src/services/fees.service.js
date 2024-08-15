@@ -37,13 +37,25 @@ const queryFees = async (filter, options) => {
 const getFeesById = async (id) => {
   return Fees.findById(id);
 };
-
 const getAmounts = async () => {
   const monthlySums = await Fees.aggregate([
     {
       $addFields: {
-        month: { $month: '$createdDate' }, // Extract month from createdDate
-        year: { $year: '$createdDate' }, // Extract year from createdDate
+        // Convert tag.dateSubmitted to a Date object if feeType is 'english-self-funded'
+        month: {
+          $cond: {
+            if: { $eq: ['$feeType', 'english-self-funded'] },
+            then: { $month: { $toDate: '$tag.dateSubmitted' } }, // Convert tag.dateSubmitted to Date and extract month
+            else: { $month: '$createdDate' }, // Use createdDate for others
+          },
+        },
+        year: {
+          $cond: {
+            if: { $eq: ['$feeType', 'english-self-funded'] },
+            then: { $year: { $toDate: '$tag.dateSubmitted' } }, // Convert tag.dateSubmitted to Date and extract year
+            else: { $year: '$createdDate' }, // Use createdDate for others
+          },
+        },
       },
     },
     {
@@ -136,7 +148,19 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
     $match: {
       feeType,
       ...(feeType === 'office-fees' && { 'tag.salesPerson': { $ne: null, $ne: '' } }),
-      createdDate: { $gte: new Date(startDate), $lte: new Date(endDate) }, // Add date range filter
+      ...(feeType === 'english-self-funded'
+        ? {
+            // Convert tag.dateSubmitted to Date and filter within the range
+            $expr: {
+              $and: [
+                { $gte: [{ $toDate: '$tag.dateSubmitted' }, new Date(startDate)] },
+                { $lte: [{ $toDate: '$tag.dateSubmitted' }, new Date(endDate)] },
+              ],
+            },
+          }
+        : {
+            createdDate: { $gte: new Date(startDate), $lte: new Date(endDate) }, // Use createdDate for others
+          }),
     },
   };
 
@@ -296,9 +320,9 @@ const getTopTypes = async ({ startDate, endDate }) => {
         count: -1,
       },
     },
-    {
-      $limit: 3,
-    },
+    // {
+    //   $limit: 3,
+    // },
   ]);
 
   return topTypes;
@@ -337,9 +361,9 @@ const getTopTests = async ({ startDate, endDate }) => {
         count: -1,
       },
     },
-    {
-      $limit: 3,
-    },
+    // {
+    //   $limit: 3,
+    // },
   ]);
 
   return topTests;
@@ -369,7 +393,7 @@ const getTopCities = async ({ startDate, endDate }) => {
       },
     },
     { $sort: { numberOfStudents: -1 } },
-    { $limit: 3 },
+    // { $limit: 10 },
   ]);
 
   return topCities;

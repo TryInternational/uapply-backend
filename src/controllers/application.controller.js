@@ -9,7 +9,7 @@ const axios = require('axios');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
-const { applicationService } = require('../services');
+const { applicationService, studentsService, userService } = require('../services');
 const config = require('../config/config');
 // const { fatoorah } = require('../thirdparty');
 // const { DateToString } = require('../utils/Common');
@@ -109,11 +109,15 @@ const createApplication = catchAsync(async (req, res) => {
     portalApplicationStatus: { applicationPhases: stages },
     startDate,
   });
+  const student = await studentsService.getStudentById(application.studentId);
+
   const slackBody = {
     attachments: [
       {
-        pretext: `*New application for ${application.institute.name}*`,
-        text: `\nApplication Id - ${application.applicationId}.\nCourse Level - ${application.courseLevel}.\nIntake Month - ${application.intakeMonth}.\nIntake Year - ${application.intakeYear}.\n`,
+        pretext: `*An application has been initiated by ${application.managedBy} for ${student.firstName || ''} ${
+          student.mddleName || ''
+        } ${student.lastName || ''}*`,
+        text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
         color: '#fd3e60',
       },
     ],
@@ -155,10 +159,191 @@ const getApplicationByStudentId = catchAsync(async (req, res) => {
   res.send(application);
 });
 
-const updateApplication = catchAsync(async (req, res) => {
-  const application = await applicationService.updateApplicationById(req.params.applicationId, req.body);
+const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
+const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
 
-  res.send(application);
+const sendSlackNotification = async (memberId, slackBody) => {
+  try {
+    const response = await axios.post(
+      SLACK_API_URL,
+      {
+        channel: memberId,
+        ...slackBody,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${SLACK_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    if (response.data.ok) {
+      console.log('Slack notification sent successfully.');
+    } else {
+      console.error('Error sending Slack notification:', response.data.error);
+    }
+  } catch (error) {
+    console.error('Error sending Slack notification:', error.message);
+  }
+};
+
+const updateApplication = catchAsync(async (req, res) => {
+  if (req.body.phaseChanged) {
+    const stages = req.body.portalApplicationStatus.applicationPhases;
+    const currentIndex = stages.findIndex((stage) => stage.phaseState === 'AwaitingResponseStudent');
+
+    const application = await applicationService.findApplicationById(req.params.applicationId);
+    const student = await studentsService.getStudentById(application.studentId);
+    const { assignedTo } = student;
+
+    const filter = pick(req.query, ['name', 'code']);
+    const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
+    const users = await userService.queryUsers(filter, options);
+
+    const updatedUsers = users.results
+      .filter((user) => assignedTo.some((assignment) => assignment.user.equals(user._id)))
+      .map((user) => {
+        const assignedRole = assignedTo.find((assignment) => assignment.user.equals(user._id));
+        if (assignedRole) {
+          return {
+            ...user,
+            assignedAs: assignedRole.role,
+          };
+        }
+        return user;
+      });
+    const usersWithRoles = updatedUsers;
+
+    const simplifiedUsers = usersWithRoles.map((user) => {
+      return {
+        _id: user._doc._id,
+        name: user._doc.name,
+        email: user._doc.email,
+        slackMemberId: user._doc.slackMemberId,
+        avatar: user._doc.avatar,
+        assignedAs: user.assignedAs,
+      };
+    });
+    let slackBody = {};
+
+    // Define conditions based on different application statuses
+    if (stages[currentIndex].status === 'Submitted') {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to Submitted by ${simplifiedUsers.map(
+              (z) => z.name
+            )} and filled out by ${simplifiedUsers.map((z) => z.name)} for ${student.firstName || ''} ${
+              student.middleName || ''
+            } ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    } else if (stages[currentIndex].status === 'Conditional offer') {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to Conditional offer by ${simplifiedUsers.map((z) => z.name)} for ${
+              student.firstName || ''
+            } ${student.middleName || ''} ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    } else if (stages[currentIndex].status === 'Unconditional offer') {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to UnConditional offer by ${simplifiedUsers.map((z) => z.name)} for ${
+              student.firstName || ''
+            } ${student.middleName || ''} ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    } else if (stages[currentIndex].status === 'Confirmation') {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to Confirmation by ${simplifiedUsers.map((z) => z.name)} for ${
+              student.firstName || ''
+            } ${student.middleName || ''} ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    } else if (stages[currentIndex].status === 'FG/BS') {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to FG/BS by ${simplifiedUsers.map((z) => z.name)} for ${
+              student.firstName || ''
+            } ${student.middleName || ''} ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    } else if (stages[currentIndex].status === 'CAS Received') {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to CAS Received by ${simplifiedUsers.map((z) => z.name)} for ${
+              student.firstName || ''
+            } ${student.middleName || ''} ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    } else {
+      slackBody = {
+        attachments: [
+          {
+            pretext: `*An application has been moved to Done by ${simplifiedUsers.map((z) => z.name)} for ${
+              student.firstName || ''
+            } ${student.middleName || ''} ${student.lastName || ''}*`,
+            text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+            color: '#fd3e60',
+          },
+        ],
+      };
+    }
+
+    // Send the Slack notification if in production environment
+    if (process.env.APP_ENV === 'production') {
+      await Promise.all(simplifiedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
+    }
+
+    if (currentIndex !== -1) {
+      // Update 'AwaitingResponseStudent' to 'Completed' and set isCurrent to false
+      stages[currentIndex].phaseState = 'Completed';
+      stages[currentIndex].isCurrent = false;
+      stages[currentIndex].isPrevious = true;
+
+      // Check if the next stage exists and update its phaseState to 'AwaitingResponseStudent' with isCurrent set to true
+      if (currentIndex < stages.length - 1) {
+        stages[currentIndex + 1].phaseState = 'AwaitingResponseStudent';
+        stages[currentIndex + 1].isCurrent = true;
+      }
+      if (currentIndex >= 0) {
+        stages[currentIndex - 1].isPrevious = false;
+      }
+    }
+    const app = await applicationService.updateApplicationById(req.params.applicationId, {
+      portalApplicationStatus: { applicationPhases: stages },
+    });
+    res.send(app);
+    return;
+  }
+
+  const app = await applicationService.updateApplicationById(req.params.applicationId, req.body);
+  res.send(app);
 });
 
 const deleteApplication = catchAsync(async (req, res) => {
