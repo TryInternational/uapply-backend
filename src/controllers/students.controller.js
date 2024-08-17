@@ -11,20 +11,14 @@ const createStudent = catchAsync(async (req, res) => {
   const today = new Date();
   const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-  // Filter to count students created today
   const todayFilter = {
     createdAt: {
       $gte: startOfToday,
       $lt: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
     },
   };
-  let studentCount;
-  await Students.countDocuments(todayFilter, (countErr, count) => {
-    if (countErr) {
-      return;
-    }
-    studentCount = count;
-  });
+
+  const studentCount = await Students.countDocuments(todayFilter);
   const body = { ...req.body, refrenceNo: `${moment(new Date()).format('DDMMYY')}-000${studentCount + 1}` };
   const student = await studentsService.createStudent(body);
   res.status(httpStatus.CREATED).send(student);

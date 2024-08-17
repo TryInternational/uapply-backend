@@ -36,13 +36,14 @@ const applicationSchema = new Schema(
     intakeYear: Number,
     courseName: String,
     intakeMonth: String,
+    finalChoice: Boolean,
     documents: { type: mongoose.SchemaTypes.ObjectId, ref: 'Documents' },
     course: { type: mongoose.SchemaTypes.ObjectId, ref: 'Courses', autopopulate: true },
     institute: Object,
     status: {
       type: [String],
-      enum: ['Status 1', 'Status 2', 'Status 3', 'Status 4', 'Status 5'],
-      default: 'Status 1',
+      enum: ['Offer on KCO', 'KCO Approved', 'Status 3'],
+      default: 'Status 3',
     },
   },
   {

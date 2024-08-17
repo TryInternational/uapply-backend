@@ -1,3 +1,4 @@
+/* eslint-disable object-shorthand */
 /* eslint-disable no-plusplus */
 const { Application } = require('../models');
 
@@ -11,12 +12,44 @@ async function findApplicationById(id) {
   }
 }
 
-async function getApplications() {
+async function getApplications(data) {
   try {
-    const applications = await Application.find({});
+    // Initialize the query object
+    let query = {};
+
+    // Ensure status values are trimmed and properly formatted
+    if (data.status && data.status.length > 0) {
+      const statuses = data.status.map((status) => status.trim());
+      const statusPatterns = statuses.map((status) => new RegExp(`^${status}$`, 'i'));
+
+      // Add the status filter to the query if statuses are provided
+      query['portalApplicationStatus.applicationPhases'] = {
+        $elemMatch: {
+          status: { $in: statusPatterns },
+          isPrevious: true,
+        },
+      };
+    }
+
+    // Add intakeMonth and intakeYear filters if they are provided
+    if (data.intakeMonth) {
+      query.intakeMonth = data.intakeMonth;
+    }
+    if (data.intakeYear) {
+      query.intakeYear = data.intakeYear;
+    }
+
+    // Add status filter if confrimStatus is provided
+    if (data.confrimStatus && data.confrimStatus.length > 0) {
+      query.status = { $in: data.confrimStatus };
+    }
+
+    // Find applications based on the dynamically constructed query
+    const applications = await Application.find(query);
+
     return applications;
   } catch (error) {
-    throw new Error(`Failed to find applications`);
+    throw new Error(`Failed to find applications: ${error.message}`);
   }
 }
 

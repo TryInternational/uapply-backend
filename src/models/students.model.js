@@ -194,6 +194,9 @@ const studentsSchema = mongoose.Schema(
     countriesTraveled: {
       type: Array,
     },
+    onHold: {
+      type: Boolean,
+    },
     email: {
       type: String,
       trim: true,

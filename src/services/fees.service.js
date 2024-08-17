@@ -41,17 +41,21 @@ const getAmounts = async () => {
   const monthlySums = await Fees.aggregate([
     {
       $addFields: {
-        // Convert tag.dateSubmitted to a Date object if feeType is 'english-self-funded'
+        // Convert tag.dateSubmitted to a Date object for specific feeTypes
         month: {
           $cond: {
-            if: { $eq: ['$feeType', 'english-self-funded'] },
+            if: {
+              $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']],
+            },
             then: { $month: { $toDate: '$tag.dateSubmitted' } }, // Convert tag.dateSubmitted to Date and extract month
             else: { $month: '$createdDate' }, // Use createdDate for others
           },
         },
         year: {
           $cond: {
-            if: { $eq: ['$feeType', 'english-self-funded'] },
+            if: {
+              $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']],
+            },
             then: { $year: { $toDate: '$tag.dateSubmitted' } }, // Convert tag.dateSubmitted to Date and extract year
             else: { $year: '$createdDate' }, // Use createdDate for others
           },
@@ -148,7 +152,7 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
     $match: {
       feeType,
       ...(feeType === 'office-fees' && { 'tag.salesPerson': { $ne: null, $ne: '' } }),
-      ...(feeType === 'english-self-funded'
+      ...(feeType === 'english-self-funded' || feeType === 'ielts-booking' || feeType === 'student-visa'
         ? {
             // Convert tag.dateSubmitted to Date and filter within the range
             $expr: {
@@ -249,13 +253,19 @@ const getTopSchools = async ({ startDate, endDate }) => {
   const query = { 'tag.school': { $exists: true, $ne: null } };
 
   if (startDate && endDate) {
-    query.createdDate = {
+    query['tag.dateSubmitted'] = {
       $gte: new Date(startDate),
       $lte: new Date(endDate),
     };
   }
 
   const topSchools = await Fees.aggregate([
+    // Convert dateSubmitted from string to Date
+    {
+      $addFields: {
+        'tag.dateSubmitted': { $toDate: '$tag.dateSubmitted' },
+      },
+    },
     { $match: query }, // Apply the query filter
     {
       $group: {
@@ -279,9 +289,9 @@ const getTopSchools = async ({ startDate, endDate }) => {
         logo_url: 1,
       },
     },
-    {
-      $limit: 3,
-    },
+    // {
+    //   $limit: 3,
+    // },
   ]);
 
   return topSchools;
@@ -329,27 +339,25 @@ const getTopTypes = async ({ startDate, endDate }) => {
 };
 
 const getTopTests = async ({ startDate, endDate }) => {
-  let query = {};
+  let query = { feeType: 'ielts-booking' };
 
   if (startDate && endDate) {
-    query = {
-      ...query,
-      createdDate: {
-        $gte: new Date(startDate),
-        $lte: new Date(endDate),
-      },
+    query['tag.dateSubmitted'] = {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
     };
   }
 
   const topTests = await Fees.aggregate([
+    // Convert dateSubmitted from string to Date
     {
-      $match: { ...query, feeType: 'ielts-booking' },
+      $addFields: {
+        'tag.dateSubmitted': { $toDate: '$tag.dateSubmitted' },
+      },
     },
-    { $match: { feeType: { $ne: '' } } }, // Add this line to filter out empty school IDs
-
-    {
-      $unwind: '$tag.typeOfTest',
-    },
+    { $match: query }, // Apply the query filter
+    { $match: { feeType: { $ne: '' } } }, // Filter out empty school IDs
+    { $unwind: '$tag.typeOfTest' }, // Unwind the typeOfTest array
     {
       $group: {
         _id: '$tag.typeOfTest',
@@ -368,14 +376,12 @@ const getTopTests = async ({ startDate, endDate }) => {
 
   return topTests;
 };
-
 const getTopCities = async ({ startDate, endDate }) => {
   let query = {};
 
   if (startDate && endDate) {
     query = {
-      ...query,
-      createdDate: {
+      'tag.dateSubmitted': {
         $gte: new Date(startDate),
         $lte: new Date(endDate),
       },
@@ -383,17 +389,23 @@ const getTopCities = async ({ startDate, endDate }) => {
   }
 
   const topCities = await Fees.aggregate([
-    { $match: { ...query, 'tag.location': { $exists: true, $ne: null } } },
-    { $match: { 'tag.location': { $ne: '' } } }, // Add this line to filter out empty city IDs
+    // Convert dateSubmitted from string to Date
     {
-      $group: {
-        _id: '$tag.location', // Adjust the field name as per your schema
-        numberOfStudents: { $sum: 1 },
-        totalWeeks: { $sum: '$tag.noOfWeeks' }, // Adjust the field name if it's different
+      $addFields: {
+        'tag.dateSubmitted': { $toDate: '$tag.dateSubmitted' },
       },
     },
-    { $sort: { numberOfStudents: -1 } },
-    // { $limit: 10 },
+    { $match: { ...query, 'tag.location': { $exists: true, $ne: null } } },
+    { $match: { 'tag.location': { $ne: '' } } }, // Filter out empty city IDs
+    {
+      $group: {
+        _id: '$tag.location', // Group by location
+        numberOfStudents: { $sum: 1 }, // Count number of students
+        totalWeeks: { $sum: '$tag.noOfWeeks' }, // Sum the number of weeks
+      },
+    },
+    { $sort: { numberOfStudents: -1 } }, // Sort by the number of students
+    // { $limit: 10 }, // Uncomment if you want to limit the results to top 10
   ]);
 
   return topCities;
