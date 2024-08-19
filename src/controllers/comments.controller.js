@@ -12,14 +12,13 @@ const catchAsync = require('../utils/catchAsync');
 const { commentsService, userService } = require('../services');
 const { getStudentById } = require('../services/students.service');
 
-const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
+const tagUserInComment = catchAsync(async (res, commentId, userIdToTag) => {
   try {
     const comment = await commentsService.getCommentById(commentId);
 
     if (!comment) {
       return res.status(404).json({ success: false, message: 'Comment not found' });
     }
-
     const userToTag = await userService.getUserById(userIdToTag);
 
     if (!userToTag) {
@@ -32,9 +31,9 @@ const tagUserInComment = catchAsync(async (commentId, userIdToTag, res) => {
 
     comment.taggedUsers.push(userToTag._id);
     await comment.save();
-    return res.status(200).json({ success: true, message: 'User tagged successfully' });
+    return res.status(200);
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Internal Server Error' });
+    console.log(error);
   }
 });
 
@@ -52,10 +51,12 @@ const createComment = catchAsync(async (req, res) => {
           channel: memberId,
           blocks: [
             {
-              type: 'header',
+              type: 'section',
               text: {
                 type: 'plain_text',
-                text: `${comment.createdBy} tagged on ${student.firstName}`,
+                text: `${comment.createdBy} tagged you on ${student.firstName ? student.firstName : ''} ${
+                  student.middleName ? student.middleName : ''
+                } ${student.lastName ? student.lastName : ''}`,
               },
               block_id: 'header',
             },
@@ -98,12 +99,11 @@ const createComment = catchAsync(async (req, res) => {
   };
   if (req.body.mentions.length) {
     req.body.mentions.map(async (z) => {
-      tagUserInComment(commentData._id, z.id);
+      tagUserInComment(res, commentData._id, z.id);
 
-      // if (process.env.APP_ENV === 'production') {
-      // await axios(Tryslack);
-      sendSlackNotification(z.memberId, commentData.content, commentData, stdnt);
-      // }
+      if (process.env.APP_ENV === 'production') {
+        sendSlackNotification(z.memberId, commentData.content, commentData, stdnt);
+      }
     });
   }
   res.status(httpStatus.CREATED).send(commentData);

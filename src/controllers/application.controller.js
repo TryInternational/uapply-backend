@@ -436,12 +436,12 @@ async function getEnrolledUniversities(req, res) {
 }
 
 const getApplicationsCountByMonth = catchAsync(async (req, res) => {
-  const data = await applicationService.getApplicationsCountByMonth();
+  const data = await applicationService.getApplicationsCountByMonth(req.query.intakeMonth, req.query.intakeYear);
   res.status(200).json(data);
 });
 
 const getEnrolledApplicationsCountByMonth = catchAsync(async (req, res) => {
-  const data = await applicationService.getEnrolledApplicationsCountByMonth();
+  const data = await applicationService.getEnrolledApplicationsCountByMonth(req.query.intakeMonth, req.query.intakeYear);
   res.status(200).json(data);
 });
 

@@ -207,26 +207,34 @@ const getTopEnrolledUniversities = async (startDate, endDate) => {
   }
 };
 
-const getEnrolledApplicationsCountByMonth = async () => {
+const getEnrolledApplicationsCountByMonth = async (intakeYear, intakeMonth) => {
   const currentYear = new Date().getFullYear();
+
+  const matchStage = {
+    'portalApplicationStatus.applicationPhases.closedStatus': true,
+    createdAt: {
+      $gte: new Date(currentYear, 0, 1),
+      $lte: new Date(currentYear, 11, 31),
+    },
+  };
+
+  // If intakeYear and intakeMonth are provided, add them to the match criteria
+  if (intakeYear && intakeMonth) {
+    matchStage.intakeYear = intakeYear;
+    matchStage.intakeMonth = intakeMonth;
+  }
 
   const monthlySums = await Application.aggregate([
     {
       $unwind: '$portalApplicationStatus.applicationPhases',
     },
     {
-      $match: {
-        'portalApplicationStatus.applicationPhases.closedStatus': true,
-        createdAt: {
-          $gte: new Date(currentYear, 0, 1),
-          $lte: new Date(currentYear, 11, 31),
-        },
-      },
+      $match: matchStage,
     },
     {
       $addFields: {
-        month: { $month: '$createdAt' }, // Extract month from createdDate
-        year: { $year: '$createdAt' }, // Extract year from createdDate
+        month: { $month: '$createdAt' },
+        year: { $year: '$createdAt' },
       },
     },
     {
@@ -267,18 +275,25 @@ const getEnrolledApplicationsCountByMonth = async () => {
   return result;
 };
 
-const getApplicationsCountByMonth = async () => {
+const getApplicationsCountByMonth = async (intakeMonth, intakeYear) => {
   const currentYear = new Date().getFullYear();
 
-  const monthlySums = await Application.aggregate([
-    {
-      $match: {
-        createdAt: {
-          $gte: new Date(currentYear, 0, 1),
-          $lte: new Date(currentYear, 11, 31),
-        },
+  const matchStage = {
+    $match: {
+      createdAt: {
+        $gte: new Date(currentYear, 0, 1),
+        $lte: new Date(currentYear, 11, 31),
       },
     },
+  };
+
+  if (intakeMonth && intakeYear) {
+    matchStage.$match.intakeMonth = intakeMonth;
+    matchStage.$match.intakeYear = parseInt(intakeYear, 10);
+  }
+
+  const monthlySums = await Application.aggregate([
+    matchStage,
     {
       $addFields: {
         month: { $month: '$createdAt' }, // Extract month from createdDate
