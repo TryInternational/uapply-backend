@@ -163,8 +163,10 @@ const getTopUniversitiesByApplications = async (startDate, endDate, limit = 10) 
 };
 const getTopEnrolledUniversities = async (startDate, endDate) => {
   const matchStage = {
-    'portalApplicationStatus.applicationPhases.closedStatus': true,
-    'portalApplicationStatus.applicationPhases.isPrevious': true,
+    $and: [
+      { 'portalApplicationStatus.applicationPhases.isPrevious': true },
+      { 'portalApplicationStatus.applicationPhases.status': 'Done' },
+    ],
   };
 
   if (startDate && endDate) {
@@ -207,11 +209,14 @@ const getTopEnrolledUniversities = async (startDate, endDate) => {
   }
 };
 
-const getEnrolledApplicationsCountByMonth = async (intakeYear, intakeMonth) => {
+const getEnrolledApplicationsCountByMonth = async (intakeMonth, intakeYear) => {
   const currentYear = new Date().getFullYear();
 
   const matchStage = {
-    'portalApplicationStatus.applicationPhases.closedStatus': true,
+    $and: [
+      { 'portalApplicationStatus.applicationPhases.isPrevious': true },
+      { 'portalApplicationStatus.applicationPhases.status': 'Done' },
+    ],
     createdAt: {
       $gte: new Date(currentYear, 0, 1),
       $lte: new Date(currentYear, 11, 31),
@@ -220,7 +225,7 @@ const getEnrolledApplicationsCountByMonth = async (intakeYear, intakeMonth) => {
 
   // If intakeYear and intakeMonth are provided, add them to the match criteria
   if (intakeYear && intakeMonth) {
-    matchStage.intakeYear = intakeYear;
+    matchStage.intakeYear = parseInt(intakeYear, 10);
     matchStage.intakeMonth = intakeMonth;
   }
 

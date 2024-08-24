@@ -153,12 +153,51 @@ const getTopNationalities = async ({ startDate, endDate }) => {
     {
       $sort: { count: -1 },
     },
-    {
-      $limit: 10, // Change this value to get more or fewer top nationalities
-    },
   ]);
 
   return topNationalities;
+};
+
+const getTopAppliedIntake = async ({ startDate, endDate }) => {
+  let query = {};
+
+  if (startDate && endDate) {
+    query = {
+      ...query,
+      createdAt: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      },
+    };
+  }
+
+  const topIntakes = await Students.aggregate([
+    {
+      $match: { ...query, stage: 'Applied' },
+    },
+
+    {
+      $group: {
+        _id: {
+          year: '$preference.intakeYear',
+          month: '$preference.intakeMonth',
+        },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $match: {
+        '_id.year': { $ne: null },
+        '_id.month': { $ne: null },
+        count: { $gt: 0 },
+      },
+    },
+    {
+      $sort: { count: -1 },
+    },
+  ]);
+
+  return topIntakes;
 };
 
 const getCountByAssignedRole = async ({ startDate, endDate }) => {
@@ -283,16 +322,18 @@ const getCountByAssignedRole = async ({ startDate, endDate }) => {
 
 const getDashboardData = async ({ startDate, endDate, filterOptions }) => {
   try {
-    const [topNationalities, studentCountByRole, students] = await Promise.all([
+    const [topNationalities, studentCountByRole, students, topIntake] = await Promise.all([
       getTopNationalities({ startDate, endDate }),
       getCountByAssignedRole({ startDate, endDate }),
       queryStudents(filterOptions.filter, filterOptions.options),
+      getTopAppliedIntake({ startDate, endDate }),
     ]);
 
     return {
       topNationalities,
       studentCountByRole,
       students,
+      topIntake,
     };
   } catch (error) {
     throw new Error(`Error fetching dashboard data: ${error.message}`);
@@ -310,4 +351,5 @@ module.exports = {
   searchStudent,
   getCountByAssignedRole,
   getDashboardData,
+  getTopAppliedIntake,
 };

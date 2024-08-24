@@ -118,7 +118,7 @@ const studentsSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
-    motherTongue: {
+    importantComment: {
       type: String,
     },
     cgpa: {

@@ -190,7 +190,9 @@ const updateApplication = catchAsync(async (req, res) => {
   try {
     if (req.body.phaseChanged) {
       const stages = req.body.portalApplicationStatus.applicationPhases;
-      const currentIndex = stages.findIndex((stage) => stage.phaseState === 'AwaitingResponseStudent');
+      const currentIndex = stages.findIndex(
+        (stage) => stage.phaseState === 'AwaitingResponseStudent' || stage.status === 'Done'
+      );
 
       const application = await applicationService.findApplicationById(req.params.applicationId);
       const student = await studentsService.getStudentById(application.studentId);
