@@ -118,6 +118,19 @@ const studentsSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    lostReason: {
+      type: String,
+      trim: true,
+    },
+    lost: {
+      type: Boolean,
+    },
+    ambassadorName: {
+      type: String,
+    },
+    ambassador: {
+      type: [{ type: mongoose.SchemaTypes.ObjectId, ref: ' Ambassadors' }],
+    },
     importantComment: {
       type: String,
     },

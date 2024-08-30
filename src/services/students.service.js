@@ -173,9 +173,11 @@ const getTopAppliedIntake = async ({ startDate, endDate }) => {
 
   const topIntakes = await Students.aggregate([
     {
-      $match: { ...query, stage: 'Applied' },
+      $match: {
+        ...query,
+        applications: { $exists: true, $not: { $size: 0 } }, // Ensure applications array is not empty
+      },
     },
-
     {
       $group: {
         _id: {
@@ -215,7 +217,7 @@ const getCountByAssignedRole = async ({ startDate, endDate }) => {
     }
     const appliedPipeline = [
       {
-        $match: { ...query, stage: 'Applied' },
+        $match: { ...query, applications: { $exists: true, $not: { $size: 0 } } },
       },
       {
         $unwind: '$assignedTo',

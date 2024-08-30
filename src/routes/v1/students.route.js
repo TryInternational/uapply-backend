@@ -17,7 +17,7 @@ router
   .route('/:studentId')
   .get(studentController.getStudent)
   .patch(studentController.updateStudent)
-  .delete(auth('manageUsers'), studentController.deleteStudent);
+  .delete(studentController.deleteStudent);
 router.route('/search/:text').get(studentController.searchStudents);
 
 module.exports = router;

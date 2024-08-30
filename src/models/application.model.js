@@ -40,6 +40,7 @@ const applicationSchema = new Schema(
     documents: { type: mongoose.SchemaTypes.ObjectId, ref: 'Documents' },
     course: { type: mongoose.SchemaTypes.ObjectId, ref: 'Courses', autopopulate: true },
     institute: Object,
+    rejected: Boolean,
     status: {
       type: [String],
       enum: ['Offer on KCO', 'KCO Approved', 'Status 3'],

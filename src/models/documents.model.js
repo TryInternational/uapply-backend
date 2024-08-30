@@ -12,8 +12,8 @@ const documentsSchema = mongoose.Schema(
     },
     docState: {
       type: String,
-      enum: ['Upload', 'Not Upoaded'],
-      default: 'Not Upoaded',
+      enum: ['Upload', 'Not Uploaded'],
+      default: 'Not Uploaded',
     },
     studentId: {
       type: mongoose.SchemaTypes.ObjectId,

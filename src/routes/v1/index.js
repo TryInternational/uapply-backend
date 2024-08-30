@@ -27,6 +27,7 @@ const paymentRoute = require('./payment.route');
 const appliedStudentRoute = require('./appliedStudent.route');
 const quotesRoute = require('./quotes.route');
 const englishLangSchoolRoute = require('./englishLangSchool.route');
+const ambassadorsRoute = require('./ambassadors.route');
 
 const router = express.Router();
 
@@ -38,6 +39,10 @@ const defaultRoutes = [
   {
     path: '/englishLangSchool',
     route: englishLangSchoolRoute,
+  },
+  {
+    path: '/ambassadors',
+    route: ambassadorsRoute,
   },
   {
     path: '/exibitionStudent',
