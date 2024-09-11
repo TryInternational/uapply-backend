@@ -22,13 +22,13 @@ const Prefrences = mongoose.Schema({
   intakeMonth: {
     type: String,
   },
-  budget: {
+  sponsoredBy: {
     type: String,
   },
   budgetRange: {
     type: String,
   },
-  currency: {
+  kcoStatus: {
     type: String,
   },
   fundingSource: { type: String },
@@ -132,6 +132,9 @@ const studentsSchema = mongoose.Schema(
       type: [{ type: mongoose.SchemaTypes.ObjectId, ref: ' Ambassadors' }],
     },
     importantComment: {
+      type: String,
+    },
+    address: {
       type: String,
     },
     cgpa: {

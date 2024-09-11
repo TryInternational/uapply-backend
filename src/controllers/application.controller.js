@@ -219,7 +219,6 @@ const updateApplication = catchAsync(async (req, res) => {
       const filledBy = users.results.filter((user) => application.managedBy == user._id)
         ? users.results.filter((user) => application.managedBy == user._id)
         : [{ name: '' }];
-      console.log(filledBy);
 
       const simplifiedUsers = usersWithRoles.map((user) => {
         return {

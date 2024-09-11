@@ -32,6 +32,7 @@ const applicationSchema = new Schema(
       ],
     },
     courseLevel: String,
+    provider: String,
     managedBy: String,
     intakeYear: Number,
     courseName: String,

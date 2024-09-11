@@ -8,6 +8,9 @@ const coursedetailsSchema = mongoose.Schema(
 
       trim: true,
     },
+    provider: {
+      type: String,
+    },
     name: {
       type: String,
       trim: true,

@@ -9,6 +9,7 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Documents>}
  */
 const createFees = async (body) => {
+  console.log(body);
   const fees = await Fees.create(body);
   return fees;
 };
