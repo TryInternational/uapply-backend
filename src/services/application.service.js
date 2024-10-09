@@ -343,6 +343,26 @@ const getApplicationsCountByMonth = async (intakeMonth, intakeYear) => {
   return result;
 };
 
+async function getDashboardData({ startDate, endDate, intakeMonth, intakeYear }) {
+  try {
+    // Fetch the data from individual functions
+    const topEnrolledUniversities = await getTopEnrolledUniversities(startDate, endDate);
+    const applicationsCountByMonth = await getApplicationsCountByMonth(intakeMonth, intakeYear);
+    const enrolledApplicationsCountByMonth = await getEnrolledApplicationsCountByMonth(intakeMonth, intakeYear);
+    const topUniversitiesByApplications = await getTopUniversitiesByApplications(startDate, endDate);
+
+    // Combine the results into a single object
+    return {
+      topEnrolledUniversities,
+      applicationsCountByMonth,
+      enrolledApplicationsCountByMonth,
+      topUniversitiesByApplications,
+    };
+  } catch (error) {
+    throw new Error(`Failed to retrieve dashboard data: ${error.message}`);
+  }
+}
+
 // Export the functions for use in other files
 module.exports = {
   findApplicationById,
@@ -356,4 +376,5 @@ module.exports = {
   getTopEnrolledUniversities,
   getApplicationsCountByMonth,
   getEnrolledApplicationsCountByMonth,
+  getDashboardData,
 };

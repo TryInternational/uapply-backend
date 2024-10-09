@@ -193,7 +193,6 @@ const updateApplication = catchAsync(async (req, res) => {
       const currentIndex = stages.findIndex(
         (stage) => stage.phaseState === 'AwaitingResponseStudent' || stage.status === 'Done'
       );
-
       const application = await applicationService.findApplicationById(req.params.applicationId);
       const student = await studentsService.getStudentById(application.studentId);
       const { assignedTo } = student;
@@ -250,7 +249,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -268,7 +269,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -286,7 +289,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -304,7 +309,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -322,7 +329,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -340,7 +349,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -358,7 +369,9 @@ const updateApplication = catchAsync(async (req, res) => {
                 application.intakeMonth
               } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
-              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${filledBy ? filledBy[0].name : ''}`,
+              }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
+                filledBy.length ? filledBy[0].name : ''
+              }`,
               color: '#fd3e60',
             },
           ],
@@ -391,7 +404,6 @@ const updateApplication = catchAsync(async (req, res) => {
       res.send(app);
       return;
     }
-
     const app = await applicationService.updateApplicationById(req.params.applicationId, req.body);
     res.send(app);
   } catch (error) {
@@ -447,6 +459,24 @@ const getEnrolledApplicationsCountByMonth = catchAsync(async (req, res) => {
   res.status(200).json(data);
 });
 
+const getDashboardData = catchAsync(async (req, res) => {
+  try {
+    // Replace with your actual aggregation logic
+    const applicationsData = await applicationService.getDashboardData(
+      req.query.intakeMonth,
+      req.query.intakeYear,
+      req.query.startDate,
+      req.query.endDate
+    );
+
+    res.status(200).json({
+      applicationsData,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = {
   createApplication,
   getApplications,
@@ -459,5 +489,6 @@ module.exports = {
   getEnrolledUniversities,
   getApplicationsCountByMonth,
   getEnrolledApplicationsCountByMonth,
+  getDashboardData,
   //   searchApplications,
 };

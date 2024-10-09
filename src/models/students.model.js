@@ -152,7 +152,6 @@ const studentsSchema = mongoose.Schema(
     source: {
       type: String,
       enum: ['ulearn', 'uapply'],
-      default: 'uapply',
     },
     applications: {
       type: Array,

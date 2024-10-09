@@ -44,7 +44,7 @@ const deleteFees = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 const searchFees = catchAsync(async (req, res) => {
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified', { searchString: req.params.text }]);
+  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'feeType', { searchString: req.params.text }]);
   const results = await feesService.searchFees(req.params.text, options);
   res.status(200).send(results);
 });

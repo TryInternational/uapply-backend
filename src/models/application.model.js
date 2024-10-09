@@ -9,6 +9,10 @@ const applicationSchema = new Schema(
     campus: {
       name: String,
     },
+    agent: {
+      type: String,
+      enum: ['Ulearn', 'SIUK', 'GESCO'],
+    },
     applicationId: String,
     studentId: { type: mongoose.SchemaTypes.ObjectId, ref: 'Students' },
     portalApplicationStatus: {

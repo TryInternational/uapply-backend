@@ -13,6 +13,7 @@ router.route('/').get(applicationsController.getApplications);
 router.route('/application-counts').get(applicationsController.getApplicationsByPhase);
 router.route('/application-counts-university').get(applicationsController.getTopUniversities);
 router.route('/application-enrolled-university').get(applicationsController.getEnrolledUniversities);
+router.route('/application-dashboard-data').get(applicationsController.getDashboardData);
 
 router.route('/count-by-month').get(applicationsController.getApplicationsCountByMonth);
 

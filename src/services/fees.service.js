@@ -131,8 +131,8 @@ const updateFeesById = async (id, updateBody) => {
 const searchFees = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
-  const courses = await Fees.paginate({ 'tag.fullName': regex }, options);
-  return courses;
+  const fees = await Fees.paginate({ $and: [{ feeType: options.feeType, $or: [{ 'tag.fullName': regex }] }] }, options);
+  return fees;
 };
 /**
  * Delete role by id
