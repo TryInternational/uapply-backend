@@ -91,11 +91,11 @@ const studentsSchema = mongoose.Schema(
     },
     backlogs: { type: Boolean },
     educationGaps: { type: Boolean },
-    ieltsScore: {
+    testScore: {
       type: String,
       trim: true,
     },
-    ieltsTaken: {
+    testTaken: {
       type: String,
       enum: ['Yes', 'No', 'Waiting for results'],
     },
