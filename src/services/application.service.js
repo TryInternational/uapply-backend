@@ -39,9 +39,14 @@ async function getApplications(data) {
       query.intakeYear = data.intakeYear;
     }
 
-    // Add status filter if confrimStatus is provided
+    // Add status filter if confirmStatus is provided
     if (data.confrimStatus && data.confrimStatus.length > 0) {
       query.status = { $in: data.confrimStatus };
+    }
+
+    // Add course level filter if courseLevel is provided
+    if (data.courseLevel) {
+      query.courseLevel = data.courseLevel;
     }
 
     // Find applications based on the dynamically constructed query

@@ -131,7 +131,27 @@ const updateFeesById = async (id, updateBody) => {
 const searchFees = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
-  const fees = await Fees.paginate({ $and: [{ feeType: options.feeType, $or: [{ 'tag.fullName': regex }] }] }, options);
+  const fees = await Fees.paginate(
+    {
+      $and: [
+        {
+          feeType: options.feeType,
+          $or: [
+            { 'tag.fullName': regex },
+            { 'tag.phoneNo': regex },
+            { 'tag.typeOfTest': regex },
+            { 'tag.passportNo': regex },
+            { 'tag.vfsRefNo': regex },
+            { 'tag.email': regex },
+            { 'tag.vfsEmail': regex },
+            { 'tag.location': regex },
+            { 'tag.school': regex },
+          ],
+        },
+      ],
+    },
+    options
+  );
   return fees;
 };
 /**

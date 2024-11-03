@@ -203,15 +203,16 @@ const updateApplication = catchAsync(async (req, res) => {
 
       const updatedUsers = users.results
         .filter((user) => assignedTo.some((assignment) => assignment.user.equals(user._id)))
-        .map((user) => {
-          const assignedRole = assignedTo.find((assignment) => assignment.user.equals(user._id));
-          if (assignedRole) {
-            return {
-              ...user,
-              assignedAs: assignedRole.role,
-            };
-          }
-          return user;
+        .flatMap((user) => {
+          const assignedRoles = assignedTo
+            .filter((assignment) => assignment.user.equals(user._id))
+            .map((assignment) => assignment.role);
+
+          // Return a separate user object for each assigned role
+          return assignedRoles.map((role) => ({
+            ...user._doc, // Destructure the actual document to avoid the internal fields
+            assignedAs: role,
+          }));
         });
 
       const usersWithRoles = updatedUsers;
@@ -221,11 +222,11 @@ const updateApplication = catchAsync(async (req, res) => {
 
       const simplifiedUsers = usersWithRoles.map((user) => {
         return {
-          _id: user._doc._id,
-          name: user._doc.name,
-          email: user._doc.email,
-          slackMemberId: user._doc.slackMemberId,
-          avatar: user._doc.avatar,
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          slackMemberId: user.slackMemberId,
+          avatar: user.avatar,
           assignedAs: user.assignedAs,
         };
       });
