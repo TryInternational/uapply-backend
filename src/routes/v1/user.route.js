@@ -7,6 +7,7 @@ const userController = require('../../controllers/user.controller');
 const router = express.Router();
 
 router.route('/').post(userController.createUser).get(validate(userValidation.getUsers), userController.getUsers);
+router.route('/users').get(userController.getUsersWithoutPagination);
 
 router
   .route('/:userId')

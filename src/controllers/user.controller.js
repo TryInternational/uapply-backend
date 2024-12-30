@@ -17,6 +17,11 @@ const getUsers = catchAsync(async (req, res) => {
   res.send(result);
 });
 
+const getUsersWithoutPagination = catchAsync(async (req, res) => {
+  const result = await userService.getUsers();
+  res.send(result);
+});
+
 const getUser = catchAsync(async (req, res) => {
   const user = await userService.getUserById(req.params.userId);
   if (!user) {
@@ -41,4 +46,5 @@ module.exports = {
   getUser,
   updateUser,
   deleteUser,
+  getUsersWithoutPagination,
 };

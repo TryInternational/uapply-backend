@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const { toJSON, paginate } = require('./plugins');
+const User = require('./user.model');
 
 const Prefrences = mongoose.Schema({
   studyDestinations: {
@@ -80,7 +81,7 @@ const studentsSchema = mongoose.Schema(
     },
     assignedTo: [
       {
-        user: { type: mongoose.SchemaTypes.ObjectId, ref: 'User', autopopulate: true },
+        user: { type: mongoose.SchemaTypes.ObjectId, ref: User },
         role: { type: String, required: true },
       },
     ],

@@ -39,7 +39,8 @@ async function getBookedDates() {
   bookings.forEach((booking) => {
     // Assuming you want to include both the start and end date in the range
     const currentDate = new Date(booking.startDate);
-    while (currentDate <= booking.endDate) {
+
+    while (currentDate.toISOString().split('T')[0] <= new Date(booking.endDate).toISOString().split('T')[0]) {
       bookedDates.push(currentDate.toISOString().split('T')[0]); // Format to 'YYYY-MM-DD'
       currentDate.setDate(currentDate.getDate() + 1);
     }

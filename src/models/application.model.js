@@ -13,6 +13,11 @@ const applicationSchema = new Schema(
       type: String,
       enum: ['Ulearn', 'SIUK', 'GESCO'],
     },
+    comments: { type: String },
+    bachelorYear: {
+      type: String,
+      enum: ['First Year', 'Second Year', ''],
+    },
     applicationId: String,
     studentId: { type: mongoose.SchemaTypes.ObjectId, ref: 'Students' },
     portalApplicationStatus: {

@@ -360,10 +360,10 @@ const getTopTypes = async ({ startDate, endDate }) => {
 };
 
 const getTopTests = async ({ startDate, endDate }) => {
-  let query = { feeType: 'ielts-booking' };
+  const query = { feeType: 'ielts-booking' };
 
   if (startDate && endDate) {
-    query['tag.dateSubmitted'] = {
+    query['tag.dateOfTest'] = {
       $gte: new Date(startDate),
       $lte: new Date(endDate),
     };
@@ -373,7 +373,7 @@ const getTopTests = async ({ startDate, endDate }) => {
     // Convert dateSubmitted from string to Date
     {
       $addFields: {
-        'tag.dateSubmitted': { $toDate: '$tag.dateSubmitted' },
+        'tag.dateOfTest': { $toDate: '$tag.dateOfTest' },
       },
     },
     { $match: query }, // Apply the query filter
@@ -395,6 +395,7 @@ const getTopTests = async ({ startDate, endDate }) => {
     // },
   ]);
 
+  console.log(topTests, 'rtyuååå');
   return topTests;
 };
 const getTopCities = async ({ startDate, endDate }) => {

@@ -3,19 +3,45 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable array-callback-return */
 const httpStatus = require('http-status');
-const { pick } = require('lodash');
 const axios = require('axios');
 
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const { applicationService, studentsService, userService } = require('../services');
-const config = require('../config/config');
+
 // const { fatoorah } = require('../thirdparty');
 // const { DateToString } = require('../utils/Common');
 // const { PubSub } = require('@google-cloud/pubsub');
 // const pubSubClient = new   PubSub();
 
+const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
+const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
+
+const sendSlackNotification = async (memberId, slackBody) => {
+  try {
+    const response = await axios.post(
+      SLACK_API_URL,
+      {
+        channel: memberId,
+        ...slackBody,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${SLACK_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    if (response.data.ok) {
+      console.log('Slack notification sent successfully.');
+    } else {
+      console.error('Error sending Slack notification:', response.data.error);
+    }
+  } catch (error) {
+    console.error('Error sending Slack notification:', error.message);
+  }
+};
 const createApplication = catchAsync(async (req, res) => {
   const startDate = new Date();
   const stages = [
@@ -100,9 +126,6 @@ const createApplication = catchAsync(async (req, res) => {
       offerStatus: null,
     },
   ];
-  //   const applicationPhases = [];
-
-  //   stages.map((a) => applicationPhases.push({ status: a,phaseState: }));
 
   const application = await applicationService.createApplication({
     ...req.body,
@@ -110,27 +133,53 @@ const createApplication = catchAsync(async (req, res) => {
     startDate,
   });
   const student = await studentsService.getStudentById(application.studentId);
+  const { assignedTo } = student;
+
+  const users = await userService.getUsers();
+
+  const updatedUsers = users
+    .filter((user) => assignedTo.some((assignment) => assignment.user.equals(user._id)))
+    .flatMap((user) => {
+      const assignedRoles = assignedTo
+        .filter((assignment) => assignment.user.equals(user._id))
+        .map((assignment) => assignment.role);
+
+      return assignedRoles.map((role) => ({
+        ...user._doc, // Destructure the actual document to avoid internal fields
+        assignedAs: role,
+      }));
+    });
+
+  const simplifiedUsers = updatedUsers.map((user) => {
+    return {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      slackMemberId: user.slackMemberId,
+      avatar: user.avatar,
+      assignedAs: user.assignedAs,
+    };
+  });
+
+  // Deduplicate users by slackMemberId
+  const deduplicatedUsers = Array.from(new Map(simplifiedUsers.map((user) => [user.slackMemberId, user])).values());
 
   const slackBody = {
     attachments: [
       {
         pretext: `*An application has been initiated by ${req.body.editor.name} for ${student.firstName || ''} ${
-          student.mddleName || ''
+          student.middleName || ''
         } ${student.lastName || ''}*`,
         text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
-        color: '#fd3e60',
+        color: '#FFFF00',
       },
     ],
   };
-  const Ulearnslack = {
-    method: 'post',
-    url: `https://hooks.slack.com/services/${config.slack.slackApplicationAlert}`,
-    data: JSON.stringify(slackBody),
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-  };
-  if (process.env.APP_ENV === 'production') {
-    await axios(Ulearnslack);
-  }
+
+  // Send notifications to deduplicated users
+  // if (process.env.APP_ENV === 'production') {
+  await Promise.all(deduplicatedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
+  // }
   res.status(httpStatus.CREATED).send(application);
 });
 
@@ -158,34 +207,6 @@ const getApplicationByStudentId = catchAsync(async (req, res) => {
   res.send(application);
 });
 
-const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
-const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
-
-const sendSlackNotification = async (memberId, slackBody) => {
-  try {
-    const response = await axios.post(
-      SLACK_API_URL,
-      {
-        channel: memberId,
-        ...slackBody,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${SLACK_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    if (response.data.ok) {
-      console.log('Slack notification sent successfully.');
-    } else {
-      console.error('Error sending Slack notification:', response.data.error);
-    }
-  } catch (error) {
-    console.error('Error sending Slack notification:', error.message);
-  }
-};
-
 const updateApplication = catchAsync(async (req, res) => {
   try {
     if (req.body.phaseChanged) {
@@ -197,11 +218,9 @@ const updateApplication = catchAsync(async (req, res) => {
       const student = await studentsService.getStudentById(application.studentId);
       const { assignedTo } = student;
 
-      const filter = pick(req.query, ['name', 'code']);
-      const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
-      const users = await userService.queryUsers(filter, options);
+      const users = await userService.getUsers();
 
-      const updatedUsers = users.results
+      const updatedUsers = users
         .filter((user) => assignedTo.some((assignment) => assignment.user.equals(user._id)))
         .flatMap((user) => {
           const assignedRoles = assignedTo
@@ -216,8 +235,8 @@ const updateApplication = catchAsync(async (req, res) => {
         });
 
       const usersWithRoles = updatedUsers;
-      const filledBy = users.results.filter((user) => application.managedBy == user._id)
-        ? users.results.filter((user) => application.managedBy == user._id)
+      const filledBy = users.filter((user) => application.managedBy == user._id)
+        ? users.filter((user) => application.managedBy == user._id)
         : [{ name: '' }];
 
       const simplifiedUsers = usersWithRoles.map((user) => {
@@ -253,7 +272,7 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#00FF00',
             },
           ],
         };
@@ -273,7 +292,7 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#FFFF00',
             },
           ],
         };
@@ -293,7 +312,7 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#FFFF00',
             },
           ],
         };
@@ -313,7 +332,7 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#FFFF00',
             },
           ],
         };
@@ -333,7 +352,7 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#FFFF00',
             },
           ],
         };
@@ -353,7 +372,7 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#FFFF00',
             },
           ],
         };
@@ -373,16 +392,16 @@ const updateApplication = catchAsync(async (req, res) => {
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
               }`,
-              color: '#fd3e60',
+              color: '#FFFF00',
             },
           ],
         };
       }
 
       // Send the Slack notification if in production environment
-      if (process.env.APP_ENV === 'production') {
-        await Promise.all(simplifiedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
-      }
+      // if (process.env.APP_ENV === 'production') {
+      await Promise.all(simplifiedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
+      // }
 
       if (currentIndex !== -1) {
         // Update 'AwaitingResponseStudent' to 'Completed' and set isCurrent to false

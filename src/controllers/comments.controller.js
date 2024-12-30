@@ -49,35 +49,13 @@ const createComment = catchAsync(async (req, res) => {
         SLACK_API_URL,
         {
           channel: memberId,
-          blocks: [
+          attachments: [
             {
-              type: 'section',
-              text: {
-                type: 'plain_text',
-                text: `${comment.createdBy} tagged you on ${student.firstName ? student.firstName : ''} ${
-                  student.middleName ? student.middleName : ''
-                } ${student.lastName ? student.lastName : ''}`,
-              },
-              block_id: 'header',
-            },
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text,
-              },
-
-              block_id: 'section',
-              fields: [
-                {
-                  type: 'mrkdwn',
-                  text: `*Phone No:*\n${student.phoneNo}`,
-                },
-                {
-                  type: 'mrkdwn',
-                  text: `*Email:*\n${student.email}`,
-                },
-              ],
+              pretext: `*${comment.createdBy} tagged you on ${student.firstName ? student.firstName : ''} ${
+                student.middleName ? student.middleName : ''
+              } ${student.lastName ? student.lastName : ''}*`,
+              text,
+              color: '#8000FF',
             },
           ],
         },
@@ -101,9 +79,9 @@ const createComment = catchAsync(async (req, res) => {
     req.body.mentions.map(async (z) => {
       tagUserInComment(res, commentData._id, z.id);
 
-      if (process.env.APP_ENV === 'production') {
-        sendSlackNotification(z.memberId, commentData.content, commentData, stdnt);
-      }
+      // if (process.env.APP_ENV === 'production') {
+      sendSlackNotification(z.memberId, commentData.content, commentData, stdnt);
+      // }
     });
   }
   res.status(httpStatus.CREATED).send(commentData);

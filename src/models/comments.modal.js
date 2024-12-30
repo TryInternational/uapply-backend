@@ -7,6 +7,7 @@ const commentSchema = new mongoose.Schema(
     content: { type: String, required: true },
     dateTime: { type: Date, default: Date.now },
     createdBy: { type: String, required: true },
+    reactions: { type: String },
     taggedUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,
