@@ -9,7 +9,6 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Documents>}
  */
 const createFees = async (body) => {
-  console.log(body);
   const fees = await Fees.create(body);
   return fees;
 };
@@ -38,6 +37,7 @@ const queryFees = async (filter, options) => {
 const getFeesById = async (id) => {
   return Fees.findById(id);
 };
+
 const getAmounts = async () => {
   const monthlySums = await Fees.aggregate([
     {
@@ -173,9 +173,8 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
     $match: {
       feeType,
       ...(feeType === 'office-fees' && { 'tag.salesPerson': { $ne: null, $ne: '' } }),
-      ...(feeType === 'english-self-funded' || feeType === 'ielts-booking' || feeType === 'student-visa'
+      ...(feeType === 'english-self-funded' || feeType === 'student-visa'
         ? {
-            // Convert tag.dateSubmitted to Date and filter within the range
             $expr: {
               $and: [
                 { $gte: [{ $toDate: '$tag.dateSubmitted' }, new Date(startDate)] },
@@ -183,8 +182,17 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
               ],
             },
           }
+        : feeType === 'ielts-booking'
+        ? {
+            $expr: {
+              $and: [
+                { $gte: [{ $toDate: '$tag.dateOfTest' }, new Date(startDate)] },
+                { $lte: [{ $toDate: '$tag.dateOfTest' }, new Date(endDate)] },
+              ],
+            },
+          }
         : {
-            createdDate: { $gte: new Date(startDate), $lte: new Date(endDate) }, // Use createdDate for others
+            createdDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
           }),
     },
   };
@@ -368,7 +376,7 @@ const getTopTests = async ({ startDate, endDate }) => {
       $lte: new Date(endDate),
     };
   }
-
+  console.log(query, 'query');
   const topTests = await Fees.aggregate([
     // Convert dateSubmitted from string to Date
     {
@@ -377,7 +385,7 @@ const getTopTests = async ({ startDate, endDate }) => {
       },
     },
     { $match: query }, // Apply the query filter
-    { $match: { feeType: { $ne: '' } } }, // Filter out empty school IDs
+    // { $match: { feeType: { $ne: '' } } }, // Filter out empty school IDs
     { $unwind: '$tag.typeOfTest' }, // Unwind the typeOfTest array
     {
       $group: {
@@ -394,8 +402,7 @@ const getTopTests = async ({ startDate, endDate }) => {
     //   $limit: 3,
     // },
   ]);
-
-  console.log(topTests, 'rtyuååå');
+  console.log(topTests, 'fdsfads');
   return topTests;
 };
 const getTopCities = async ({ startDate, endDate }) => {

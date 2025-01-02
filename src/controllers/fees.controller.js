@@ -17,6 +17,7 @@ const getFees = catchAsync(async (req, res) => {
     filter['tag.salesPerson'] = { $in: salesPersons };
   }
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
+
   const result = await feesService.queryFees(filter, options);
   res.send(result);
 });
