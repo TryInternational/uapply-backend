@@ -12,7 +12,6 @@ const leadsSchema = mongoose.Schema(
     },
     residence: {
       type: Object,
-      required: true,
       trim: true,
     },
     city: {
@@ -33,15 +32,12 @@ const leadsSchema = mongoose.Schema(
     },
     phoneNo: {
       type: String,
-      required: true,
     },
     applications: {
       type: Array,
-      required: true,
     },
     qualified: {
       type: Boolean,
-      required: true,
       default: false,
     },
     selectedUniversity: {

@@ -15,7 +15,7 @@ router.route('/leads-dashboard-data').get(leadController.getDashboardData);
 
 router
   .route('/:leadId')
-  .get(auth('getUsers'), leadController.getLead)
+  .get(leadController.getLead)
   .patch(leadController.updateLead)
   .delete(auth('manageUsers'), leadController.deleteLead);
 router.route('/search/:text').get(leadController.searchLeads);

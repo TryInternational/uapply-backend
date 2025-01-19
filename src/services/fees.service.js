@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /* eslint-disable no-restricted-syntax */
 const httpStatus = require('http-status');
 const { Fees } = require('../models');
@@ -376,7 +377,7 @@ const getTopTests = async ({ startDate, endDate }) => {
       $lte: new Date(endDate),
     };
   }
-  console.log(query, 'query');
+
   const topTests = await Fees.aggregate([
     // Convert dateSubmitted from string to Date
     {
@@ -402,7 +403,7 @@ const getTopTests = async ({ startDate, endDate }) => {
     //   $limit: 3,
     // },
   ]);
-  console.log(topTests, 'fdsfads');
+
   return topTests;
 };
 const getTopCities = async ({ startDate, endDate }) => {
