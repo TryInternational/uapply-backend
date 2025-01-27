@@ -29,11 +29,13 @@ const createLead = catchAsync(async (req, res) => {
     attachments: [
       {
         pretext: `*New qualified user ${lead.fullname}*`,
-        text: `\nEmail - ${lead.email}.\nPhone No - ${lead.phoneNo}.\nNationality - ${
+        text: `\nEmail - ${lead.email || 'N/A'}.\nPhone No - ${lead.phoneNo}.\nNationality - ${
           lead.nationality.english_name
-        }.\nResidence - ${lead.residence.english_name}.\nDegree- ${lead.degree.en_name}.\nMajor - ${lead.subjects}.\nGPA - ${
-          lead.cgpa
-        }.\nCountry travelled - ${lead.countriesTraveled.toString() || 'N/A'}.\nIncome above $30,000 - ${
+        }.\nResidence - ${lead.residence.english_name || 'N/A'}.\nDegree- ${lead.degree.en_name}.\nMajor - ${
+          lead.subjects || 'N/A'
+        }.\nGPA - ${lead.cgpa || 'N/A'}.\nCountry travelled - ${
+          lead.countriesTraveled.toString() || 'N/A'
+        }.\nIncome above $30,000 - ${
           lead.parentsIncome === 'true' ? 'Yes' : lead.parentsIncome === 'false' ? 'No' : 'N/A'
         }.\nSchool study in - ${lead.previousSchool || 'N/A'}`,
         color: '#fd3e60',

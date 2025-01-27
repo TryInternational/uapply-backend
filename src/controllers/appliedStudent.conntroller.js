@@ -34,6 +34,11 @@ const getAmountPermonth = catchAsync(async (req, res) => {
   res.send(data);
 });
 
+const getAppliedPerCounselor = catchAsync(async (req, res) => {
+  const data = await appliedStudentService.getUserNumberSums(req.query.startDate, req.query.endDate);
+  res.send(data);
+});
+
 const deleteAppliedStudent = catchAsync(async (req, res) => {
   await appliedStudentService.deleteFeesById(req.params.id);
   res.status(httpStatus.NO_CONTENT).send();
@@ -46,4 +51,5 @@ module.exports = {
   deleteAppliedStudent,
   createAppliedStudent,
   getAmountPermonth,
+  getAppliedPerCounselor,
 };

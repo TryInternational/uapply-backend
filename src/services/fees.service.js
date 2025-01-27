@@ -441,12 +441,47 @@ const getTopCities = async ({ startDate, endDate }) => {
   return topCities;
 };
 
+const getEnglishSelfFundedData = async ({ startDate, endDate }) => {
+  const result = await Fees.aggregate([
+    {
+      $match: {
+        feeType: 'english-self-funded',
+        $expr: {
+          $and: [
+            { $gte: [{ $toDate: '$tag.dateSubmitted' }, new Date(startDate)] },
+            { $lte: [{ $toDate: '$tag.dateSubmitted' }, new Date(endDate)] },
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: null, // Group all data into one bucket
+        totalBookings: { $sum: 1 }, // Count of documents
+        totalWeeks: { $sum: { $toInt: '$tag.noOfWeeks' } }, // Sum of weeks
+        totalAmount: { $sum: { $toDouble: '$tag.amount' } }, // Sum of amount
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalBookings: 1,
+        totalWeeks: 1,
+        totalAmount: 1,
+      },
+    },
+  ]);
+
+  // If no results, return defaults
+  return result.length > 0 ? result[0] : { totalBookings: 0, totalWeeks: 0, totalAmount: 0 };
+};
+
 const getDashboardData = async (data) => {
   const amounts = await getAmounts();
 
   const topSchools = await getTopSchools({ startDate: data.startDate, endDate: data.endDate });
   const topTypes = await getTopTypes({ startDate: data.startDate, endDate: data.endDate });
-
+  const selfFunded = await getEnglishSelfFundedData({ startDate: data.startDate, endDate: data.endDate });
   const topTests = await getTopTests({ startDate: data.startDate, endDate: data.endDate });
   const topCities = await getTopCities({ startDate: data.startDate, endDate: data.endDate });
 
@@ -456,6 +491,7 @@ const getDashboardData = async (data) => {
     topTypes,
     topTests,
     topCities,
+    selfFunded,
   };
 };
 
@@ -473,4 +509,5 @@ module.exports = {
   getTopTypes,
   getTopTests,
   getDashboardData,
+  getEnglishSelfFundedData,
 };

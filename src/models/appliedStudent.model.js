@@ -7,6 +7,7 @@ const appliedStudentSchema = new mongoose.Schema(
     createdDate: {
       type: Date,
     },
+    counsellor: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
     userId: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
   },
   {

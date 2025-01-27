@@ -116,6 +116,53 @@ const getCommentByStudentId = catchAsync(async (req, res) => {
 const updateComment = catchAsync(async (req, res) => {
   const comment = await commentsService.updateCommentById(req.params.commentId, req.body);
 
+  if (req.body.reactedBy && req.body.reactions) {
+    const commentBody = await commentsService.getCommentById(req.params.commentId);
+
+    const user = await userService.getUserById(commentBody.userId);
+
+    const sendSlackNotification = async (memberId, slackBody) => {
+      const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
+      const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
+
+      try {
+        const response = await axios.post(
+          SLACK_API_URL,
+          {
+            channel: memberId,
+            ...slackBody,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${SLACK_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        if (response.data.ok) {
+          console.log('Slack notification sent successfully.');
+        } else {
+          console.error('Error sending Slack notification:', response.data.error);
+        }
+      } catch (error) {
+        console.error('Error sending Slack notification:', error.message);
+      }
+    };
+    const slackBody = {
+      attachments: [
+        {
+          pretext: `${req.body.reactedBy} reacted "${req.body.reactions}" to your comment \n"${commentBody.content || ''}"`,
+          text: ``,
+          color: '#FFFF00',
+        },
+      ],
+    };
+
+    // Send notifications to deduplicated users
+    // if (process.env.APP_ENV === 'production') {
+    await sendSlackNotification(user.slackMemberId, slackBody);
+  }
+
   res.send(comment);
 });
 

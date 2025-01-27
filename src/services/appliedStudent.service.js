@@ -94,6 +94,38 @@ const deleteAppliedStudentById = async (id) => {
   return student;
 };
 
+const getUserNumberSums = async (startDate, endDate) => {
+  if (!startDate || !endDate) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Start date and end date are required');
+  }
+
+  const sums = await AppliedStudent.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      },
+    },
+    {
+      $group: {
+        _id: '$counsellor',
+        totalNumber: { $sum: { $toInt: '$number' } }, // Convert number to integer and sum
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        counsellor: '$_id',
+        totalNumber: 1,
+      },
+    },
+  ]);
+
+  return sums;
+};
+
 module.exports = {
   createAppliedStudent,
   queryAppliedStudents,
@@ -101,4 +133,5 @@ module.exports = {
   updateAppliedStudentById,
   deleteAppliedStudentById,
   getAmounts,
+  getUserNumberSums,
 };

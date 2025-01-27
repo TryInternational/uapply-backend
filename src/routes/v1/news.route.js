@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.route('/').post(newsController.createNews);
 router.route('/').get(newsController.getNews);
+router.post('/generate-qr', newsController.generateQRCode);
+router.put('/update', newsController.updateQRCodeUrl);
 
 router
   .route('/:id')
