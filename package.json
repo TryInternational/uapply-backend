@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "pm2 start ecosystem.config.json --no-daemon",
-    "dev": "cross-env NODE_ENV=production APP_ENV=production nodemon src/index.js",
+    "dev": "cross-env NODE_ENV=production APP_ENV=staging nodemon src/index.js",
     "test": "jest -i --colors --verbose --detectOpenHandles",
     "test:watch": "jest -i --watchAll",
     "coverage": "jest -i --coverage",

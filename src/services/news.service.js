@@ -59,7 +59,14 @@ const deleteNewsById = async (id) => {
 
 const generateQRCode = async (url) => {
   try {
-    const qrCodeImage = await QRCode.toDataURL(url); // Generates QR code as base64
+    const qrCodeImage = await QRCode.toDataURL(url, {
+      color: {
+        dark: '#299cf7', // Dark color (foreground)
+        light: '#fff', // Light color (background)
+      },
+      errorCorrectionLevel: 'H', // High error correction for better readability
+      width: 600, // Set the width to a larger value for a bigger QR code
+    }); // Generates QR code as base64
     return qrCodeImage;
   } catch (error) {
     throw new Error('Failed to generate QR code');

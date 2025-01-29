@@ -102,7 +102,7 @@ const getUserNumberSums = async (startDate, endDate) => {
   const sums = await AppliedStudent.aggregate([
     {
       $match: {
-        createdAt: {
+        createdDate: {
           $gte: new Date(startDate),
           $lte: new Date(endDate),
         },
