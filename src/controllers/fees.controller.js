@@ -1,5 +1,7 @@
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
+const moment = require('moment');
+
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { feesService } = require('../services');
@@ -109,8 +111,8 @@ const topCities = catchAsync(async (req, res) => {
 });
 
 const getDashboardData = catchAsync(async (req, res) => {
-  const { startDate, endDate } = req.query;
-
+  const startDate = moment(req.query.startDate).utc().startOf('day').subtract(3, 'hours').toDate();
+  const endDate = moment(req.query.endDate).utc().endOf('day').subtract(3, 'hours').toDate();
   // Validate startDate and endDate
   if (!startDate || !endDate) {
     return res.status(400).send('startDate and endDate are required');

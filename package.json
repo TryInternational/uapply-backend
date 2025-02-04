@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "pm2 start ecosystem.config.json --no-daemon",
-    "dev": "cross-env NODE_ENV=production APP_ENV=staging nodemon src/index.js",
+    "dev": "cross-env NODE_ENV=production APP_ENV=production nodemon src/index.js",
     "test": "jest -i --colors --verbose --detectOpenHandles",
     "test:watch": "jest -i --watchAll",
     "coverage": "jest -i --coverage",
@@ -69,7 +69,7 @@
     "joi": "^17.3.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.21",
-    "moment": "^2.24.0",
+    "luxon": "^3.5.0",
     "moment-timezone": "^0.5.39",
     "mongodb": "^6.8.0",
     "mongoose": "^5.7.7",

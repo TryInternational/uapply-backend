@@ -4,12 +4,12 @@ const mongoose = require('mongoose');
 
 const moment = require('moment');
 const axios = require('axios');
+const { text } = require('express');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { studentsService, userService } = require('../services');
 const { Students } = require('../models');
-const { text } = require('express');
 
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
 const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
@@ -217,8 +217,8 @@ const getStudentsByMonths = catchAsync(async (req, res) => {
       $and: [
         {
           createdAt: {
-            $gte: req.query.startDate,
-            $lte: req.query.endDate,
+            $gte: moment(req.query.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
+            $lte: moment(req.query.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
           },
         },
         { qualified: req.query.qualified },
@@ -263,8 +263,8 @@ const getDashboardStudentData = catchAsync(async (req, res) => {
   };
 
   const dashboardData = await studentsService.getDashboardData({
-    startDate: req.query.startDate,
-    endDate: req.query.endDate,
+    startDate: moment(req.query.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
+    endDate: moment(req.query.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
     filterOptions,
   });
   res.send(dashboardData);

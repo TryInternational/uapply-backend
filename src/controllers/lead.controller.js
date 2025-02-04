@@ -1,6 +1,8 @@
 /* eslint-disable no-nested-ternary */
 const httpStatus = require('http-status');
 const { default: axios } = require('axios');
+const moment = require('moment');
+
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -73,9 +75,17 @@ const getLeads = catchAsync(async (req, res) => {
     'residence',
     'status',
     'source',
+    'createdAt',
   ]);
   if (req.query.destination && req.query.destination.en_name) {
     filter = { 'destination.en_name': req.query.destination.en_name };
+  }
+
+  if (req.query.startDate && req.query.endDate) {
+    filter.createdAt = {
+      $gte: moment(req.query.startDate).utc().startOf('day').subtract(3, 'hours').toDate(), // Start date filter
+      $lte: moment(req.query.endDate).utc().endOf('day').subtract(3, 'hours').toDate(), // End date filter
+    };
   }
 
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
@@ -159,12 +169,13 @@ const searchLeads = catchAsync(async (req, res) => {
 const getLeadsCountByDates = async (filter) => {
   const formattedFilter = {
     ...filter,
-    startDate: filter.startDate,
-    endDate: filter.endDate,
+    startDate: moment(filter.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
+    endDate: moment(filter.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
   };
+
   const count = await leadsService.countLeads({
     $and: [
-      { createdAt: { $gte: new Date(formattedFilter.startDate), $lte: new Date(formattedFilter.endDate) } },
+      { createdAt: { $gte: formattedFilter.startDate, $lte: formattedFilter.endDate } },
       { qualified: formattedFilter.qualified },
       ...(formattedFilter.status ? [{ status: formattedFilter.status }] : []),
       ...(formattedFilter.source ? [{ source: formattedFilter.source }] : []),

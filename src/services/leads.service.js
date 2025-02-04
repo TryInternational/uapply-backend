@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const moment = require('moment');
 const { Leads } = require('../models');
 const ApiError = require('../utils/ApiError');
 
@@ -23,6 +24,7 @@ const createLead = async (studentBody) => {
  * @param {number} [options.page] - Current page (default = 1)
  * @returns {Promise<QueryResult>}
  */
+
 const queryLeads = async (filter, options) => {
   const lead = await Leads.paginate(filter, options);
   return lead;
@@ -38,10 +40,10 @@ const getTop5ByContries = async (data) => {
     matchQuery.status = data.status;
   }
 
-  if (data.startDate) {
+  if (data.startDate && moment(data.startDate).isValid()) {
     matchQuery.createdAt = {
-      $gte: new Date(data.startDate), // Filter by start date
-      $lte: new Date(data.endDate), // Filter by end date
+      $gte: moment(data.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
+      $lte: moment(data.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
     };
   }
 
@@ -74,13 +76,12 @@ const getTop5ByDegree = async (data) => {
     qualified: true,
   };
 
-  if (data.startDate) {
+  if (data.startDate && moment(data.startDate).isValid()) {
     matchQuery.createdAt = {
-      $gte: new Date(data.startDate), // Filter by start date
-      $lte: new Date(data.endDate), // Filter by end date
+      $gte: moment(data.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
+      $lte: moment(data.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
     };
   }
-
   const aggregationPipeline = [
     {
       $match: matchQuery,
