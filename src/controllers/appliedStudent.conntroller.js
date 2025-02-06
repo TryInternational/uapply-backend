@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
+const moment = require('moment');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { appliedStudentService } = require('../services');
@@ -35,7 +36,10 @@ const getAmountPermonth = catchAsync(async (req, res) => {
 });
 
 const getAppliedPerCounselor = catchAsync(async (req, res) => {
-  const data = await appliedStudentService.getUserNumberSums(req.query.startDate, req.query.endDate);
+  const data = await appliedStudentService.getUserNumberSums(
+    moment.utc(req.query.startDate).startOf('day').subtract(3, 'hours').toDate(),
+    moment.utc(req.query.endDate).endOf('day').subtract(3, 'hours').toDate()
+  );
   res.send(data);
 });
 

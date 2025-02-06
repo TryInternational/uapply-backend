@@ -42,8 +42,8 @@ const getTop5ByContries = async (data) => {
 
   if (data.startDate && moment(data.startDate).isValid()) {
     matchQuery.createdAt = {
-      $gte: moment(data.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
-      $lte: moment(data.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
+      $gte: moment.utc(data.startDate).startOf('day').subtract(3, 'hours').toDate(),
+      $lte: moment.utc(data.endDate).endOf('day').subtract(3, 'hours').toDate(),
     };
   }
 
@@ -78,8 +78,8 @@ const getTop5ByDegree = async (data) => {
 
   if (data.startDate && moment(data.startDate).isValid()) {
     matchQuery.createdAt = {
-      $gte: moment(data.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
-      $lte: moment(data.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
+      $gte: moment.utc(data.startDate).startOf('day').subtract(3, 'hours').toDate(),
+      $lte: moment.utc(data.endDate).endOf('day').subtract(3, 'hours').toDate(),
     };
   }
   const aggregationPipeline = [
@@ -96,7 +96,7 @@ const getTop5ByDegree = async (data) => {
       $sort: { count: -1 }, // Sort by count in descending order
     },
     {
-      $limit: 5, // Limit to top 5 countries
+      $limit: 10, // Limit to top 5 countries
     },
   ];
 

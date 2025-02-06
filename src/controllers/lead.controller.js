@@ -81,10 +81,11 @@ const getLeads = catchAsync(async (req, res) => {
     filter = { 'destination.en_name': req.query.destination.en_name };
   }
 
+  console.log('fytgjhklj', req.query.startDate);
   if (req.query.startDate && req.query.endDate) {
     filter.createdAt = {
-      $gte: moment(req.query.startDate).utc().startOf('day').subtract(3, 'hours').toDate(), // Start date filter
-      $lte: moment(req.query.endDate).utc().endOf('day').subtract(3, 'hours').toDate(), // End date filter
+      $gte: moment.utc(req.query.startDate).startOf('day').subtract(3, 'hours').toDate(), // Start date filter
+      $lte: moment.utc(req.query.endDate).endOf('day').subtract(3, 'hours').toDate(), // End date filter
     };
   }
 
@@ -169,8 +170,8 @@ const searchLeads = catchAsync(async (req, res) => {
 const getLeadsCountByDates = async (filter) => {
   const formattedFilter = {
     ...filter,
-    startDate: moment(filter.startDate).utc().startOf('day').subtract(3, 'hours').toDate(),
-    endDate: moment(filter.endDate).utc().endOf('day').subtract(3, 'hours').toDate(),
+    startDate: moment.utc(filter.startDate).startOf('day').subtract(3, 'hours').toDate(),
+    endDate: moment.utc(filter.endDate).endOf('day').subtract(3, 'hours').toDate(),
   };
 
   const count = await leadsService.countLeads({

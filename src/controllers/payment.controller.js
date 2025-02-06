@@ -1,7 +1,6 @@
 const httpStatus = require('http-status');
 // const moment = require('moment');
 const moment = require('moment-timezone');
-const axios = require('axios');
 
 // const { pick } = require('lodash');
 const ApiError = require('../utils/ApiError');

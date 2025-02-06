@@ -45,6 +45,7 @@ const createComment = catchAsync(async (req, res) => {
   const stdnt = await getStudentById(commentData.studentId);
   const sendSlackNotification = async (memberId, text, comment, student) => {
     try {
+      console.log(req.body.mentions, 'rdfhtgjkkjhg');
       const response = await axios.post(
         SLACK_API_URL,
         {
@@ -66,6 +67,7 @@ const createComment = catchAsync(async (req, res) => {
           },
         }
       );
+
       if (response.data.ok) {
         console.log('Slack notification sent successfully.');
       } else {
@@ -124,7 +126,6 @@ const updateComment = catchAsync(async (req, res) => {
     const sendSlackNotification = async (memberId, slackBody) => {
       const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
       const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
-
       try {
         const response = await axios.post(
           SLACK_API_URL,
@@ -139,6 +140,8 @@ const updateComment = catchAsync(async (req, res) => {
             },
           }
         );
+        console.log(response);
+
         if (response.data.ok) {
           console.log('Slack notification sent successfully.');
         } else {
