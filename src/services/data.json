@@ -1,0 +1,3170 @@
+{
+  "error": false,
+  "message": "Records Found Successfully",
+  "data": {
+    "is_filter_applied": 0,
+    "isCityPage": true,
+    "city": "Ranchi",
+    "city_id": 392,
+    "selected_city": 392,
+    "crumb": [
+      { "text": "Home", "href": "/" },
+      { "text": "Cakes", "href": "/cakes" },
+      { "text": "Cake Delivery In Ranchi", "href": "na" }
+    ],
+    "page_name": "Cake Delivery In Ranchi",
+    "page_type": "listing_page",
+    "explore_more_position": 4,
+    "explore_more": [
+      { "name": "Photo Cakes", "url": "/photo-cakes" },
+      { "name": "Theme Cakes", "url": "/designer-cakes" },
+      { "name": "Jar Cakes", "url": "/jar-cakes" },
+      { "name": "Cup Cakes", "url": "/cup-cakes" }
+    ],
+    "results": [
+      {
+        "node_id": 956,
+        "sku": "cake0005choc",
+        "product_type": "regular_cake",
+        "title": "Rich Chocolate Truffle Cake",
+        "long_title": "Rich Chocolate Truffle Cake",
+        "url": "/p/cake/choco-truffle-cake0005choc",
+        "sell_price": 549,
+        "list_price": 599,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 6266,
+        "ingredient": "Satiate your taste a buds right away! Enrich with chocolate sponge & truffle cream. Topped with white chocolate garnish and cherry, it is sure to leave you omnomnom!",
+        "mini_desc": "Dive into the richness of the Chocolate Truffle Cake, where each velvety layer of chocolate delivers an...",
+        "full_desc": "Satiate your taste a buds right away! Enrich with chocolate sponge & truffle cream. Topped with white chocolate garnish and cherry, it is sure to leave you omnomnom!",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake0005choc-a.jpg",
+            "alt": "Classic Chocolate Truffle Cake",
+            "title": "Classic Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake0005choc-BBB_1.jpg",
+            "alt": "Top View of Round Chocolate Truffle Cake",
+            "title": "Top View of Round Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake0005choc-CCC_2.jpg",
+            "alt": "Front View of Round Chocolate Truffle Cake",
+            "title": "Front View of Round Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake0005choc-DDD_1.jpg",
+            "alt": "Round Chocolate Truffle Same Day Cake Delivery ",
+            "title": "Round Chocolate Truffle Same Day Cake Delivery "
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake0005choc-EEE_1.jpg",
+            "alt": "Round Chocolate Truffle Same Day Cake Delivery ",
+            "title": "Round Chocolate Truffle Same Day Cake Delivery "
+          }
+        ],
+        "image": [
+          {
+            "src": "choco-truffle-cake0005choc-a.jpg",
+            "alt": "Classic Chocolate Truffle Cake",
+            "title": "Classic Chocolate Truffle Cake"
+          },
+          {
+            "src": "choco-truffle-cake0005choc-BBB_1.jpg",
+            "alt": "Top View of Round Chocolate Truffle Cake",
+            "title": "Top View of Round Chocolate Truffle Cake"
+          },
+          {
+            "src": "choco-truffle-cake0005choc-CCC_2.jpg",
+            "alt": "Front View of Round Chocolate Truffle Cake",
+            "title": "Front View of Round Chocolate Truffle Cake"
+          },
+          {
+            "src": "choco-truffle-cake0005choc-DDD_1.jpg",
+            "alt": "Round Chocolate Truffle Same Day Cake Delivery ",
+            "title": "Round Chocolate Truffle Same Day Cake Delivery "
+          },
+          {
+            "src": "choco-truffle-cake0005choc-EEE_1.jpg",
+            "alt": "Round Chocolate Truffle Same Day Cake Delivery ",
+            "title": "Round Chocolate Truffle Same Day Cake Delivery "
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 9,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 954,
+        "sku": "cake0003butt",
+        "product_type": "regular_cake",
+        "title": " Rich Butterscotch Crunch Cake",
+        "long_title": " Rich Butterscotch Crunch Cake",
+        "url": "/p/cake/butterscotch-cake0003butt",
+        "sell_price": 499,
+        "list_price": 549,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 2285,
+        "ingredient": "Savoured by all the age groups, this crunchy chunks of butterscotch mixed with smooth caramel is what makes this flavour amazing amongst butterscotch-lovers.",
+        "mini_desc": "Celebrate birthday with this three-layered cake with a butterscotch glaze, crunchy caramel balls, white...",
+        "full_desc": "Savoured by all the age groups, this crunchy chunks of butterscotch mixed with smooth caramel is what makes this flavour amazing amongst butterscotch-lovers.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/butterscotch-cake0003butt-AAAA.jpg",
+            "alt": "Round Shape Butterscotch Cake",
+            "title": "Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/butterscotch-cake0003butt-BBBB.jpg",
+            "alt": "Top View of Round Shape Butterscotch Cake",
+            "title": "Top View of Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/butterscotch-cake0003butt-CCCC.jpg",
+            "alt": "Front View of Round Shape Butterscotch Cake",
+            "title": "Front View of Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/butterscotch-cake0003butt-DDDD_0.jpg",
+            "alt": "Sliced View of Round Shape Butterscotch Cake",
+            "title": "Sliced View of Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/butterscotch-cake0003butt-EEEE.jpg",
+            "alt": "Order Butterscotch Delight-Round Shape Cake",
+            "title": "Order Butterscotch Delight-Round Shape Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "butterscotch-cake0003butt-AAAA.jpg",
+            "alt": "Round Shape Butterscotch Cake",
+            "title": "Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "butterscotch-cake0003butt-BBBB.jpg",
+            "alt": "Top View of Round Shape Butterscotch Cake",
+            "title": "Top View of Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "butterscotch-cake0003butt-CCCC.jpg",
+            "alt": "Front View of Round Shape Butterscotch Cake",
+            "title": "Front View of Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "butterscotch-cake0003butt-DDDD_0.jpg",
+            "alt": "Sliced View of Round Shape Butterscotch Cake",
+            "title": "Sliced View of Round Shape Butterscotch Cake"
+          },
+          {
+            "src": "butterscotch-cake0003butt-EEEE.jpg",
+            "alt": "Order Butterscotch Delight-Round Shape Cake",
+            "title": "Order Butterscotch Delight-Round Shape Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 10,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 957,
+        "sku": "cake0006chva",
+        "product_type": "regular_cake",
+        "title": "Chocolate Vanilla Half & Half Cake",
+        "long_title": "Chocolate Vanilla Half & Half Cake",
+        "url": "/p/cake/choco-vanilla-cake0006chva",
+        "sell_price": 549,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 2543,
+        "ingredient": "The perfect blend of tempting chocolate and irresistible vanilla flavours topped up with a cherry and some chocolate shavings.",
+        "mini_desc": "This cake boasts a moist chocolate base, topped with white chocolate shards, a cherry centerpiece, & a blend...",
+        "full_desc": "The perfect blend of tempting chocolate and irresistible vanilla flavours topped up with a cherry and some chocolate shavings.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/choco-vanilla-cake0006chva-AAA.jpg",
+            "alt": "Chocolate & Vanilla Drip Cake",
+            "title": "Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-vanilla-cake0006chva-BBB.jpg",
+            "alt": "Top View of Chocolate & Vanilla Drip Cake",
+            "title": "Top View of Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-vanilla-cake0006chva-CCC.jpg",
+            "alt": "Front View of Chocolate & Vanilla Drip Cake",
+            "title": "Front View of Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-vanilla-cake0006chva-DDD.jpg",
+            "alt": "Sliced View of Chocolate & Vanilla Drip Cake",
+            "title": "Sliced View of Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-vanilla-cake0006chva-EEE.jpg",
+            "alt": "Order Chocolate & Vanilla Drip Cake",
+            "title": "Order Chocolate & Vanilla Drip Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "choco-vanilla-cake0006chva-AAA.jpg",
+            "alt": "Chocolate & Vanilla Drip Cake",
+            "title": "Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "choco-vanilla-cake0006chva-BBB.jpg",
+            "alt": "Top View of Chocolate & Vanilla Drip Cake",
+            "title": "Top View of Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "choco-vanilla-cake0006chva-CCC.jpg",
+            "alt": "Front View of Chocolate & Vanilla Drip Cake",
+            "title": "Front View of Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "choco-vanilla-cake0006chva-DDD.jpg",
+            "alt": "Sliced View of Chocolate & Vanilla Drip Cake",
+            "title": "Sliced View of Chocolate & Vanilla Drip Cake"
+          },
+          {
+            "src": "choco-vanilla-cake0006chva-EEE.jpg",
+            "alt": "Order Chocolate & Vanilla Drip Cake",
+            "title": "Order Chocolate & Vanilla Drip Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 973,
+        "sku": "cake0022pifr",
+        "product_type": "regular_cake",
+        "title": "Whipped Cream Pineapple Cake",
+        "long_title": "Whipped Cream Pineapple Cake",
+        "url": "/p/cake/pineapple-cake0022pifr",
+        "sell_price": 549,
+        "list_price": 0,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 1302,
+        "ingredient": "The juicy chunks of the very tasty and fresh Pineapples and whipped cream and red cherry, it give you an exclusive creamy and succulent taste.",
+        "mini_desc": "A pineapple flavoured cake with whipped cream, pineapple jelly, white chocolate shards adorned with a cherry...",
+        "full_desc": "The juicy chunks of the very tasty and fresh Pineapples and whipped cream and red cherry, it give you an exclusive creamy and succulent taste.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-pineapple-cake0022pifr-CCC.jpg",
+            "alt": "Whipped Cream Pineapple Cake",
+            "title": "Whipped Cream Pineapple Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-pineapple-cake0022pifr-BBB.jpg",
+            "alt": "Front View of Whipped Cream Pineapple Cake",
+            "title": "Front View of Whipped Cream Pineapple Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-pineapple-cake0022pifr-DDD.jpg",
+            "alt": "Top View of Whipped Cream Pineapple Cake",
+            "title": "Top View of Whipped Cream Pineapple Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-pineapple-cake0022pifr-CCC.jpg",
+            "alt": "Whipped Cream Pineapple Cake",
+            "title": "Whipped Cream Pineapple Cake"
+          },
+          {
+            "src": "sq-pineapple-cake0022pifr-BBB.jpg",
+            "alt": "Front View of Whipped Cream Pineapple Cake",
+            "title": "Front View of Whipped Cream Pineapple Cake"
+          },
+          {
+            "src": "sq-pineapple-cake0022pifr-DDD.jpg",
+            "alt": "Top View of Whipped Cream Pineapple Cake",
+            "title": "Top View of Whipped Cream Pineapple Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 13100,
+        "sku": "cake3316mang",
+        "product_type": "regular_cake",
+        "title": "Pulpy Mango Cream Cake",
+        "long_title": "Pulpy Mango Cream Cake",
+        "url": "/p/cake/pulpy-mango-cream-cake-cake3316mang",
+        "sell_price": 599,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 109,
+        "ingredient": "",
+        "mini_desc": "Indulge in the perfect harmony of flavors with this vanilla mango cream cake. The luscious vanilla sponge is...",
+        "full_desc": "Indulge in the perfect harmony of flavors with this vanilla mango cream cake. The luscious vanilla sponge is complemented by a refreshing mango compote, creating a delightful combination. Adorned with pistachio crumbles on all sides, this cake is a true masterpiece. Treat yourself to a slice of pure bliss and experience the enchanting textures and exquisite flavors that make this cake a contemporary delight. Each bite is a moment of refined pleasure, bringing joy to your taste buds. Elevate your dessert experience with this heavenly creation that celebrates the artistry of flavor.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/pulpy-mango-cream-cake-cake3316mang-AA.jpg",
+            "alt": "Online Cake Delivery of Pulpy Mango Cream Cake",
+            "title": "Online Cake Delivery of Pulpy Mango Cream Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/pulpy-mango-cream-cake-cake3316mang-BB.jpg",
+            "alt": "Top View of Pulpy Mango Cream Cake",
+            "title": "Top View of Pulpy Mango Cream Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/pulpy-mango-cream-cake-cake3316mang-CC.jpg",
+            "alt": "Side View of Pulpy Mango Cream Cake",
+            "title": "Side View of Pulpy Mango Cream Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "pulpy-mango-cream-cake-cake3316mang-AA.jpg",
+            "alt": "Online Cake Delivery of Pulpy Mango Cream Cake",
+            "title": "Online Cake Delivery of Pulpy Mango Cream Cake"
+          },
+          {
+            "src": "pulpy-mango-cream-cake-cake3316mang-BB.jpg",
+            "alt": "Top View of Pulpy Mango Cream Cake",
+            "title": "Top View of Pulpy Mango Cream Cake"
+          },
+          {
+            "src": "pulpy-mango-cream-cake-cake3316mang-CC.jpg",
+            "alt": "Side View of Pulpy Mango Cream Cake",
+            "title": "Side View of Pulpy Mango Cream Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 992,
+        "sku": "cake0033hech_0",
+        "product_type": "regular_cake",
+        "title": "Heart Shape ChocoTruffle Cake With Fondant Roses",
+        "long_title": "Heart Shape ChocoTruffle Cake With Fondant Roses",
+        "url": "/p/cake/choco-truffle-heart-shape-cake0033hech",
+        "sell_price": 799,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 454,
+        "ingredient": "A rich, chocolate heart-shaped truffle cake which comes topped up with some fondant red roses and white milk stripes is sure to make one and all gaga with its unmatched taste and appeal.",
+        "mini_desc": "Heart shaped cake covered in pure dark ganache, topped with hand crafted fondant red roses, white cream &...",
+        "full_desc": "A rich, chocolate heart-shaped truffle cake which comes topped up with some fondant red roses and white milk stripes is sure to make one and all gaga with its unmatched taste and appeal.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/squ-choco-truffle-heart-shape-cake0033hech-A_0.jpg",
+            "alt": "Heart Shaped Choco Truffle Cake ",
+            "title": "Heart Shaped Choco Truffle Cake "
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/squ-choco-truffle-heart-shape-cake0033hech-B.jpg",
+            "alt": "Top View of Heart Shaped Choco Truffle Cake",
+            "title": "Top View of Heart Shaped Choco Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/squ-choco-truffle-heart-shape-cake0033hech-C.jpg",
+            "alt": "Side View of Heart Shaped Choco Truffle Cake",
+            "title": "Side View of Heart Shaped Choco Truffle Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "squ-choco-truffle-heart-shape-cake0033hech-A_0.jpg",
+            "alt": "Heart Shaped Choco Truffle Cake ",
+            "title": "Heart Shaped Choco Truffle Cake "
+          },
+          {
+            "src": "squ-choco-truffle-heart-shape-cake0033hech-B.jpg",
+            "alt": "Top View of Heart Shaped Choco Truffle Cake",
+            "title": "Top View of Heart Shaped Choco Truffle Cake"
+          },
+          {
+            "src": "squ-choco-truffle-heart-shape-cake0033hech-C.jpg",
+            "alt": "Side View of Heart Shaped Choco Truffle Cake",
+            "title": "Side View of Heart Shaped Choco Truffle Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 2483,
+        "sku": "cake0742frui_0.5",
+        "product_type": "regular_cake",
+        "title": "Heart Shape Fruits & Nuts Cake",
+        "long_title": "Heart Shape Fruits & Nuts Cake",
+        "url": "/p/cake/heart-shaped-fruit-cake-3-cake0742frui",
+        "sell_price": 849,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 111,
+        "ingredient": "Talk love over this scrumptiously baked heart-shaped fruit cake topped up with freshly-chopped berries and other fruits.",
+        "mini_desc": "Garnished with fresh assortment of tropical fruits, this vanilla cake is coated with handfolded cream &...",
+        "full_desc": "Talk love over this scrumptiously baked heart-shaped fruit cake topped up with freshly-chopped berries and other fruits.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/heart-shaped-fruit-cake-3-cake0742frui-AAA.jpg",
+            "alt": "Fruity By Nature - Heart Shaped Mixed Fruit Cake",
+            "title": "Fruity By Nature - Heart Shaped Mixed Fruit Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heart-shaped-fruit-cake-3-cake0742frui-BBB.jpg",
+            "alt": "Fruity By Nature - Heart Shaped Mixed Fruit Cake Top View",
+            "title": "Fruity By Nature - Heart Shaped Mixed Fruit Cake Top View"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heart-shaped-fruit-cake-3-cake0742frui-CCC.jpg",
+            "alt": "Fruity By Nature - Heart Shaped Mixed Fruit Cake",
+            "title": "Fruity By Nature - Heart Shaped Mixed Fruit Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "heart-shaped-fruit-cake-3-cake0742frui-AAA.jpg",
+            "alt": "Fruity By Nature - Heart Shaped Mixed Fruit Cake",
+            "title": "Fruity By Nature - Heart Shaped Mixed Fruit Cake"
+          },
+          {
+            "src": "heart-shaped-fruit-cake-3-cake0742frui-BBB.jpg",
+            "alt": "Fruity By Nature - Heart Shaped Mixed Fruit Cake Top View",
+            "title": "Fruity By Nature - Heart Shaped Mixed Fruit Cake Top View"
+          },
+          {
+            "src": "heart-shaped-fruit-cake-3-cake0742frui-CCC.jpg",
+            "alt": "Fruity By Nature - Heart Shaped Mixed Fruit Cake",
+            "title": "Fruity By Nature - Heart Shaped Mixed Fruit Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 13801,
+        "sku": "cake3455redv",
+        "product_type": "regular_cake",
+        "title": "Heart Red Velvet Cake",
+        "long_title": "Heart Red Velvet Cake",
+        "url": "/p/cake/blooming-velvet-cake-cake3455redv",
+        "sell_price": 649,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 33,
+        "ingredient": "",
+        "mini_desc": "Savour the romance in every bite with this delicious Red Velvet Heart Cake, adorned with cream petals and...",
+        "full_desc": "Savour the romance in every bite with this delicious Red Velvet Heart Cake, adorned with cream petals and topped with crimson crumbs in a heart shape.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/blooming-velvet-cake-cake3455redv-A.jpg",
+            "alt": "Valentine Blooming Velvet Cake ",
+            "title": "Valentine Blooming Velvet Cake "
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/blooming-velvet-cake-cake3455redv-B.jpg",
+            "alt": "Top View Valentine Blooming Velvet Cake ",
+            "title": "Top View Valentine Blooming Velvet Cake "
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/blooming-velvet-cake-cake3455redv-C.jpg",
+            "alt": "Front View Valentine Blooming Velvet Cake ",
+            "title": "Front View Valentine Blooming Velvet Cake "
+          },
+          { "src": "https://bkmedia.bakingo.com/blooming-velvet-cake-cake3455redv-D.jpg", "alt": "", "title": "" }
+        ],
+        "image": [
+          {
+            "src": "blooming-velvet-cake-cake3455redv-A.jpg",
+            "alt": "Valentine Blooming Velvet Cake ",
+            "title": "Valentine Blooming Velvet Cake "
+          },
+          {
+            "src": "blooming-velvet-cake-cake3455redv-B.jpg",
+            "alt": "Top View Valentine Blooming Velvet Cake ",
+            "title": "Top View Valentine Blooming Velvet Cake "
+          },
+          {
+            "src": "blooming-velvet-cake-cake3455redv-C.jpg",
+            "alt": "Front View Valentine Blooming Velvet Cake ",
+            "title": "Front View Valentine Blooming Velvet Cake "
+          },
+          { "src": "blooming-velvet-cake-cake3455redv-D.jpg", "alt": "", "title": "" }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 979,
+        "sku": "cake0028choc",
+        "product_type": "regular_cake",
+        "title": "Chocolate Loaded Glazed Cake",
+        "long_title": "Chocolate Loaded Glazed Cake",
+        "url": "/p/cake/snicker-chocolate-cake0028choc",
+        "sell_price": 699,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 814,
+        "ingredient": "Snickers snickers all around! Your super healthy dessert topped with molten chocolate and chocolate chunks, you can't stop drooling over this cake.",
+        "mini_desc": "Rich chocolate ganache, dark chocolate balls, crunchy chocolate chuncks, layers of chocolate cream frosting &...",
+        "full_desc": "Snickers snickers all around! Your super healthy dessert topped with molten chocolate and chocolate chunks, you can't stop drooling over this cake.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-snicker-chocolate-cake0028choc-AA.jpg",
+            "alt": "Chocolate Loaded Glazed Cake",
+            "title": "Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-snicker-chocolate-cake0028choc-AB.jpg",
+            "alt": "Top View of Chocolate Loaded Glazed Cake",
+            "title": "Top View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-snicker-chocolate-cake0028choc-AC.jpg",
+            "alt": "Side View of Chocolate Loaded Glazed Cake",
+            "title": "Side View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-snicker-chocolate-cake0028choc-AD.jpg",
+            "alt": "Sliced View of Chocolate Loaded Glazed Cake",
+            "title": "Sliced View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-snicker-chocolate-cake0028choc-AE.jpg",
+            "alt": "Sliced View of Chocolate Loaded Glazed Cake",
+            "title": "Sliced View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-snicker-chocolate-cake0028choc-E.jpg",
+            "alt": "Far View of Chocolate Loaded Glazed Cake",
+            "title": "Far View of Chocolate Loaded Glazed Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-snicker-chocolate-cake0028choc-AA.jpg",
+            "alt": "Chocolate Loaded Glazed Cake",
+            "title": "Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "sq-snicker-chocolate-cake0028choc-AB.jpg",
+            "alt": "Top View of Chocolate Loaded Glazed Cake",
+            "title": "Top View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "sq-snicker-chocolate-cake0028choc-AC.jpg",
+            "alt": "Side View of Chocolate Loaded Glazed Cake",
+            "title": "Side View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "sq-snicker-chocolate-cake0028choc-AD.jpg",
+            "alt": "Sliced View of Chocolate Loaded Glazed Cake",
+            "title": "Sliced View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "sq-snicker-chocolate-cake0028choc-AE.jpg",
+            "alt": "Sliced View of Chocolate Loaded Glazed Cake",
+            "title": "Sliced View of Chocolate Loaded Glazed Cake"
+          },
+          {
+            "src": "sq-snicker-chocolate-cake0028choc-E.jpg",
+            "alt": "Far View of Chocolate Loaded Glazed Cake",
+            "title": "Far View of Chocolate Loaded Glazed Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 964,
+        "sku": "cake0013exot",
+        "product_type": "regular_cake",
+        "title": "Ferrero Infused Celebration Cake",
+        "long_title": "Ferrero Infused Celebration Cake",
+        "url": "/p/cake/ferrero-rocher-cake0013exot",
+        "sell_price": 849,
+        "list_price": 0,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 490,
+        "ingredient": "A soul pleasing treat to celebrate your occasion! Enriched and coated with exotic chocolates, this cake is embellished with crunchy Ferrero Rochers, hazelnut flavour, and chocolate syrup.",
+        "mini_desc": "Experience the pinnacle of chocolate luxury with this Ferrero Rocher-topped masterpiece. Perfect for life's...",
+        "full_desc": "A soul pleasing treat to celebrate your occasion! Enriched and coated with exotic chocolates, this cake is embellished with crunchy Ferrero Rochers, hazelnut flavour, and chocolate syrup.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-ferrero-rocher-cake0013exot-A_0.jpg",
+            "alt": "Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-ferrero-rocher-cake0013exot-C_0.jpg",
+            "alt": "Top View of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Top View of Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-ferrero-rocher-cake0013exot-B_0.jpg",
+            "alt": "Front View of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Front View of Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-ferrero-rocher-cake0013exot-D_0.jpg",
+            "alt": "Sliced View of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Sliced View of Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-ferrero-rocher-cake0013exot-E_0.jpg",
+            "alt": "Sliced View of Ferrero Rocher Cake Onlien",
+            "title": "Sliced View of Ferrero Rocher Cake Online"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-ferrero-rocher-cake0013exot-E.jpg",
+            "alt": "Product Ingredients of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Product Ingredients of Chocolate Ferrero Rocher Almonds Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-ferrero-rocher-cake0013exot-A_0.jpg",
+            "alt": "Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "sq-ferrero-rocher-cake0013exot-C_0.jpg",
+            "alt": "Top View of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Top View of Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "sq-ferrero-rocher-cake0013exot-B_0.jpg",
+            "alt": "Front View of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Front View of Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "sq-ferrero-rocher-cake0013exot-D_0.jpg",
+            "alt": "Sliced View of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Sliced View of Chocolate Ferrero Rocher Almonds Cake"
+          },
+          {
+            "src": "sq-ferrero-rocher-cake0013exot-E_0.jpg",
+            "alt": "Sliced View of Ferrero Rocher Cake Onlien",
+            "title": "Sliced View of Ferrero Rocher Cake Online"
+          },
+          {
+            "src": "sq-ferrero-rocher-cake0013exot-E.jpg",
+            "alt": "Product Ingredients of Chocolate Ferrero Rocher Almonds Cake",
+            "title": "Product Ingredients of Chocolate Ferrero Rocher Almonds Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 9616,
+        "sku": "rosecake2561vani",
+        "product_type": "regular_cake",
+        "title": "Roses Topped Vanilla Cream Cake",
+        "long_title": "Roses Topped Vanilla Cream Cake",
+        "url": "/p/cake/round-pink-roses-vanilla-cake-rosecake2561vani",
+        "sell_price": 1149,
+        "list_price": 1499,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 202,
+        "ingredient": "",
+        "mini_desc": "Indulge in the pure joy of our creamy vanilla dream, a perfect circle of delight, blanketed in a fluffy cloud...",
+        "full_desc": "Indulge in the pure joy of our creamy vanilla dream, a perfect circle of delight, blanketed in a fluffy cloud of whipped perfection. The cake comes topped with real flowers for a glamorous appeal.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-pink-roses-vanilla-cake-rosecake2561vani-AAA.jpg",
+            "alt": "Creamy Vanilla Rose Cake ",
+            "title": "Creamy Vanilla Rose Cake "
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-pink-roses-vanilla-cake-rosecake2561vani-BBB.jpg",
+            "alt": "Top View of Vanilla Rose Cake ",
+            "title": "Front View of Creamy Vanilla Rose Cake "
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-pink-roses-vanilla-cake-rosecake2561vani-CCC.jpg",
+            "alt": "Front View of Creamy Vanilla Rose Cake ",
+            "title": "Front View of Creamy Vanilla Rose Cake "
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-round-pink-roses-vanilla-cake-rosecake2561vani-AAA.jpg",
+            "alt": "Creamy Vanilla Rose Cake ",
+            "title": "Creamy Vanilla Rose Cake "
+          },
+          {
+            "src": "sq-round-pink-roses-vanilla-cake-rosecake2561vani-BBB.jpg",
+            "alt": "Top View of Vanilla Rose Cake ",
+            "title": "Front View of Creamy Vanilla Rose Cake "
+          },
+          {
+            "src": "sq-round-pink-roses-vanilla-cake-rosecake2561vani-CCC.jpg",
+            "alt": "Front View of Creamy Vanilla Rose Cake ",
+            "title": "Front View of Creamy Vanilla Rose Cake "
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 24,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 12068,
+        "sku": "cake3171pine",
+        "product_type": "regular_cake",
+        "title": "Love N Rose Pinepple Cake",
+        "long_title": "Love N Rose Pinepple Cake",
+        "url": "/p/cake/essence-of-love-vday-cake-cake3171pine",
+        "sell_price": 675,
+        "list_price": 0,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 137,
+        "ingredient": "",
+        "mini_desc": "Fresh red roses and a fondant-made 'Love' inscription adorn this pineapple cream cake, making it an ideal...",
+        "full_desc": "Fresh red roses and a fondant-made 'Love' inscription adorn this pineapple cream cake, making it an ideal choice for all love-filled moments.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/essence-of-love-vday-cake-cake3171pine-AA.jpg",
+            "alt": "Rose Pineapple Cream Cake",
+            "title": "Rose Pineapple Cream Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/essence-of-love-vday-cake-cake3171pine-BB.jpg",
+            "alt": "Side View of Rose Pineapple Cream Cake",
+            "title": "Side View of Rose Pineapple Cream Cake"
+          },
+          { "src": "https://bkmedia.bakingo.com/essence-of-love-vday-cake-cake3171pine-CC.jpg", "alt": "", "title": "" }
+        ],
+        "image": [
+          {
+            "src": "essence-of-love-vday-cake-cake3171pine-AA.jpg",
+            "alt": "Rose Pineapple Cream Cake",
+            "title": "Rose Pineapple Cream Cake"
+          },
+          {
+            "src": "essence-of-love-vday-cake-cake3171pine-BB.jpg",
+            "alt": "Side View of Rose Pineapple Cream Cake",
+            "title": "Side View of Rose Pineapple Cream Cake"
+          },
+          { "src": "essence-of-love-vday-cake-cake3171pine-CC.jpg", "alt": "", "title": "" }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 952,
+        "sku": "cake0001chbl",
+        "product_type": "regular_cake",
+        "title": "Classic Black Forest Cake",
+        "long_title": "Classic Black Forest Cake",
+        "url": "/p/cake/black-forest-cake0001chbl",
+        "sell_price": 549,
+        "list_price": 599,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 846,
+        "ingredient": "Rich, delicious,classic dessert made with several layers of chocolate all covered in whipped cream and shaved chocolates with cherries toppings.",
+        "mini_desc": "For the Old-School OG Dad- A timeless soul who finds joy in the familiar. This Black Forest cake is a true...",
+        "full_desc": "Rich, delicious,classic dessert made with several layers of chocolate all covered in whipped cream and shaved chocolates with cherries toppings.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/black-forest-cake0001chbl-AAA.jpg",
+            "alt": "Eggless Black Forest Cake",
+            "title": "Eggless Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/black-forest-cake0001chbl-BBB.jpg",
+            "alt": "Top View of Eggless Black Forest Cake",
+            "title": "Top View of Eggless Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/black-forest-cake0001chbl-CCC.jpg",
+            "alt": "Side View of Eggless Black Forest Cake",
+            "title": "Side View of Eggless Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/black-forest-cake0001chbl-DDD.jpg",
+            "alt": "Sliced View of Eggless Black Forest Cake",
+            "title": "Sliced View of Eggless Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/black-forest-cake0001chbl-EEE.jpg",
+            "alt": "Sliced View of Eggless Black Forest Cake Online",
+            "title": "Sliced View of Eggless Black Forest Cake Online"
+          }
+        ],
+        "image": [
+          {
+            "src": "black-forest-cake0001chbl-AAA.jpg",
+            "alt": "Eggless Black Forest Cake",
+            "title": "Eggless Black Forest Cake"
+          },
+          {
+            "src": "black-forest-cake0001chbl-BBB.jpg",
+            "alt": "Top View of Eggless Black Forest Cake",
+            "title": "Top View of Eggless Black Forest Cake"
+          },
+          {
+            "src": "black-forest-cake0001chbl-CCC.jpg",
+            "alt": "Side View of Eggless Black Forest Cake",
+            "title": "Side View of Eggless Black Forest Cake"
+          },
+          {
+            "src": "black-forest-cake0001chbl-DDD.jpg",
+            "alt": "Sliced View of Eggless Black Forest Cake",
+            "title": "Sliced View of Eggless Black Forest Cake"
+          },
+          {
+            "src": "black-forest-cake0001chbl-EEE.jpg",
+            "alt": "Sliced View of Eggless Black Forest Cake Online",
+            "title": "Sliced View of Eggless Black Forest Cake Online"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 9,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 1762,
+        "sku": "cake0620hbut",
+        "product_type": "regular_cake",
+        "title": "Heart Shaped Butterscotch Cherry Topped Cake",
+        "long_title": "Heart Shaped Butterscotch Cherry Topped Cake",
+        "url": "/p/cake/heart-shaped-butterscotch-cake-1-cake0620hbut",
+        "sell_price": 699,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.7,
+        "total_reviews": 27,
+        "ingredient": "This crystallised butterscotch cake leave you astonished alongwith its whipped cream with butterscotch crush filling on inside. With the subtle brown colour to its cherry on top garnish to its authentic taste, this cake is what our dreams are made of.",
+        "mini_desc": "A butterscotch delight, adorned with caramelized nuts, crowned with delicate white chocolate shards, & a...",
+        "full_desc": "This crystallised butterscotch cake leave you astonished alongwith its whipped cream with butterscotch crush filling on inside. With the subtle brown colour to its cherry on top garnish to its authentic taste, this cake is what our dreams are made of.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-heart-shaped-butterscotch-cake-1-cake0620hbut-A_1.jpg",
+            "alt": "Heart Shaped Butterscotch Cake",
+            "title": "Heart Shaped Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-heart-shaped-butterscotch-cake-1-cake0620hbut-B_1.jpg",
+            "alt": "Top View of Heart Shaped Butterscotch Cake",
+            "title": "Top View of Heart Shaped Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-heart-shaped-butterscotch-cake-1-cake0620hbut-C.jpg",
+            "alt": "",
+            "title": ""
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-heart-shaped-butterscotch-cake-1-cake0620hbut-A_1.jpg",
+            "alt": "Heart Shaped Butterscotch Cake",
+            "title": "Heart Shaped Butterscotch Cake"
+          },
+          {
+            "src": "sq-heart-shaped-butterscotch-cake-1-cake0620hbut-B_1.jpg",
+            "alt": "Top View of Heart Shaped Butterscotch Cake",
+            "title": "Top View of Heart Shaped Butterscotch Cake"
+          },
+          { "src": "sq-heart-shaped-butterscotch-cake-1-cake0620hbut-C.jpg", "alt": "", "title": "" }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 14015,
+        "sku": "cake3550rash",
+        "product_type": "regular_cake",
+        "title": "Rose Petals N Pistachio Rasmalai Cake",
+        "long_title": "Rose Petals N Pistachio Rasmalai Cake",
+        "url": "/p/cake/pista-topped-rasmalai-cake-cake3550rash",
+        "sell_price": 699,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.8,
+        "total_reviews": 379,
+        "ingredient": "",
+        "mini_desc": "Savour an exotic blend of flavours in this delightful cake, boasting a vanilla sponge base adorned with spongy...",
+        "full_desc": "Savour an exotic blend of flavours in this delightful cake, boasting a vanilla sponge base adorned with spongy Rasmalai pieces, pistachios, and fragrant rose petals.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/pista-topped-rasmalai-cake-cake3550rash-A.jpg",
+            "alt": "Rose Petals N Pistachio Rasmalai Cake",
+            "title": "Rose Petals N Pistachio Rasmalai Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/pista-topped-rasmalai-cake-cake3550rash-B.jpg",
+            "alt": "Top View of Rose Petals N Pistachio Rasmalai Cake",
+            "title": "Top View of Rose Petals N Pistachio Rasmalai Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/pista-topped-rasmalai-cake-cake3550rash-C.jpg",
+            "alt": "Side View of Rose Petals N Pistachio Rasmalai Cake",
+            "title": "Side View of Rose Petals N Pistachio Rasmalai Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "pista-topped-rasmalai-cake-cake3550rash-A.jpg",
+            "alt": "Rose Petals N Pistachio Rasmalai Cake",
+            "title": "Rose Petals N Pistachio Rasmalai Cake"
+          },
+          {
+            "src": "pista-topped-rasmalai-cake-cake3550rash-B.jpg",
+            "alt": "Top View of Rose Petals N Pistachio Rasmalai Cake",
+            "title": "Top View of Rose Petals N Pistachio Rasmalai Cake"
+          },
+          {
+            "src": "pista-topped-rasmalai-cake-cake3550rash-C.jpg",
+            "alt": "Side View of Rose Petals N Pistachio Rasmalai Cake",
+            "title": "Side View of Rose Petals N Pistachio Rasmalai Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 5605,
+        "sku": "cake1119choc",
+        "product_type": "regular_cake",
+        "title": "KitKat Chocolate Truffle Cake",
+        "long_title": "KitKat Chocolate Truffle Cake",
+        "url": "/p/cake/kitkat-chocolate-cake-cake1119choco",
+        "sell_price": 699,
+        "list_price": 0,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 776,
+        "ingredient": "Rich in melt-in-mouth chocolates, layered with Inside- Chocolate Truffle With Chopped Kitkat and chunks which make this cake an irresistible one.",
+        "mini_desc": "A chocolate truffle cake base with whipped cream frosting, chocolate ganache coating, chopped Kitkat chunks &...",
+        "full_desc": "Rich in melt-in-mouth chocolates, layered with Inside- Chocolate Truffle With Chopped Kitkat and chunks which make this cake an irresistible one.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/kitkat-chocolate-cake-cake1119choco-AAA.jpg",
+            "alt": "KitKat Chocolate Truffle Cake",
+            "title": "KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/kitkat-chocolate-cake-cake1119choco-BBB.jpg",
+            "alt": "Top View of KitKat Chocolate Truffle Cake",
+            "title": "Top View of KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/kitkat-chocolate-cake-cake1119choco-CCC.jpg",
+            "alt": "Front View of KitKat Chocolate Truffle Cake",
+            "title": "Front View of KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/kitkat-chocolate-cake-cake1119choco-DDD.jpg",
+            "alt": "Sliced View of KitKat Chocolate Truffle Cake",
+            "title": "Sliced View of KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/kitkat-chocolate-cake-cake1119choco-EEE.jpg",
+            "alt": "Sliced View of KitKat Chocolate Truffle Cake",
+            "title": "Sliced View of KitKat Chocolate Truffle Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "kitkat-chocolate-cake-cake1119choco-AAA.jpg",
+            "alt": "KitKat Chocolate Truffle Cake",
+            "title": "KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "kitkat-chocolate-cake-cake1119choco-BBB.jpg",
+            "alt": "Top View of KitKat Chocolate Truffle Cake",
+            "title": "Top View of KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "kitkat-chocolate-cake-cake1119choco-CCC.jpg",
+            "alt": "Front View of KitKat Chocolate Truffle Cake",
+            "title": "Front View of KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "kitkat-chocolate-cake-cake1119choco-DDD.jpg",
+            "alt": "Sliced View of KitKat Chocolate Truffle Cake",
+            "title": "Sliced View of KitKat Chocolate Truffle Cake"
+          },
+          {
+            "src": "kitkat-chocolate-cake-cake1119choco-EEE.jpg",
+            "alt": "Sliced View of KitKat Chocolate Truffle Cake",
+            "title": "Sliced View of KitKat Chocolate Truffle Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 15901,
+        "sku": "cake4047butt-.5",
+        "product_type": "regular_cake",
+        "title": "Delightful Butterscotch Birthday Cake",
+        "long_title": "Delightful Butterscotch Birthday Cake",
+        "url": "/p/cake/delightful-butterscotch-birthday-cake-cake4047butt",
+        "sell_price": 549,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.8,
+        "total_reviews": 158,
+        "ingredient": "",
+        "mini_desc": "Experience intense butterscotch flavour, balanced with creamy white chocolate, in this irresistibly rich and...",
+        "full_desc": "Experience intense butterscotch flavour, balanced with creamy white chocolate, in this irresistibly rich and buttery cake. Ideal for making birthday celebrations truly special.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/nutty-butterscotch-bliss-cake4047butt-a.jpg",
+            "alt": "Delightful Butterscotch Birthday Cake",
+            "title": "Delightful Butterscotch Birthday Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/nutty-butterscotch-bliss-cake4047butt-b.jpg",
+            "alt": "Side View of Delightful Butterscotch Birthday Cake",
+            "title": "Side View of Delightful Butterscotch Birthday Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/nutty-butterscotch-bliss-cake4047butt-c.jpg",
+            "alt": "Top View of Delightful Butterscotch Birthday Cake",
+            "title": "Top View of Delightful Butterscotch Birthday Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "nutty-butterscotch-bliss-cake4047butt-a.jpg",
+            "alt": "Delightful Butterscotch Birthday Cake",
+            "title": "Delightful Butterscotch Birthday Cake"
+          },
+          {
+            "src": "nutty-butterscotch-bliss-cake4047butt-b.jpg",
+            "alt": "Side View of Delightful Butterscotch Birthday Cake",
+            "title": "Side View of Delightful Butterscotch Birthday Cake"
+          },
+          {
+            "src": "nutty-butterscotch-bliss-cake4047butt-c.jpg",
+            "alt": "Top View of Delightful Butterscotch Birthday Cake",
+            "title": "Top View of Delightful Butterscotch Birthday Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 8298,
+        "sku": "pina2148choc_1",
+        "product_type": "regular_cake",
+        "title": "Gems Filled Chocolate Pinata Cake",
+        "long_title": "Gems Filled Chocolate Pinata Cake",
+        "url": "/p/cake/chocolate-cake-with-gems-inside-pina2148choc",
+        "sell_price": 1299,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 5,
+        "total_reviews": 21,
+        "ingredient": "",
+        "mini_desc": "Chocolate gems surprise cake, draped in buttercream, adorned with creamy swirls. As you cut, gems overflow,...",
+        "full_desc": "Chocolate gems surprise cake, draped in buttercream, adorned with creamy swirls. As you cut, gems overflow, tickling taste buds\u2014a pure chocolate delight with sprinkles on the bottom.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-cake-with-gems-inside-pina2148choc-A_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-cake-with-gems-inside-pina2148choc-B_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-cake-with-gems-inside-pina2148choc-C_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-cake-with-gems-inside-pina2148choc-D_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-chocolate-cake-with-gems-inside-pina2148choc-A_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          },
+          {
+            "src": "sq-chocolate-cake-with-gems-inside-pina2148choc-B_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          },
+          {
+            "src": "sq-chocolate-cake-with-gems-inside-pina2148choc-C_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          },
+          {
+            "src": "sq-chocolate-cake-with-gems-inside-pina2148choc-D_0.jpg",
+            "alt": "Chocolate Gems Pinata Cake",
+            "title": "Chocolate Gems Suprise Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 978,
+        "sku": "cake0027reex",
+        "product_type": "regular_cake",
+        "title": "Red Velvet Cream Cake",
+        "long_title": "Red Velvet Cream Cake",
+        "url": "/p/cake/red-velvet-cake0027reex",
+        "sell_price": 699,
+        "list_price": 0,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 232,
+        "ingredient": "Dreamy creamy red velvet cake with cheese cream & white chocolate garnish on top is finally here! From its flaky, red velvet crumbs on its sides to its creamy crown, everything about this cake is sure to leave you drooling.",
+        "mini_desc": "Made of three moist & velvety layers of rich red velvet sponge cake combined with white chocolate & crowned...",
+        "full_desc": "Dreamy creamy red velvet cake with cheese cream & white chocolate garnish on top is finally here! From its flaky, red velvet crumbs on its sides to its creamy crown, everything about this cake is sure to leave you drooling.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/red-velvet-cake0027reex-AAA.jpg",
+            "alt": "Red Velvet Cake",
+            "title": "Red Velvet Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/red-velvet-cake0027reex-BBB.jpg",
+            "alt": "Top View of Red Velvet Cake",
+            "title": "Top View of Red Velvet Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/red-velvet-cake0027reex-CCC.jpg",
+            "alt": "Front View of Red Velvet Cake",
+            "title": "Front View of Red Velvet Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/red-velvet-cake0027reex-DDD.jpg",
+            "alt": "Sliced View of Red Velvet Cake",
+            "title": "Sliced View of Red Velvet Cake"
+          }
+        ],
+        "image": [
+          { "src": "red-velvet-cake0027reex-AAA.jpg", "alt": "Red Velvet Cake", "title": "Red Velvet Cake" },
+          {
+            "src": "red-velvet-cake0027reex-BBB.jpg",
+            "alt": "Top View of Red Velvet Cake",
+            "title": "Top View of Red Velvet Cake"
+          },
+          {
+            "src": "red-velvet-cake0027reex-CCC.jpg",
+            "alt": "Front View of Red Velvet Cake",
+            "title": "Front View of Red Velvet Cake"
+          },
+          {
+            "src": "red-velvet-cake0027reex-DDD.jpg",
+            "alt": "Sliced View of Red Velvet Cake",
+            "title": "Sliced View of Red Velvet Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 13578,
+        "sku": "cake3380pine",
+        "product_type": "regular_cake",
+        "title": "Tropical Pineapple Cake",
+        "long_title": "Tropical Pineapple Cake",
+        "url": "/p/cake/dreamy-creamy-pineapple-cake-cake3380pine",
+        "sell_price": 549,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 117,
+        "ingredient": "",
+        "mini_desc": "Savour the refreshing taste of this Tropical Pineapple Cake. Topped with juicy pineapple slices and vibrant...",
+        "full_desc": "Savour the refreshing taste of this Tropical Pineapple Cake. Topped with juicy pineapple slices and vibrant cherries, it\u2019s a perfect blend of sweet and tangy flavour for any celebration.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/dreamy-creamy-pineapple-cake-cake3380pine-A.jpg",
+            "alt": "Tropical Pineapple Cake",
+            "title": "Tropical Pineapple Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/dreamy-creamy-pineapple-cake-cake3380pine-B.jpg",
+            "alt": "Top View of Tropical Pineapple Cake",
+            "title": "Top View of Tropical Pineapple Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/dreamy-creamy-pineapple-cake-cake3380pine-C.jpg",
+            "alt": "Side View of Tropical Pineapple Cake",
+            "title": "Side View of Tropical Pineapple Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "dreamy-creamy-pineapple-cake-cake3380pine-A.jpg",
+            "alt": "Tropical Pineapple Cake",
+            "title": "Tropical Pineapple Cake"
+          },
+          {
+            "src": "dreamy-creamy-pineapple-cake-cake3380pine-B.jpg",
+            "alt": "Top View of Tropical Pineapple Cake",
+            "title": "Top View of Tropical Pineapple Cake"
+          },
+          {
+            "src": "dreamy-creamy-pineapple-cake-cake3380pine-C.jpg",
+            "alt": "Side View of Tropical Pineapple Cake",
+            "title": "Side View of Tropical Pineapple Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 8359,
+        "sku": "pina2163choc",
+        "product_type": "regular_cake",
+        "title": "Choco Pinata Birthday Cake",
+        "long_title": "Choco Pinata Birthday Cake",
+        "url": "/p/cake/birthday-chocolate-overload-pinata-cake-750gm-pina2163choc",
+        "sell_price": 1399,
+        "list_price": 1499,
+        "ribbon": "",
+        "rating": 5,
+        "total_reviews": 213,
+        "ingredient": "",
+        "mini_desc": "The perfect birthday surprise! This Chocolate Pinata Cake, with its sprinkle-covered exterior, reveals a...",
+        "full_desc": "The perfect birthday surprise! This Chocolate Pinata Cake, with its sprinkle-covered exterior, reveals a hidden treasure of chocolatey goodness and delicious treats inside",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-A_0.jpg",
+            "alt": "Chocolate Overload Pinata Cake for Birthday",
+            "title": "Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-B_0.jpg",
+            "alt": "Order Chocolate Overload Pinata Cake for Birthday",
+            "title": "Order Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-C_0.jpg",
+            "alt": "Front View of Chocolate Overload Pinata Cake for Birthday",
+            "title": "Front View of Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-D_0.jpg",
+            "alt": "Zoomed View of Chocolate Overload Pinata Cake for Birthday",
+            "title": "Zoomed View of Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-E_0.jpg",
+            "alt": "Top View of Chocolate Overload Pinata Cake for Birthday",
+            "title": "Top View of Chocolate Overload Pinata Cake for Birthday"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-A_0.jpg",
+            "alt": "Chocolate Overload Pinata Cake for Birthday",
+            "title": "Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-B_0.jpg",
+            "alt": "Order Chocolate Overload Pinata Cake for Birthday",
+            "title": "Order Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-C_0.jpg",
+            "alt": "Front View of Chocolate Overload Pinata Cake for Birthday",
+            "title": "Front View of Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-D_0.jpg",
+            "alt": "Zoomed View of Chocolate Overload Pinata Cake for Birthday",
+            "title": "Zoomed View of Chocolate Overload Pinata Cake for Birthday"
+          },
+          {
+            "src": "sq-birthday-chocolate-overload-pinata-cake-750gm-pina2163choc-E_0.jpg",
+            "alt": "Top View of Chocolate Overload Pinata Cake for Birthday",
+            "title": "Top View of Chocolate Overload Pinata Cake for Birthday"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 7,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 5495,
+        "sku": "cake1095redv",
+        "product_type": "regular_cake",
+        "title": "Red Velvet Heart Shape Cake",
+        "long_title": "Red Velvet Heart Shape Cake",
+        "url": "/p/cake/heart-shaped-red-velvet-cake-cake1095redv",
+        "sell_price": 799,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 254,
+        "ingredient": "Relish the scarlet dream-- a heart-shaped cake in red velvet flavour coated in red velvet cake crumbs, cheese cream and heart chocolate garnish decorations. ",
+        "mini_desc": "A heart shaped cake in red velvet flavour coated in red velvet cake crumbs, cheese cream & heart shaped...",
+        "full_desc": "Relish the scarlet dream-- a heart-shaped cake in red velvet flavour coated in red velvet cake crumbs, cheese cream and heart chocolate garnish decorations. ",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/heart-shaped-red-velvet-cake-cake1095redv-AAA.jpg",
+            "alt": "Heart Shaped Red Velvet Cake",
+            "title": "Heart Shaped Red Velvet Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heart-shaped-red-velvet-cake-cake1095redv-BBB.jpg",
+            "alt": "Top View of Heart Shaped Red Velvet Cake",
+            "title": "Top View of Heart Shaped Red Velvet Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heart-shaped-red-velvet-cake-cake1095redv-CCC.jpg",
+            "alt": "Front View of Heart Shaped Red Velvet Cake ",
+            "title": "Front View of Heart Shaped Red Velvet Cake "
+          }
+        ],
+        "image": [
+          {
+            "src": "heart-shaped-red-velvet-cake-cake1095redv-AAA.jpg",
+            "alt": "Heart Shaped Red Velvet Cake",
+            "title": "Heart Shaped Red Velvet Cake"
+          },
+          {
+            "src": "heart-shaped-red-velvet-cake-cake1095redv-BBB.jpg",
+            "alt": "Top View of Heart Shaped Red Velvet Cake",
+            "title": "Top View of Heart Shaped Red Velvet Cake"
+          },
+          {
+            "src": "heart-shaped-red-velvet-cake-cake1095redv-CCC.jpg",
+            "alt": "Front View of Heart Shaped Red Velvet Cake ",
+            "title": "Front View of Heart Shaped Red Velvet Cake "
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 14008,
+        "sku": "cake3542butt",
+        "product_type": "regular_cake",
+        "title": "Butterscotch Crunch Designer Cake",
+        "long_title": "Butterscotch Crunch Designer Cake",
+        "url": "/p/cake/heavenly-butterscotch-crunch-cake-cake3542butt",
+        "sell_price": 649,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.8,
+        "total_reviews": 134,
+        "ingredient": "",
+        "mini_desc": "Indulge in the perfect harmony of sweet and crunchy with this delectable cake featuring caramelized...",
+        "full_desc": "Indulge in the perfect harmony of sweet and crunchy with this delectable cake featuring caramelized butterscotch crunch at the base and elegant cream swirls gracing its borders.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/heavenly-butterscotch-crunch-cake-cake3542butt-A.jpg",
+            "alt": "Butterscotch Crunch Designer Cake",
+            "title": "Butterscotch Crunch Designer Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heavenly-butterscotch-crunch-cake-cake3542butt-B.jpg",
+            "alt": "Top View Butterscotch Crunch Designer Cake Online",
+            "title": "Top View Butterscotch Crunch Designer Cake Online"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heavenly-butterscotch-crunch-cake-cake3542butt-C.jpg",
+            "alt": "Butterscotch Crunch Designer Cake Online",
+            "title": "Butterscotch Crunch Designer Cake Online"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heavenly-butterscotch-crunch-cake-cake3542butt-D.jpg",
+            "alt": "Butterscotch Crunch Designer Cake",
+            "title": "Butterscotch Crunch Designer Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heavenly-butterscotch-crunch-cake-cake3542butt-E.jpg",
+            "alt": "Butterscotch Crunch Designer Cake",
+            "title": "Butterscotch Crunch Designer Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/heavenly-butterscotch-crunch-cake-cake3542butt-F.jpg",
+            "alt": "Order Butterscotch Crunch Designer Cake",
+            "title": "Order Butterscotch Crunch Designer Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "heavenly-butterscotch-crunch-cake-cake3542butt-A.jpg",
+            "alt": "Butterscotch Crunch Designer Cake",
+            "title": "Butterscotch Crunch Designer Cake"
+          },
+          {
+            "src": "heavenly-butterscotch-crunch-cake-cake3542butt-B.jpg",
+            "alt": "Top View Butterscotch Crunch Designer Cake Online",
+            "title": "Top View Butterscotch Crunch Designer Cake Online"
+          },
+          {
+            "src": "heavenly-butterscotch-crunch-cake-cake3542butt-C.jpg",
+            "alt": "Butterscotch Crunch Designer Cake Online",
+            "title": "Butterscotch Crunch Designer Cake Online"
+          },
+          {
+            "src": "heavenly-butterscotch-crunch-cake-cake3542butt-D.jpg",
+            "alt": "Butterscotch Crunch Designer Cake",
+            "title": "Butterscotch Crunch Designer Cake"
+          },
+          {
+            "src": "heavenly-butterscotch-crunch-cake-cake3542butt-E.jpg",
+            "alt": "Butterscotch Crunch Designer Cake",
+            "title": "Butterscotch Crunch Designer Cake"
+          },
+          {
+            "src": "heavenly-butterscotch-crunch-cake-cake3542butt-F.jpg",
+            "alt": "Order Butterscotch Crunch Designer Cake",
+            "title": "Order Butterscotch Crunch Designer Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 958,
+        "sku": "cake0007chbu",
+        "product_type": "regular_cake",
+        "title": "Butterscotch Chocolate Cake",
+        "long_title": "Butterscotch Chocolate Cake",
+        "url": "/p/cake/chocolate-butterscotch-cake0007chbu",
+        "sell_price": 599,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 239,
+        "ingredient": "Relish the soft-crunch with caramely-buttery flavoured vanilla sponge cake. It's a bite of heavenly layers of Vanilla and Chocolate Sponge with caramel chips, light crust, and whipped choclolate cream frosting.",
+        "mini_desc": "A moist butterscotch delight with layers of vanilla & chocolate cake base, rich cream chocolate glaze frosting...",
+        "full_desc": "Relish the soft-crunch with caramely-buttery flavoured vanilla sponge cake. It's a bite of heavenly layers of Vanilla and Chocolate Sponge with caramel chips, light crust, and whipped choclolate cream frosting.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-butterscotch-cake0007chbu-AA.jpg",
+            "alt": "Chocolate Butterscotch Cake",
+            "title": "Chocolate Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-butterscotch-cake0007chbu-AB.jpg",
+            "alt": "Top View of Chocolate Butterscotch Cake",
+            "title": "Top View of Chocolate Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-butterscotch-cake0007chbu-AC.jpg",
+            "alt": "Front View of Chocolate Butterscotch Cake",
+            "title": "Front View of Chocolate Butterscotch Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-chocolate-butterscotch-cake0007chbu-E.jpg",
+            "alt": "Product Ingredients",
+            "title": "Product Ingredients"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-chocolate-butterscotch-cake0007chbu-AA.jpg",
+            "alt": "Chocolate Butterscotch Cake",
+            "title": "Chocolate Butterscotch Cake"
+          },
+          {
+            "src": "sq-chocolate-butterscotch-cake0007chbu-AB.jpg",
+            "alt": "Top View of Chocolate Butterscotch Cake",
+            "title": "Top View of Chocolate Butterscotch Cake"
+          },
+          {
+            "src": "sq-chocolate-butterscotch-cake0007chbu-AC.jpg",
+            "alt": "Front View of Chocolate Butterscotch Cake",
+            "title": "Front View of Chocolate Butterscotch Cake"
+          },
+          {
+            "src": "sq-chocolate-butterscotch-cake0007chbu-E.jpg",
+            "alt": "Product Ingredients",
+            "title": "Product Ingredients"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 15427,
+        "sku": "cake3968choc-0.5",
+        "product_type": "regular_cake",
+        "title": "Oreo Chocolate Cake",
+        "long_title": "Oreo Chocolate Cake",
+        "url": "/p/cake/oreo-chocolate-drip-cake-cake3968choc",
+        "sell_price": 799,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 23,
+        "ingredient": "",
+        "mini_desc": "Savour a combination that is simply irresistible\u2014Oreos and chocolate! This choco drip cake is the ultimate...",
+        "full_desc": "Savour a combination that is simply irresistible\u2014Oreos and chocolate! This choco drip cake is the ultimate treat for birthdays or any moment that calls for a delight everyone will adore.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/oreo-chocolate-drip-cake-cake3968choc-a.jpg",
+            "alt": "Oreo Chocolate Drip Cake",
+            "title": "Oreo Chocolate Drip Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/oreo-chocolate-drip-cake-cake3968choc-c.jpg",
+            "alt": "Side View of Oreo Chocolate Drip Cake",
+            "title": "Side View of Oreo Chocolate Drip Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/oreo-chocolate-drip-cake-cake3968choc-c_0.jpg",
+            "alt": "Top-View of Oreo Chocolate Drip Cake",
+            "title": "Top-View of Oreo Chocolate Drip Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "oreo-chocolate-drip-cake-cake3968choc-a.jpg",
+            "alt": "Oreo Chocolate Drip Cake",
+            "title": "Oreo Chocolate Drip Cake"
+          },
+          {
+            "src": "oreo-chocolate-drip-cake-cake3968choc-c.jpg",
+            "alt": "Side View of Oreo Chocolate Drip Cake",
+            "title": "Side View of Oreo Chocolate Drip Cake"
+          },
+          {
+            "src": "oreo-chocolate-drip-cake-cake3968choc-c_0.jpg",
+            "alt": "Top-View of Oreo Chocolate Drip Cake",
+            "title": "Top-View of Oreo Chocolate Drip Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 12624,
+        "sku": "cake3212germ",
+        "product_type": "regular_cake",
+        "title": "German Black Forest Cake",
+        "long_title": "German Black Forest Cake",
+        "url": "/p/cake/a-classic-german-treat-cake3212germ",
+        "sell_price": 649,
+        "list_price": 0,
+        "ribbon": "New Arrival",
+        "rating": 4.9,
+        "total_reviews": 331,
+        "ingredient": "",
+        "mini_desc": "Dive into this rich cake where moist layers meet velvety truffle richness. The luscious cream, soft cherries,...",
+        "full_desc": "Dive into this rich cake where moist layers meet velvety truffle richness. The luscious cream, soft cherries, and chocolatey crunch create a symphony of taste and texture.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/a-classic-german-treat-cake3212germ-AA.jpg",
+            "alt": "German Black Forest Cake",
+            "title": "German Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/a-classic-german-treat-cake3212germ-bb.jpg",
+            "alt": "Top View of German Black Forest Cake",
+            "title": "Top View of German Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/a-classic-german-treat-cake3212germ-CC.jpg",
+            "alt": "Side View of German Black Forest Cake",
+            "title": "Side View of German Black Forest Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/a-classic-german-treat-cake3212germ-DD.jpg",
+            "alt": "Sliced View of German Black Forest Cake",
+            "title": "Sliced View of German Black Forest Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "a-classic-german-treat-cake3212germ-AA.jpg",
+            "alt": "German Black Forest Cake",
+            "title": "German Black Forest Cake"
+          },
+          {
+            "src": "a-classic-german-treat-cake3212germ-bb.jpg",
+            "alt": "Top View of German Black Forest Cake",
+            "title": "Top View of German Black Forest Cake"
+          },
+          {
+            "src": "a-classic-german-treat-cake3212germ-CC.jpg",
+            "alt": "Side View of German Black Forest Cake",
+            "title": "Side View of German Black Forest Cake"
+          },
+          {
+            "src": "a-classic-german-treat-cake3212germ-DD.jpg",
+            "alt": "Sliced View of German Black Forest Cake",
+            "title": "Sliced View of German Black Forest Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 9026,
+        "sku": "cake2370rasm",
+        "product_type": "regular_cake",
+        "title": "Rasmalai Pista Whipped Cream Cake",
+        "long_title": "Rasmalai Pista Whipped Cream Cake",
+        "url": "/p/cake/round-luscious-rasmalai-cake-cake2370rasm",
+        "sell_price": 675,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 877,
+        "ingredient": "",
+        "mini_desc": "A fusion house of Indian & western delicacies, this cake is baked & layered with handmade whipped cream...",
+        "full_desc": "A fusion house of Indian & western delicacies, this cake is baked & layered with handmade whipped cream frosting & Rasmalai crumbs. This cake is further decorated with pistachios & whole Rasmalais.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-luscious-rasmalai-cake-cake2370rasm-AA.jpg",
+            "alt": "Rasmalai Pista Whipped Cream Cake",
+            "title": "Rasmalai Pista Whipped Cream Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-luscious-rasmalai-cake-cake2370rasm-AB.jpg",
+            "alt": "Top View of Round Luscious Rasmalai Cake",
+            "title": "Top View of Round Luscious Rasmalai Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-luscious-rasmalai-cake-cake2370rasm-AC.jpg",
+            "alt": "Side View of Round Luscious Rasmalai Cake",
+            "title": "Side View of Round Luscious Rasmalai Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-luscious-rasmalai-cake-cake2370rasm-AD.jpg",
+            "alt": "Slice of Relish Rasmalai Cake",
+            "title": "Slice of Relish Rasmalai Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/sq-round-luscious-rasmalai-cake-cake2370rasm-AE.jpg",
+            "alt": "Slice of Relish Rasmalai Cake",
+            "title": "Slice of Relish Rasmalai Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "sq-round-luscious-rasmalai-cake-cake2370rasm-AA.jpg",
+            "alt": "Rasmalai Pista Whipped Cream Cake",
+            "title": "Rasmalai Pista Whipped Cream Cake"
+          },
+          {
+            "src": "sq-round-luscious-rasmalai-cake-cake2370rasm-AB.jpg",
+            "alt": "Top View of Round Luscious Rasmalai Cake",
+            "title": "Top View of Round Luscious Rasmalai Cake"
+          },
+          {
+            "src": "sq-round-luscious-rasmalai-cake-cake2370rasm-AC.jpg",
+            "alt": "Side View of Round Luscious Rasmalai Cake",
+            "title": "Side View of Round Luscious Rasmalai Cake"
+          },
+          {
+            "src": "sq-round-luscious-rasmalai-cake-cake2370rasm-AD.jpg",
+            "alt": "Slice of Relish Rasmalai Cake",
+            "title": "Slice of Relish Rasmalai Cake"
+          },
+          {
+            "src": "sq-round-luscious-rasmalai-cake-cake2370rasm-AE.jpg",
+            "alt": "Slice of Relish Rasmalai Cake",
+            "title": "Slice of Relish Rasmalai Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 959,
+        "sku": "cake0008choc",
+        "product_type": "regular_cake",
+        "title": "Choco Chip Truffle Cake",
+        "long_title": "Choco Chip Truffle Cake",
+        "url": "/p/cake/chocolate-chip-cake0008choc",
+        "sell_price": 549,
+        "list_price": 599,
+        "ribbon": "Best Seller",
+        "rating": 4.9,
+        "total_reviews": 807,
+        "ingredient": "",
+        "mini_desc": "This signature specialty cake boasts a moist chocolate base, decadent chocolate ganache topping, & adorned...",
+        "full_desc": "This signature specialty cake boasts a moist chocolate base, decadent chocolate ganache topping, & adorned with an abundance of luscious choco chips, adding a delightful crunch to each bite.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/chocolate-chip-cake0008choc-AAA.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/chocolate-chip-cake0008choc-BBB.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/chocolate-chip-cake0008choc-CCC.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/chocolate-chip-cake0008choc-DDD.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "chocolate-chip-cake0008choc-AAA.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          },
+          {
+            "src": "chocolate-chip-cake0008choc-BBB.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          },
+          {
+            "src": "chocolate-chip-cake0008choc-CCC.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          },
+          {
+            "src": "chocolate-chip-cake0008choc-DDD.jpg",
+            "alt": "Choco Chip Truffle Cake",
+            "title": "Choco Chip Truffle Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 9,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 4680,
+        "sku": "cake896choc",
+        "product_type": "regular_cake",
+        "title": "Truffle Ganache Cake",
+        "long_title": "Truffle Ganache Cake",
+        "url": "/p/cake/choco-truffle-cake-2-cake896choc",
+        "sell_price": 549,
+        "list_price": 599,
+        "ribbon": "",
+        "rating": 4.9,
+        "total_reviews": 434,
+        "ingredient": "Indulge in the irresistible taste of our round truffle cake topped with white chocolate garnish decorations and crunchy-chocolatey roll sticks. ",
+        "mini_desc": "Indulge in the irresistible taste of our round chocolate truffle cake topped with chocolate cream frosting,...",
+        "full_desc": "Indulge in the irresistible taste of our round truffle cake topped with white chocolate garnish decorations and crunchy-chocolatey roll sticks. ",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake-2-cake896choc-aaaa.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake-2-cake896choc-bbbb.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake-2-cake896choc-ccc.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake-2-cake896choc-DDD.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "https://bkmedia.bakingo.com/choco-truffle-cake-2-cake896choc-EEE.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          }
+        ],
+        "image": [
+          {
+            "src": "choco-truffle-cake-2-cake896choc-aaaa.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "choco-truffle-cake-2-cake896choc-bbbb.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "choco-truffle-cake-2-cake896choc-ccc.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "choco-truffle-cake-2-cake896choc-DDD.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          },
+          {
+            "src": "choco-truffle-cake-2-cake896choc-EEE.jpg",
+            "alt": "Chocolate Truffle Symphony Cake",
+            "title": "Chocolate Truffle Symphony Cake"
+          }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 9,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      },
+      {
+        "node_id": 14137,
+        "sku": "cake3589choc",
+        "product_type": "regular_cake",
+        "title": "Mens Day Bow Choco Truffle Cake",
+        "long_title": "Mens Day Bow Choco Truffle Cake",
+        "url": "/p/cake/mens-day-bow-truffle-cake-cake3589choc",
+        "sell_price": 649,
+        "list_price": 0,
+        "ribbon": "",
+        "rating": 5,
+        "total_reviews": 16,
+        "ingredient": "",
+        "mini_desc": "This couverture chocolate truffle cake comes topped with elements of tuxedo made out of fondant such as a red...",
+        "full_desc": "This couverture chocolate truffle cake comes topped with elements of tuxedo made out of fondant such as a red bow and a white shirt flap.",
+        "isSelected": false,
+        "hamperpricerange": null,
+        "assortedpricerange": null,
+        "priceRange": null,
+        "images": [
+          { "src": "https://bkmedia.bakingo.com/mens-day-bow-truffle-cake-cake3589choc-A.jpg", "alt": "", "title": "" },
+          { "src": "https://bkmedia.bakingo.com/mens-day-bow-truffle-cake-cake3589choc-B.jpg", "alt": "", "title": "" },
+          { "src": "https://bkmedia.bakingo.com/mens-day-bow-truffle-cake-cake3589choc-C.jpg", "alt": "", "title": "" }
+        ],
+        "image": [
+          { "src": "mens-day-bow-truffle-cake-cake3589choc-A.jpg", "alt": "", "title": "" },
+          { "src": "mens-day-bow-truffle-cake-cake3589choc-B.jpg", "alt": "", "title": "" },
+          { "src": "mens-day-bow-truffle-cake-cake3589choc-C.jpg", "alt": "", "title": "" }
+        ],
+        "customize": false,
+        "eggless": true,
+        "preparation_time": null,
+        "exp_product": 0,
+        "discount": 0,
+        "stock": "true",
+        "era_product": false,
+        "prod_detail_data": { "couponCode": "" }
+      }
+    ],
+    "is_primary_filter_enabled": 1,
+    "current_time": 16,
+    "image_baseurl": "https://bkmedia.bakingo.com/",
+    "cardblock": [],
+    "blogs": [
+      {
+        "title": "Top 10 Flavours of Cakes Becoming Popular in Ranchi?",
+        "url": "https://www.bakingo.com/blog/top-10-cake-flavors-becoming-popular-in-ranchi/",
+        "description": "A cake is the most tempting dessert we can\u2019t say a no to. Most of the people in Ranchi go drooling over freshly-baked cakes that taste heavenly delicious. This irresistible sweet treat suits every occasion like birthdays, anniversaries, engagements, weddings etc. Online cake shops provide you with the best cake flavors to make your celebrations [\u2026]\n",
+        "thumbnail": "https://bakingo.com/blog/wp-content/uploads/2022/06/cover-6.jpg",
+        "category": "Baked Fresh",
+        "date": "2022-06-28 05:44:15"
+      }
+    ],
+    "meta": {
+      "is_header": true,
+      "is_footer": true,
+      "is_meta": true,
+      "is_sorting": true,
+      "is_fitler": true,
+      "header": { "area": "Online Cake Delivery in Ranchi", "area_1": "" },
+      "footer": {
+        "area": "<div class=\"dph-ck col-md-12\" style=\"clear:both\">\r\n<h2>Choose Bakingo for Online Cake Delivery in Ranchi</h2>\r\n\r\n<p>Say hello to your most reliable online cake shop in Ranchi. Ranchi is a city that's quite dear to us at Bakingo for not just one but many reasons. Bakingo, as you must already know, is a name that is synonymous with delicious cakes. We, at Bakingo, offer you cakes of all kinds at all times. It is the delightful taste of our cakes and their light freshness that goes on to help us impress our customers. We are an FSSAI certified bakery which means that we keep your safety and well being at the top of our list of priorities. Our online cake delivery in Ranchi service has received a lovely response from you. It is always things like these that help us deliver the best cakes in Ranchi.</p>\r\n\r\n<h2>Order Cake in Ranchi From Wide Variety of From Bakingo</h2>\r\n\r\n<p>If you are choosing to order cake online in Ranchi from Bakingo, we assure you that you are in safe hands. It is customer satisfaction that matters the most to us. This is why we offer you a wide variety of cakes for you to choose from. Below we have mentioned some of the cake types that you can find at Bakingo.</p>\r\n\r\n<ul>\r\n\t<li><a href=\"https://www.bakingo.com/photo-cakes\">Photo Cakes</a></li>\r\n\t<li>Vegan Cakes</li>\r\n\t<li>Heart Shaped Cakes</li>\r\n\t<li><a href=\"https://www.bakingo.com/pinata-cakes\">Pinata Cakes</a></li>\r\n\t<li>Party Cakes</li>\r\n\t<li>Designer Cakes, etc.</li>\r\n</ul>\r\n\r\n<p>Just because we offer you a wide variety of cakes at Bakingo Ranchi cake shop, it doesn't mean that they are super expensive. We ensure that all of our cakes are reasonably priced while ensuring the top quality. Baking has got a cake for everyone, no matter what their budget is. On that note, the price range of our cakes is listed below.</p>\r\n\r\n<ul>\r\n\t<li>Cakes start from 349 INR</li>\r\n\t<li>Photo cakes start from 649 INR</li>\r\n\t<li>Designer cakes start from 649 INR</li>\r\n</ul>\r\n\r\n<h2>Order Cake Online in Ranchi from a Wide Variety of Cakes Flavours</h2>\r\n\r\n<p>It is very common for a lot of people to confuse the came type for its flavor. We, at Bakingo, ensure that we bring to your notice the difference between the cake type and its flavor. The cake type is about the structure or its formula while the flavour of the cake, as the name suggests, is about the taste of the cake. At Bakingo, you can be sure to find all flavors of cakes and they only start at 449 INR. Expect the finest quality of cakes, with on-time delivery. \r\nWe also offer a range specifically for different occasions like birthdays and anniversaries. Surprise your loved ones with the most scrumptious cakes in the town. You can also order delicious cartoon cakes, kids' favourite character cakes, and theme-based cakes according to your celebrations and themes. Add the most flavoursome touch to your celebrations with a click of a button; order cake online in Ranchi and enjoy the most memorable events with your loved ones.With only top-quality ingredients used, here are some of the popular flavors of cake at Bakingo.</p>\r\n\r\n<ul>\r\n\t<li><a href=\"https://www.bakingo.com/chocolate-cakes\">Chocolate Cakes</a></li>\r\n\t<li><a href=\"https://www.bakingo.com/eggless-cakes\">Eggless Cakes</a></li>\r\n\t<li><a href=\"https://www.bakingo.com/black-forest-cakes\">Black Forest Cakes</a></li>\r\n\t<li><a href=\"https://www.bakingo.com/butterscotch-cakes\">Butterscotch Cakes</a></li>\r\n\t<li>Strawberry Cakes, etc</li>\r\n</ul>\r\n\r\n<h2>Send Cake to Ranchi To Your Loved Ones on All Special Occasions</h2>\r\n\r\n<p>Bakingo understands how much your special occasions mean to you. We are constantly trying to make your special occasions even sweeter and special through our cakes. It is something that we have learned and mastered over the course of time that a good dessert can do wonders. So, we are constantly enjoying the process of further beautifying your special occasions through our delicious cakes. Below we have listed some of the occasions for which we offer cakes.</p>\r\n\r\n<ul>\r\n\t<li><a href=\"https://www.bakingo.com/birthday-cakes\">Birthday cakes</a></li>\r\n\t<li><a href=\"https://www.bakingo.com/anniversary-cakes\">Anniversary cakes</a></li>\r\n\t<li><a href=\"https://www.bakingo.com/valentine-cakes\">Valentine cakes</a></li>\r\n\t<li><a href=\"https://www.bakingo.com/womens-day-cakes\">Women day cakes</a></li>\r\n\t<li>Mothers day cakes</li>\r\n\t<li><a href=\"https://www.bakingo.com/fathers-day-cakes\">Fathers day cakes</a>, etc</li>\r\n</ul>\r\n\r\n<h2>Celebrate Valentine's Day with your Loved Ones with Bakingo</h2>\r\n<p>Add a boatload of love and sweetness to your Valentine\u2019s celebrations with a delightful range of Valentine's special cakes from Bakingo, now easily accessible online in Ranchi. Every <a href=\"https://www.bakingo.com/valentine-cakes\">Valentine cake</a> in our selection is crafted with quality ingredients and infused with love, making it perfect for adding more sweetness to your celebrations or elevating your surprises for your special someone. Whether you want a classic chocolate cake or prefer an exotic blueberry cheesecake, rest assured that your taste buds will be mesmerized by our freshly delivered cakes that will surely bring cherished smiles.</p>\r\n<p>No matter where you are, if you wish to surprise your partner by sending online cakes in Ranchi, then fret not, as Bakingo provides an effortless ordering process with swift doorstep delivery services. You can find all types of trending cakes in multiple flavor options for a memorable celebration. Apart from cakes, if you wish to surprise your dearest one with other <a href=\"https://www.bakingo.com/valentines-day-desserts\"> Valentine Day Desserts</a>, then don\u2019t look anywhere else, as Bakingo also offers a plethora of lip-smackingly delicious cupcakes, brownies, jar cakes, pastries, and so much more. So, without any delay, let Bakingo be your cupid in making your Valentine\u2019s celebrations memorable and filled with cherished moments of bliss.</p>\r\n<h2>Get Same Day and Midnight Cake Delivery in Ranchi via Bakingo</h2>\r\n\r\n<p>So, you have been wanting to get midnight cake delivery in Ranchi. Don't worry, Bakingo has got your back. We offer <a href=\"https://www.bakingo.com/midnight-cakes\">Midnight cake delivery</a> in not only Ranchi but all across India. It will charge you a total of 249 INR plus the price of the cake that you are ordering. As you must already know the freshness guaranteed with all of our cakes is something that we are very proud of, we also need you to know how we offer Free home delivery of all our Same day delivery of cakes. However, you need to place your cake order before eight in the evening to avail this amazing same-day free cake delivery. We offer <a href=\"https://www.bakingo.com/eggless-cakes\">eggless cakes</a> that have been baked with utmost affection and care. There are also provisions for 2-hour delivery, Fix time delivery, and early morning delivery of cakes with Bakingo. You must try them out if they suit your needs better.</p>\r\n\r\n<h2>Make your Loved Ones Feel Special with Bakingo's Early Morning and FIx time Cake Delivery in Ranchi</h2>\r\n\r\n<p>We would just like to begin by saying that Bakingo is all in with you as you do your best to make your loved one feel special. Our cake delivery is a great way in which you can do that. We offer you cake delivery at times and situations in which you wouldn't usually be able to buy a cake on your own. Take our early morning and midnight cake delivery for example. They only cost you two hundred and forty rupees. We also offer fixed-time cake delivery which is only an extra charge of one hundred and fifty rupees. You also get the option to get your cake delivered at different time slots. For example, 6 p.m. to 9 p.m.</p>\r\n\r\n<h2>FAQs Related to Bakingo Cake Delivery in Ranchi</h2>\r\n<h3>Q1. Can you Deliver the Cake Near My house or at my home in  Ranchi?</h3>\r\n<p>Ans. Yes, with Bakingo\u2019s hassle-free delivery you can get your cake delivered right to your doorsteps.</p>\r\n\r\n<h3>Q2. Can I customize the cake?</h3>\r\n<p>Ans. Yes, Bakingo provides you with an option to customize your cake as per your need and requirements.</p>\r\n\r\n\r\n<h3>Q3. Is there any extra charge for midnight cake delivery in Ranchi?</h3>\r\n<p>Ans. Yes, if you wish to order a cake for midnight delivery, you have to pay an extra charge of rs 250. </p>\r\n\r\n\r\n<h3>Q4. Can I order an A Alphabet cake online in Ranchi?</h3>\r\n<p>Ans. Yes, Ranging from A-Z Bakingo has every variety of alphabet cakes.</p>\r\n\r\n<h3>Q5. Is the cake served fresh?</h3>\r\n<p>Ans. Yes, we always serve fresh cakes as we bake cakes as per order. To place your order, visit our website- www.bakingo.com</p>\r\n\r\n<h3>Q6. Will I get the same cake as on the website?</h3>\r\n<p>Ans. Yes, You will get the same cake mentioned on the website. Explore our best-quality cakes with just a tap on your phone.</p>\r\n\r\n<h3>Q7. Which cake is best for Father\u2019s birthday?</h3>\r\n\r\n<p>Ans. All our cakes are the best and freshly baked. Bakingo offers a wide range of cakes for father ranging from heart shape, photo shape, to premium cakes, etc. Send your father a delicious token of love from us.</p>\r\n\r\n\r\n<h3>Q8. What do I need to do to place an order for a large gathering?</h3>\r\n<p>Ans. Bakingo is all ready to make your celebration grand. For that, you have to inform us in advance. Our bakers need to be informed in advance to provide you with best quality cakes. For details, please contact our customer support.</p>\r\n\r\n\r\n<h3>Q9. Do you use fresh ingredients in fruit cake?</h3>\r\n<p>Ans. Yes, our cakes are freshly baked using 100% fresh quality ingredients. We never compromise with quality. All our fruits are fresh and natural.</p>\r\n\r\n<h3>Q10. How many people are served 0.5 kg cake?</h3>\r\n<p>Ans. It can be served to 5 people. </p>\r\n\r\n\r\n<h3>Q11. It's my kids birthday, which cake flavor is the best?</h3>\r\n<p>Ans. You can choose from a wide range of flavors including chocolate, vanilla, butterscotch, red velvet, black forest, pineapple, etc. Make your kid smile with joy with our delicious range of cake flavors. </p>\r\n\r\n<h3>Q12. Does a photo sheet affect the quality and taste of cake?</h3>\r\n<p>Ans. Not really. It has little effect on the cake taste, which you cannot easily identify. </p>\r\n\r\n<h3>Q13. Is the Same day delivery available for designer cakes?</h3>\r\n<p>Ans. Yes, Bakingo offers same-day delivery for designer cakes. For more details, visit the website www.bakingo.com</p>\r\n\r\n\r\n<h2>Bakingo Cake Shops Near You In Ranchi</h2>\r\n\r\n<div itemscope itemtype=\"https://schema.org/LocalBusiness\">\r\n  <span itemprop=\"name\">Bakingo - Cake Shop in Ashok Nagar</span>\r\n\r\n\r\n  <div itemprop=\"address\" itemscope itemtype=\"https://schema.org/PostalAddress\">\r\n    <span itemprop=\"streetAddress\">Argora Chowk, next to Sweet Centre, Ashok Nagar</span>,\r\n    <span itemprop=\"addressLocality\">Ranchi</span>,\r\n    <span itemprop=\"addressRegion\">Jharkhand</span>, <span itemprop=\"postalCode\">834002</span>\r\n  </div>\r\n  <span itemprop=\"telephone\">08882553333</span>,\r\n    <span itemprop=\"email\">care@bakingo.com</span>\r\n</div>\r\n\r\n<p><a href=\"https://goo.gl/maps/N4nw64suneE3pxgAA\">Get Directions</a></p>\r\n\r\n<p>View All <a href=\"https://www.bakingo.com/cake-stores-in-ranchi\"><strong>Cake Stores in Ranchi</strong></a></p>\r\n\r\n</div>"
+      },
+      "metatag": {
+        "title": "Online Cake Delivery in Ranchi | Upto \u20b9200 OFF | Free Delivery",
+        "description": "Send Cake to Ranchi Online from Bakingo with Free Delivery. Order Cake Online in Rachi for Your Loved Ones. Avail \u2713Same day & Midnight Delivery \u27132hrs Delivery.",
+        "keywords": "",
+        "robots": ",,",
+        "og:type": "website",
+        "og:url": "https://www.bakingo.com/cakes/ranchi",
+        "og:title": "Online Cake Delivery in Ranchi | Upto \u20b9200 OFF | Free Delivery",
+        "og:description": "Send Cake to Ranchi Online from Bakingo with Free Delivery. Order Cake Online in Rachi for Your Loved Ones. Avail \u2713Same day & Midnight Delivery \u27132hrs Delivery.",
+        "twitter:url": "https://www.bakingo.com/cakes/ranchi",
+        "twitter:title": "Online Cake Delivery in Ranchi | Upto \u20b9200 OFF | Free Delivery",
+        "twitter:description": "Send Cake to Ranchi Online from Bakingo with Free Delivery. Order Cake Online in Rachi for Your Loved Ones. Avail \u2713Same day & Midnight Delivery \u27132hrs Delivery.",
+        "canonical": "https://www.bakingo.com/cakes/ranchi"
+      },
+      "sort_by": [
+        { "order": "ASC", "field": "prod_pos", "label": "Popularity" },
+        { "order": "ASC", "field": "commerce_price_amount", "label": "Price Low to High" },
+        { "order": "DESC", "field": "commerce_price_amount_1", "label": "Price High to Low" }
+      ],
+      "filter": []
+    },
+    "quick-links": {
+      "menu-quicklinks": [
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "TOP CAKE DELIVERY CITIES",
+          "has_children": 1,
+          "weight": -50,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/delhi",
+              "router_path": "cakes/delhi",
+              "link_title": "Delhi",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/bangalore",
+              "router_path": "cakes/bangalore",
+              "link_title": "Bangalore",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/gurgaon",
+              "router_path": "cakes/gurgaon",
+              "link_title": "Gurgaon",
+              "has_children": 0,
+              "weight": -47
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/noida",
+              "router_path": "cakes/noida",
+              "link_title": "Noida",
+              "has_children": 0,
+              "weight": -46
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/ghaziabad",
+              "router_path": "cakes/ghaziabad",
+              "link_title": "Ghaziabad",
+              "has_children": 0,
+              "weight": -45
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/hyderabad",
+              "router_path": "cakes/hyderabad",
+              "link_title": "Hyderabad",
+              "has_children": 0,
+              "weight": -44
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/kolkata",
+              "router_path": "cakes/kolkata",
+              "link_title": "Kolkata",
+              "has_children": 0,
+              "weight": -43
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/chennai",
+              "router_path": "cakes/chennai",
+              "link_title": "Chennai",
+              "has_children": 0,
+              "weight": -42
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/mumbai",
+              "router_path": "cakes/mumbai",
+              "link_title": "Mumbai",
+              "has_children": 0,
+              "weight": -41
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/pune",
+              "router_path": "cakes/pune",
+              "link_title": "Pune",
+              "has_children": 0,
+              "weight": -40
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/secunderabad",
+              "router_path": "cakes/secunderabad",
+              "link_title": "Secunderabad",
+              "has_children": 0,
+              "weight": -39
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/coimbatore",
+              "router_path": "cakes/coimbatore",
+              "link_title": "Coimbatore",
+              "has_children": 0,
+              "weight": -38
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/kanpur",
+              "router_path": "cakes/kanpur",
+              "link_title": "Kanpur",
+              "has_children": 0,
+              "weight": -37
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/jaipur",
+              "router_path": "cakes/jaipur",
+              "link_title": "Jaipur",
+              "has_children": 0,
+              "weight": -36
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/faridabad",
+              "router_path": "cakes/faridabad",
+              "link_title": "Faridabad",
+              "has_children": 0,
+              "weight": -35
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/ahmedabad",
+              "router_path": "cakes/ahmedabad",
+              "link_title": "Ahmedabad",
+              "has_children": 0,
+              "weight": -34
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/lucknow",
+              "router_path": "cakes/lucknow",
+              "link_title": "Lucknow",
+              "has_children": 0,
+              "weight": -33
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/ranchi",
+              "router_path": "cakes/ranchi",
+              "link_title": "Ranchi",
+              "has_children": 0,
+              "weight": -32
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/ludhiana",
+              "router_path": "cakes/ludhiana",
+              "link_title": "Ludhiana",
+              "has_children": 0,
+              "weight": -31
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/chandigarh",
+              "router_path": "cakes/chandigarh",
+              "link_title": "Chandigarh",
+              "has_children": 0,
+              "weight": -30
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "Birthday Cakes For",
+          "has_children": 1,
+          "weight": -48,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-father",
+              "router_path": "cakes/for-father",
+              "link_title": "Father",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-mother",
+              "router_path": "cakes/for-mother",
+              "link_title": "Mother",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-kids",
+              "router_path": "cakes/for-kids",
+              "link_title": "Kids",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-wife",
+              "router_path": "cakes/for-wife",
+              "link_title": "Wife",
+              "has_children": 0,
+              "weight": -47
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-husband",
+              "router_path": "cakes/for-husband",
+              "link_title": "Husband",
+              "has_children": 0,
+              "weight": -46
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-friend",
+              "router_path": "cakes/for-friend",
+              "link_title": "Friend",
+              "has_children": 0,
+              "weight": -45
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-her",
+              "router_path": "cakes/for-her",
+              "link_title": "Her",
+              "has_children": 0,
+              "weight": -44
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-him",
+              "router_path": "cakes/for-him",
+              "link_title": "Him",
+              "has_children": 0,
+              "weight": -43
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-brother",
+              "router_path": "cakes/for-brother",
+              "link_title": "Brother",
+              "has_children": 0,
+              "weight": -41
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-sister",
+              "router_path": "cakes/for-sister",
+              "link_title": "Sister",
+              "has_children": 0,
+              "weight": -40
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-boy",
+              "router_path": "cakes/for-boy",
+              "link_title": "Boy",
+              "has_children": 0,
+              "weight": -39
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-girl",
+              "router_path": "cakes/for-girl",
+              "link_title": "Girl",
+              "has_children": 0,
+              "weight": -38
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-boyfriend",
+              "router_path": "cakes/for-boyfriend",
+              "link_title": "Boyfriend",
+              "has_children": 0,
+              "weight": -37
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cakes/for-girlfriend",
+              "router_path": "cakes/for-girlfriend",
+              "link_title": "Girlfriend",
+              "has_children": 0,
+              "weight": -36
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "Theme Cakes",
+          "has_children": 1,
+          "weight": -47,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/car-cakes",
+              "router_path": "designer-cakes/car-cakes",
+              "link_title": "Car",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/cartoon-cakes",
+              "router_path": "designer-cakes/cartoon-cakes",
+              "link_title": "Cartoon",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/spiderman-cakes",
+              "router_path": "designer-cakes/spiderman-cakes",
+              "link_title": "Spiderman",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/doraemon-cakes",
+              "router_path": "designer-cakes/doraemon-cakes",
+              "link_title": "Doraemon",
+              "has_children": 0,
+              "weight": -47
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/princess-cakes",
+              "router_path": "designer-cakes/princess-cakes",
+              "link_title": "Princess",
+              "has_children": 0,
+              "weight": -46
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/barbie-cakes",
+              "router_path": "designer-cakes/barbie-cakes",
+              "link_title": "Barbie",
+              "has_children": 0,
+              "weight": -45
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/butterfly-cakes",
+              "router_path": "designer-cakes/butterfly-cakes",
+              "link_title": "Butterfly",
+              "has_children": 0,
+              "weight": -44
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/cricket-cakes",
+              "router_path": "designer-cakes/cricket-cakes",
+              "link_title": "Cricket",
+              "has_children": 0,
+              "weight": -43
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/avenger-cakes",
+              "router_path": "designer-cakes/avenger-cakes",
+              "link_title": "Avenger",
+              "has_children": 0,
+              "weight": -42
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/cocomelon-cakes",
+              "router_path": "designer-cakes/cocomelon-cakes",
+              "link_title": "Cocomelon",
+              "has_children": 0,
+              "weight": -41
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/baby-shower-cakes",
+              "router_path": "designer-cakes/baby-shower-cakes",
+              "link_title": "Baby Shower",
+              "has_children": 0,
+              "weight": -40
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/jungle-theme-cakes",
+              "router_path": "designer-cakes/jungle-theme-cakes",
+              "link_title": "Jungle Theme",
+              "has_children": 0,
+              "weight": -39
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/free-fire-cakes",
+              "router_path": "designer-cakes/free-fire-cakes",
+              "link_title": "Free Fire",
+              "has_children": 0,
+              "weight": -38
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/number-cakes",
+              "router_path": "designer-cakes/number-cakes",
+              "link_title": "Number",
+              "has_children": 0,
+              "weight": -37
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/hello-kitty-cakes",
+              "router_path": "designer-cakes/hello-kitty-cakes",
+              "link_title": "Hello Kitty",
+              "has_children": 0,
+              "weight": -36
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/football-cakes",
+              "router_path": "designer-cakes/football-cakes",
+              "link_title": "Football",
+              "has_children": 0,
+              "weight": -35
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/mickey-mouse-cakes",
+              "router_path": "designer-cakes/mickey-mouse-cakes",
+              "link_title": "Mickey Mouse",
+              "has_children": 0,
+              "weight": -34
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/superhero-cakes",
+              "router_path": "designer-cakes/superhero-cakes",
+              "link_title": "Superhero",
+              "has_children": 0,
+              "weight": -33
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/beer-cakes",
+              "router_path": "designer-cakes/beer-cakes",
+              "link_title": "Beer",
+              "has_children": 0,
+              "weight": -32
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/chota-bheem-cakes",
+              "router_path": "designer-cakes/chota-bheem-cakes",
+              "link_title": "Chota Bheem",
+              "has_children": 0,
+              "weight": -31
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/dinosaur-cakes",
+              "router_path": "designer-cakes/dinosaur-cakes",
+              "link_title": "Dinosaur",
+              "has_children": 0,
+              "weight": -30
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes/batman-cakes",
+              "router_path": "designer-cakes/batman-cakes",
+              "link_title": "Batman",
+              "has_children": 0,
+              "weight": -29
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "TRENDING CAKES BY TYPE",
+          "has_children": 1,
+          "weight": -46,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "pinata-cakes",
+              "router_path": "pinata-cakes",
+              "link_title": "Pinata Cakes",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "pull-me-up-cakes",
+              "router_path": "pull-me-up-cakes",
+              "link_title": "Pull Me Up Cakes",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "half-cakes",
+              "router_path": "half-cakes",
+              "link_title": "Half Cakes",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "bomb-cakes",
+              "router_path": "bomb-cakes",
+              "link_title": "Bomb Cakes",
+              "has_children": 0,
+              "weight": -47
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "party-cakes",
+              "router_path": "party-cakes",
+              "link_title": "Party Cakes",
+              "has_children": 0,
+              "weight": -46
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "cup-cakes",
+              "router_path": "cup-cakes",
+              "link_title": "Cup Cakes",
+              "has_children": 0,
+              "weight": -45
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "photo-cakes",
+              "router_path": "photo-cakes",
+              "link_title": "Photo Cakes",
+              "has_children": 0,
+              "weight": -44
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "jar-cakes",
+              "router_path": "jar-cakes",
+              "link_title": "Jar Cakes",
+              "has_children": 0,
+              "weight": -43
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "plum-cakes",
+              "router_path": "plum-cakes",
+              "link_title": "Plum Cakes",
+              "has_children": 0,
+              "weight": -42
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "eggless-cakes",
+              "router_path": "eggless-cakes",
+              "link_title": "Eggless Cakes",
+              "has_children": 0,
+              "weight": -41
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "BEST CAKES BY FLAVOUR",
+          "has_children": 1,
+          "weight": -45,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "chocolate-cakes",
+              "router_path": "chocolate-cakes",
+              "link_title": "Chocolate Cakes",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "black-forest-cakes",
+              "router_path": "black-forest-cakes",
+              "link_title": "Black Forest Cakes",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "butterscotch-cakes",
+              "router_path": "butterscotch-cakes",
+              "link_title": "Butterscotch Cakes",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "red-velvet-cakes",
+              "router_path": "red-velvet-cakes",
+              "link_title": "Red Velvet Cakes",
+              "has_children": 0,
+              "weight": -47
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "vanilla-cakes",
+              "router_path": "vanilla-cakes",
+              "link_title": "Vanilla Cakes",
+              "has_children": 0,
+              "weight": -46
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "strawberry-cakes",
+              "router_path": "strawberry-cakes",
+              "link_title": "Strawberry Cakes",
+              "has_children": 0,
+              "weight": -45
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "pineapple-cakes",
+              "router_path": "pineapple-cakes",
+              "link_title": "Pineapple Cakes",
+              "has_children": 0,
+              "weight": -44
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "heart-shape-cakes",
+              "router_path": "heart-shape-cakes",
+              "link_title": "Heart Shape Cakes",
+              "has_children": 0,
+              "weight": -43
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "fruit-cakes",
+              "router_path": "fruit-cakes",
+              "link_title": "Fruit Cakes",
+              "has_children": 0,
+              "weight": -42
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "coffee-cakes",
+              "router_path": "coffee-cakes",
+              "link_title": "Coffee Cakes",
+              "has_children": 0,
+              "weight": -41
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "Most Celebrated",
+          "has_children": 1,
+          "weight": -44,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "birthday-cakes",
+              "router_path": "birthday-cakes",
+              "link_title": "Birthday Cakes",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "1st-birthday-cakes",
+              "router_path": "1st-birthday-cakes",
+              "link_title": "First Birthday Cakes",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "anniversary-cakes",
+              "router_path": "anniversary-cakes",
+              "link_title": "Anniversary Cakes",
+              "has_children": 0,
+              "weight": -48
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "Occasion Special Cakes",
+          "has_children": 1,
+          "weight": -43,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "valentine-cakes",
+              "router_path": "valentine-cakes",
+              "link_title": "Valentine's Day Cakes",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "mothers-day-cakes",
+              "router_path": "mothers-day-cakes",
+              "link_title": "Mother's Day Cakes",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "fathers-day-cakes",
+              "router_path": "fathers-day-cakes",
+              "link_title": "Father's Day Cakes",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "friendship-day-cakes",
+              "router_path": "friendship-day-cakes",
+              "link_title": "Friendship Day Cakes",
+              "has_children": 0,
+              "weight": -47
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "rakhi-with-cakes",
+              "router_path": "rakhi-with-cakes",
+              "link_title": "Rakhi Cakes",
+              "has_children": 0,
+              "weight": -46
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "rakhi-gift-hampers",
+              "router_path": "rakhi-gift-hampers",
+              "link_title": "Rakhi Gift Hampers",
+              "has_children": 0,
+              "weight": -45
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "womens-day-cakes",
+              "router_path": "womens-day-cakes",
+              "link_title": "Women's Day Cakes",
+              "has_children": 0,
+              "weight": -44
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "halloween-cakes",
+              "router_path": "halloween-cakes",
+              "link_title": "Halloween Cakes",
+              "has_children": 0,
+              "weight": -43
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "christmas-cakes",
+              "router_path": "christmas-cakes",
+              "link_title": "Christmas Cakes",
+              "has_children": 0,
+              "weight": -41
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "new-year-cakes",
+              "router_path": "new-year-cakes",
+              "link_title": "New Year Cakes",
+              "has_children": 0,
+              "weight": -40
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "teachers-day-cakes",
+              "router_path": "teachers-day-cakes",
+              "link_title": "Teacher's Day Cakes",
+              "has_children": 0,
+              "weight": -39
+            }
+          ]
+        },
+        {
+          "menu_name": "menu-quicklinks",
+          "link_path": "<nolink>",
+          "router_path": "<nolink>",
+          "link_title": "Top Searches",
+          "has_children": 1,
+          "weight": -41,
+          "children": [
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "gourmet-cakes",
+              "router_path": "gourmet-cakes",
+              "link_title": "Gourmet Cakes",
+              "has_children": 0,
+              "weight": -50
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "designer-cakes",
+              "router_path": "designer-cakes",
+              "link_title": "Designer Cakes",
+              "has_children": 0,
+              "weight": -49
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "bakery-baskets",
+              "router_path": "bakery-baskets",
+              "link_title": "Gift Hampers",
+              "has_children": 0,
+              "weight": -48
+            },
+            {
+              "menu_name": "menu-quicklinks",
+              "link_path": "pastries",
+              "router_path": "pastries",
+              "link_title": "Pastries",
+              "has_children": 0,
+              "weight": -47
+            }
+          ]
+        }
+      ]
+    },
+    "product_review": {
+      "reviews": [
+        {
+          "author": "Asha Srivastava",
+          "city": "Ranchi",
+          "area": "Ranchi Airport",
+          "order_rating": 5,
+          "review_title": "Very good service",
+          "review_text": "Very good service",
+          "occasion": "Birthday",
+          "title": " Rich Butterscotch Crunch Cake",
+          "postdate": "25/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Avik Sarkar",
+          "city": "Ranchi",
+          "area": "Hatia",
+          "order_rating": 5,
+          "review_title": "Great as always",
+          "review_text": "Great as always",
+          "occasion": "Anniversary",
+          "title": "Creamy Photo Anniversary Cake",
+          "postdate": "24/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Saurabh",
+          "city": "Ranchi",
+          "area": "Hehal",
+          "order_rating": 5,
+          "review_title": "Very well made and quality c",
+          "review_text": "Very well made and quality cake",
+          "occasion": "Valentine's Day",
+          "title": "One Flower Candle",
+          "postdate": "22/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Warish Ahamed",
+          "city": "Ranchi",
+          "area": "Ashok Nagar",
+          "order_rating": 5,
+          "review_title": "It was an amazing experience",
+          "review_text": "It was an amazing experience. I'll give 5 stars to bakingo.",
+          "occasion": "",
+          "title": "Sweetest Emotions Photo Cake",
+          "postdate": "11/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Aliya Food Secrets",
+          "city": "Ranchi",
+          "area": "Bariatu",
+          "order_rating": 5,
+          "review_title": "Very tasty",
+          "review_text": "Very tasty",
+          "occasion": "",
+          "title": "Choco Chip Truffle Cake",
+          "postdate": "07/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Manisha",
+          "city": "Ranchi",
+          "area": "Hatia",
+          "order_rating": 5,
+          "review_title": "Delivery was done smoothly a",
+          "review_text": "Delivery was done smoothly and on time, all our expectations were met regarding the cake and the cake was delicious! Amazing service from Bakingo, totally recommend it to everyone.",
+          "occasion": "",
+          "title": "Rich Chocolate Truffle Cake",
+          "postdate": "08/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Riya",
+          "city": "Ranchi",
+          "area": "Hehal",
+          "order_rating": 5,
+          "review_title": "",
+          "review_text": "The cake was very tasty...and looking great...i highly recommend people to go for it without any doubt....you will really like the experience",
+          "occasion": "Anniversary",
+          "title": "Chocolate Mud Cake",
+          "postdate": "05/05/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "BIJAY AGARWAL",
+          "city": "Ranchi",
+          "area": "HATIA",
+          "order_rating": 5,
+          "review_title": "Very Good Cake and Test is A",
+          "review_text": "Very Good Cake and Test is Also Best Delivery Was Also Good in Time",
+          "occasion": "Birthday",
+          "title": "Magical Unicorn Cake",
+          "postdate": "29/04/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Amrita Barker",
+          "city": "Ranchi",
+          "area": "Ashok Nagar",
+          "order_rating": 5,
+          "review_title": "Good",
+          "review_text": "Good",
+          "occasion": "",
+          "title": null,
+          "postdate": "22/04/2025",
+          "images": [],
+          "rating": 5
+        },
+        {
+          "author": "Aakanksha",
+          "city": "Ranchi",
+          "area": "Lalpur",
+          "order_rating": 5,
+          "review_title": "Everyone liked the taste of ",
+          "review_text": "Everyone liked the taste of cake\u2764\ufe0f",
+          "occasion": "",
+          "title": "Bunch Of 6 Red Roses",
+          "postdate": "20/04/2025",
+          "images": [],
+          "rating": 5
+        }
+      ],
+      "rating": { "total": 125, "average": "4.9", "percent": 98, "google": 4.5, "facebook": 4.5 },
+      "url": "/reviews/c/ranchi"
+    },
+    "pager": { "current": 1, "total_pages": 4, "total_records": 112, "item_per_page": 30 }
+  },
+  "success": true,
+  "status_code": 200,
+  "_meta": { "current": 1, "total_pages": 4, "total_records": 112, "item_per_page": 30 }
+}

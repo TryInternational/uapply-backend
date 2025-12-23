@@ -1,5 +1,4 @@
-/* eslint-disable security/detect-unsafe-regex */
-const moment = require('moment');
+const { DateTime } = require('luxon'); // Import luxon
 
 const generatePassword = () => {
   const length = 8;
@@ -11,13 +10,20 @@ const generatePassword = () => {
   return retVal;
 };
 
-const DateToString = ({ dateIsoString, format = 'MMM DD YYYY', timezone = 'Asia/Kuwait' }) => {
-  const dateObject = new Date(dateIsoString);
+const DateToString = ({ dateIsoString, format = 'MMM dd yyyy', timezone = 'Asia/Kuwait' }) => {
+  const dateObject = DateTime.fromISO(dateIsoString, { zone: timezone });
 
-  return moment(dateObject).tz(timezone).format(format);
+  return dateObject.toFormat(format); // Use luxon for formatting
 };
+function convertASTToUTC(astDateTime, keepWallTime = false) {
+  if (keepWallTime) {
+    return astDateTime.setZone('UTC', { keepLocalTime: true });
+  }
+  return astDateTime.toUTC();
+}
 
 module.exports = {
   DateToString,
   generatePassword,
+  convertASTToUTC,
 };

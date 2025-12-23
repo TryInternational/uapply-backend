@@ -1,15 +1,22 @@
-FROM node:alpine
+FROM node:22
 
-RUN mkdir -p /usr/src/node-app && chown -R node:node /usr/src/node-app
+# Set build-time arg (default: production)
+ARG APP_ENV=production
+ENV NODE_ENV=${APP_ENV} APP_ENV=${APP_ENV}
 
-WORKDIR /usr/src/node-app
+# Install dependencies
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm ci --only=production  # Skip devDependencies in production
 
-COPY package.json yarn.lock ./
+# Copy app and .env file
+COPY . .
+RUN if [ "$APP_ENV" = "production" ]; then \
+      cp .env.production .env; \
+    else \
+      cp .env.staging .env; \
+    fi
 
-USER node
-
-RUN yarn install --pure-lockfile
-
-COPY --chown=node:node . .
-
+# Start the app
 EXPOSE 3000
+CMD [ "sh", "-c", "if [ \"$APP_ENV\" = \"production\" ]; then npm start; else npm run dev; fi" ]

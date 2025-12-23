@@ -8,7 +8,7 @@ const axios = require('axios');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
-const { applicationService, studentsService, userService } = require('../services');
+const { applicationService, studentsService, userService, notificationsService } = require('../services');
 
 // const { fatoorah } = require('../thirdparty');
 // const { DateToString } = require('../utils/Common');
@@ -178,7 +178,19 @@ const createApplication = catchAsync(async (req, res) => {
 
   // Send notifications to deduplicated users
   // if (process.env.APP_ENV === 'production') {
+
   await Promise.all(deduplicatedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
+  const io = req.app.get('io');
+
+  await notificationsService.createNotification(
+    io,
+    deduplicatedUsers.map((user) => user._id.toString()),
+    slackBody.attachments[0].pretext,
+    'application',
+    student.id,
+    application.id,
+    req.body.editor.id
+  );
   // }
   res.status(httpStatus.CREATED).send(application);
 });
@@ -397,11 +409,21 @@ const updateApplication = catchAsync(async (req, res) => {
           ],
         };
       }
-
+      const io = req.app.get('io');
       // Send the Slack notification if in production environment
-      // if (process.env.APP_ENV === 'production') {
-      await Promise.all(simplifiedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
-      // }
+      if (process.env.APP_ENV === 'production') {
+        await Promise.all(simplifiedUsers.map((user) => sendSlackNotification(user.slackMemberId, slackBody)));
+      }
+
+      await notificationsService.createNotification(
+        io,
+        simplifiedUsers.map((user) => user._id.toString()),
+        slackBody.attachments[0].pretext,
+        'application',
+        student.id,
+        application.id,
+        req.body.editor.id
+      );
 
       if (currentIndex !== -1) {
         // Update 'AwaitingResponseStudent' to 'Completed' and set isCurrent to false

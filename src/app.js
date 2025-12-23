@@ -21,47 +21,55 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
-// set security HTTP headers
+// Set security HTTP headers
 app.use(helmet());
 
-// parse json request body
+// Parse JSON request body
 app.use(express.json());
 
-// parse urlencoded request body
+// Parse URL-encoded request body
 app.use(express.urlencoded({ extended: true }));
 
-// sanitize request data
+// Sanitize request data
 app.use(xss());
 app.use(mongoSanitize());
 
-// gzip compression
+// Gzip compression
 app.use(compression());
 
-// enable cors
-app.use(cors());
-app.options('*', cors());
+const corsOptions = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+};
 
-// jwt authentication
-app.use(passport.initialize());
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler for all routes
+app.options('*', cors(corsOptions));
 passport.use('jwt', jwtStrategy);
 
-// limit repeated failed requests to auth endpoints
+// Limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
   app.use('/v1/auth', authLimiter);
 }
 
-// v1 api routes
+// v1 API routes
 app.use('/v1', routes);
 
-// send back a 404 error for any unknown api request
+// Send back a 404 error for any unknown API request
 app.use((req, res, next) => {
   next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
 });
 
-// convert error to ApiError, if needed
+// Convert error to ApiError, if needed
 app.use(errorConverter);
 
-// handle error
+// Handle error
 app.use(errorHandler);
 
 module.exports = app;

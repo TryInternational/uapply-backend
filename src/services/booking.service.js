@@ -160,6 +160,7 @@ const getTotalAmounts = async () => {
     totalAmountsByMonth,
     totalRentingAmount,
     totalInsuranceAmount,
+    bookings: bookings.length,
   };
 };
 

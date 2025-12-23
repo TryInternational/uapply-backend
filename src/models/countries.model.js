@@ -1,14 +1,28 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate, slug, mongooseHistory } = require('./plugins');
+const { toJSON, paginate, slug, trackable } = require('./plugins');
 
 const countriesSchema = mongoose.Schema(
   {
-    name: {
+    english_name: {
       type: String,
       trim: true,
     },
 
-    code: {
+    arabic_name: {
+      type: String,
+      trim: true,
+    },
+
+    alpha2_code: {
+      type: String,
+      trim: true,
+    },
+    alpha3_code: {
+      type: String,
+      trim: true,
+    },
+
+    phone_code: {
       type: String,
       trim: true,
     },
@@ -22,7 +36,7 @@ const countriesSchema = mongoose.Schema(
 countriesSchema.plugin(toJSON);
 countriesSchema.plugin(paginate);
 countriesSchema.plugin(slug);
-countriesSchema.plugin(mongooseHistory);
+countriesSchema.plugin(trackable);
 
 /**
  * @typedef Booking

@@ -1,13 +1,14 @@
 /* eslint-disable no-nested-ternary */
 const httpStatus = require('http-status');
 const { default: axios } = require('axios');
-const moment = require('moment');
+const { DateTime } = require('luxon');
 
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { leadsService } = require('../services');
 const config = require('../config/config');
+const { convertASTToUTC } = require('../utils/Common');
 
 const createLead = catchAsync(async (req, res) => {
   const checkQualified =
@@ -63,29 +64,41 @@ const createLead = catchAsync(async (req, res) => {
 
   res.status(httpStatus.CREATED).send(lead);
 });
-
 const getLeads = catchAsync(async (req, res) => {
-  let filter = pick(req.query, [
+  const filter = pick(req.query, [
     'name',
     'destination.en_name',
     'role',
     'qualified',
-    'degree',
-    'nationality',
-    'residence',
+    'degree.en_name',
+    'nationality.english_name',
+    'residence.english_name',
     'status',
     'source',
     'createdAt',
   ]);
+
+  if (req.query.nationality) {
+    filter['nationality.english_name'] = req.query.nationality;
+  }
+  if (req.query.residence) {
+    filter['residence.english_name'] = req.query.residence;
+  }
+  if (req.query.degree) {
+    filter['degree.en_name'] = req.query.degree;
+  }
   if (req.query.destination && req.query.destination.en_name) {
-    filter = { 'destination.en_name': req.query.destination.en_name };
+    filter['destination.en_name'] = req.query.destination.en_name;
   }
 
-  console.log('fytgjhklj', req.query.startDate);
+  console.log(filter);
   if (req.query.startDate && req.query.endDate) {
     filter.createdAt = {
-      $gte: moment.utc(req.query.startDate).startOf('day').subtract(3, 'hours').toDate(), // Start date filter
-      $lte: moment.utc(req.query.endDate).endOf('day').subtract(3, 'hours').toDate(), // End date filter
+      $gte: DateTime.fromJSDate(new Date(req.query.startDate), { zone: 'utc' })
+        .startOf('day')
+        .minus({ hours: 3 })
+        .toJSDate(), // Start date filter
+      $lte: DateTime.fromJSDate(new Date(req.query.endDate), { zone: 'utc' }).endOf('day').minus({ hours: 3 }).toJSDate(), // End date filter
     };
   }
 
@@ -168,10 +181,20 @@ const searchLeads = catchAsync(async (req, res) => {
 });
 
 const getLeadsCountByDates = async (filter) => {
+  const startDate = DateTime.fromISO(new Date(filter.startDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).startOf('day');
+  const endDate = DateTime.fromISO(new Date(filter.endDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).endOf('day');
+
+  const sd = convertASTToUTC(startDate, true).toString();
+  const ed = convertASTToUTC(endDate, true).toString();
+
   const formattedFilter = {
     ...filter,
-    startDate: moment.utc(filter.startDate).startOf('day').subtract(3, 'hours').toDate(),
-    endDate: moment.utc(filter.endDate).endOf('day').subtract(3, 'hours').toDate(),
+    startDate: sd,
+    endDate: ed,
   };
 
   const count = await leadsService.countLeads({

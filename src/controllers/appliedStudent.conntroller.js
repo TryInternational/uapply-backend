@@ -1,9 +1,10 @@
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
-const moment = require('moment');
+const { DateTime } = require('luxon');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { appliedStudentService } = require('../services');
+const { convertASTToUTC } = require('../utils/Common');
 
 const createAppliedStudent = catchAsync(async (req, res) => {
   const fees = await appliedStudentService.createAppliedStudent(req.body);
@@ -36,9 +37,18 @@ const getAmountPermonth = catchAsync(async (req, res) => {
 });
 
 const getAppliedPerCounselor = catchAsync(async (req, res) => {
+  const astTime = DateTime.fromISO(new Date(req.query.startDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).startOf('day');
+
   const data = await appliedStudentService.getUserNumberSums(
-    moment.utc(req.query.startDate).startOf('day').subtract(3, 'hours').toDate(),
-    moment.utc(req.query.endDate).endOf('day').subtract(3, 'hours').toDate()
+    convertASTToUTC(astTime, true).toString(),
+    convertASTToUTC(
+      DateTime.fromISO(new Date(req.query.endDate).toISOString(), {
+        zone: 'Asia/Riyadh',
+      }).endOf('day'),
+      true
+    ).toString()
   );
   res.send(data);
 });

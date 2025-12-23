@@ -12,7 +12,6 @@ const leadsSchema = mongoose.Schema(
     },
     residence: {
       type: Object,
-      trim: true,
     },
     city: {
       type: String,

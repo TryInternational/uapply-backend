@@ -1,32 +1,17 @@
-version: '3'
-
+version: '3.8'
 services:
-  node-app:
-    build: .
-    image: node-app
-    environment:
-      - MONGODB_URL=mongodb+srv://27017/node-boilerplate
+  production:
+    build:
+      context: .
+      args:
+        DEPLOY_ENV: production
     ports:
       - '3000:3000'
-    depends_on:
-      - mongodb
-    volumes:
-      - .:/usr/src/node-app
-    networks:
-      - node-network
 
-  mongodb:
-    image: mongo:4.2.1-bionic
+  staging:
+    build:
+      context: .
+      args:
+        DEPLOY_ENV: staging
     ports:
-      - '27017:27017'
-    volumes:
-      - dbdata:/data/db
-    networks:
-      - node-network
-
-volumes:
-  dbdata:
-
-networks:
-  node-network:
-    driver: bridge
+      - '4000:3000' # Different port for staging

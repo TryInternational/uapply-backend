@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate, slug, mongooseHistory } = require('./plugins');
+const { toJSON, paginate, slug, trackable } = require('./plugins');
 
 const coursesSchema = mongoose.Schema(
   {
@@ -71,7 +71,7 @@ const coursesSchema = mongoose.Schema(
 coursesSchema.plugin(toJSON);
 coursesSchema.plugin(paginate);
 coursesSchema.plugin(slug);
-coursesSchema.plugin(mongooseHistory);
+coursesSchema.plugin(trackable);
 
 /**
  * @typedef Booking

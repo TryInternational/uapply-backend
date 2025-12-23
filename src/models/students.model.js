@@ -67,6 +67,18 @@ const EmergencyContact = mongoose.Schema({
   },
 });
 
+const Credentials = mongoose.Schema({
+  type: {
+    type: String,
+  },
+  password: {
+    type: String,
+  },
+  email: {
+    type: String,
+  },
+});
+
 const studentsSchema = mongoose.Schema(
   {
     firstName: {
@@ -193,6 +205,9 @@ const studentsSchema = mongoose.Schema(
     },
     emergencyContact: {
       type: [EmergencyContact],
+    },
+    credentials: {
+      type: [Credentials],
     },
     sourceOfFund: {
       type: String,

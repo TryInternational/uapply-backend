@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const AutoIncrement = require('mongoose-sequence')(mongoose);
 
-const { toJSON, paginate, slug, mongooseHistory } = require('./plugins');
+const { toJSON, paginate, slug, trackable } = require('./plugins');
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -83,7 +83,7 @@ const bookingSchema = new mongoose.Schema(
 bookingSchema.plugin(toJSON);
 bookingSchema.plugin(paginate);
 bookingSchema.plugin(slug);
-bookingSchema.plugin(mongooseHistory);
+bookingSchema.plugin(trackable);
 bookingSchema.plugin(AutoIncrement, { inc_field: 'orderNo' });
 
 module.exports = mongoose.model('Booking', bookingSchema);

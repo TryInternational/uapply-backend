@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate, slug, mongooseHistory } = require('./plugins');
+const { toJSON, paginate, slug, trackable } = require('./plugins');
 
 const courseLevelSchema = mongoose.Schema(
   {
@@ -22,7 +22,7 @@ const courseLevelSchema = mongoose.Schema(
 courseLevelSchema.plugin(toJSON);
 courseLevelSchema.plugin(paginate);
 courseLevelSchema.plugin(slug);
-courseLevelSchema.plugin(mongooseHistory);
+courseLevelSchema.plugin(trackable);
 
 /**
  * @typedef CourseLevels

@@ -1,7 +1,8 @@
 const httpStatus = require('http-status');
-const moment = require('moment');
+const { DateTime } = require('luxon');
 const { Leads } = require('../models');
 const ApiError = require('../utils/ApiError');
+const { convertASTToUTC } = require('../utils/Common');
 
 /**
  * Create a lead
@@ -40,10 +41,20 @@ const getTop5ByContries = async (data) => {
     matchQuery.status = data.status;
   }
 
-  if (data.startDate && moment(data.startDate).isValid()) {
+  const startDate = DateTime.fromISO(new Date(data.startDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).startOf('day');
+  const endDate = DateTime.fromISO(new Date(data.endDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).endOf('day');
+
+  const sd = convertASTToUTC(startDate, true).toString();
+  const ed = convertASTToUTC(endDate, true).toString();
+
+  if (data.startDate && data.endDate) {
     matchQuery.createdAt = {
-      $gte: moment.utc(data.startDate).startOf('day').subtract(3, 'hours').toDate(),
-      $lte: moment.utc(data.endDate).endOf('day').subtract(3, 'hours').toDate(),
+      $gte: sd,
+      $lte: ed,
     };
   }
 
@@ -65,7 +76,6 @@ const getTop5ByContries = async (data) => {
       $limit: 5, // Limit to top 5 countries
     },
   ];
-
   const result = await Leads.aggregate(aggregationPipeline);
 
   return result;
@@ -76,10 +86,20 @@ const getTop5ByDegree = async (data) => {
     qualified: true,
   };
 
-  if (data.startDate && moment(data.startDate).isValid()) {
+  const startDate = DateTime.fromISO(new Date(data.startDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).startOf('day');
+  const endDate = DateTime.fromISO(new Date(data.endDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).endOf('day');
+
+  const sd = convertASTToUTC(startDate, true).toString();
+  const ed = convertASTToUTC(endDate, true).toString();
+
+  if (data.startDate && data.endDate) {
     matchQuery.createdAt = {
-      $gte: moment.utc(data.startDate).startOf('day').subtract(3, 'hours').toDate(),
-      $lte: moment.utc(data.endDate).endOf('day').subtract(3, 'hours').toDate(),
+      $gte: sd,
+      $lte: ed,
     };
   }
   const aggregationPipeline = [

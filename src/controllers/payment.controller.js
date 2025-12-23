@@ -1,6 +1,5 @@
 const httpStatus = require('http-status');
-// const moment = require('moment');
-const moment = require('moment-timezone');
+const { DateTime } = require('luxon'); // Import Luxon
 
 // const { pick } = require('lodash');
 const ApiError = require('../utils/ApiError');
@@ -84,18 +83,20 @@ const confirm = catchAsync(async (req, res) => {
       paymentMode: payment.paymentMode,
       paymentModeImg: paymentImg,
       price: booking.price,
-      year: moment().year(),
+      year: DateTime.now().year, // Replaced moment() with Luxon
       packageType: booking.packageType,
-      startDate: moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-      endDate: moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+      startDate: DateTime.fromJSDate(new Date(booking.startDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'), // Replaced moment()
+      endDate: DateTime.fromJSDate(new Date(booking.endDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'), // Replaced moment()
       signature: booking.signature,
       civilId: booking.civilId,
-      today: new Date().toLocaleDateString(),
+      today: DateTime.now().toLocaleString(DateTime.DATE_SHORT), // Replaced new Date().toLocaleDateString() with Luxon
     };
     const payload = {
-      'Date of Booking': moment(booking.createdAt).tz('Asia/Kuwait').format('MMM DD YYYY [at] hh:mm a'),
-      'Start Date': moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-      'End Date': moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+      'Date of Booking': DateTime.fromJSDate(new Date(booking.createdAt))
+        .setZone('Asia/Kuwait')
+        .toFormat('MMM dd yyyy [at] hh:mm a'), // Replaced moment()
+      'Start Date': DateTime.fromJSDate(new Date(booking.startDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'), // Replaced moment()
+      'End Date': DateTime.fromJSDate(new Date(booking.endDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'), // Replaced moment()
       'Full Name': booking.fullname,
       'Phone Number': booking.phoneNo,
       'Alternate Number': booking.alternatePhoneNo,
@@ -116,6 +117,7 @@ const confirm = catchAsync(async (req, res) => {
     return res.redirect(`${config.website}/booking/failed?id=${booking.id}`);
   }
 });
+
 const getPayment = catchAsync(async (req, res) => {
   const payment = await paymentService.getPaymentById(req.params.paymentId);
 
@@ -124,6 +126,7 @@ const getPayment = catchAsync(async (req, res) => {
   }
   res.send(payment);
 });
+
 module.exports = {
   getPaymentMethods,
   error,

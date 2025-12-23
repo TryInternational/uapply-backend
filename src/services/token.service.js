@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const moment = require('moment');
+const { DateTime } = require('luxon'); // Import luxon
 const httpStatus = require('http-status');
 const config = require('../config/config');
 const userService = require('./user.service');
@@ -10,7 +10,7 @@ const { tokenTypes } = require('../config/tokens');
 /**
  * Generate token
  * @param {ObjectId} userId
- * @param {Moment} expires
+ * @param {DateTime} expires
  * @param {string} type
  * @param {string} [secret]
  * @returns {string}
@@ -18,8 +18,8 @@ const { tokenTypes } = require('../config/tokens');
 const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
   const payload = {
     sub: userId,
-    iat: moment().unix(),
-    exp: expires.unix(),
+    iat: DateTime.now().toUnixInteger(), // Use luxon for current time
+    exp: expires.toUnixInteger(), // Use luxon for expiration
     type,
   };
   return jwt.sign(payload, secret);
@@ -29,7 +29,7 @@ const generateToken = (userId, expires, type, secret = config.jwt.secret) => {
  * Save a token
  * @param {string} token
  * @param {ObjectId} userId
- * @param {Moment} expires
+ * @param {DateTime} expires
  * @param {string} type
  * @param {boolean} [blacklisted]
  * @returns {Promise<Token>}
@@ -38,7 +38,7 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
   const tokenDoc = await Token.create({
     token,
     user: userId,
-    expires: expires.toDate(),
+    expires: expires.toJSDate(), // Convert luxon DateTime to JS Date
     type,
     blacklisted,
   });
@@ -66,21 +66,21 @@ const verifyToken = async (token, type) => {
  * @returns {Promise<Object>}
  */
 const generateAuthTokens = async (user) => {
-  const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
+  const accessTokenExpires = DateTime.now().plus({ minutes: config.jwt.accessExpirationMinutes }); // Use luxon for date manipulation
   const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
 
-  const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
+  const refreshTokenExpires = DateTime.now().plus({ days: config.jwt.refreshExpirationDays }); // Use luxon for date manipulation
   const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH);
   await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH);
 
   return {
     access: {
       token: accessToken,
-      expires: accessTokenExpires.toDate(),
+      expires: accessTokenExpires.toJSDate(), // Convert luxon DateTime to JS Date
     },
     refresh: {
       token: refreshToken,
-      expires: refreshTokenExpires.toDate(),
+      expires: refreshTokenExpires.toJSDate(), // Convert luxon DateTime to JS Date
     },
   };
 };
@@ -95,7 +95,7 @@ const generateResetPasswordToken = async (email) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
   }
-  const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
+  const expires = DateTime.now().plus({ minutes: config.jwt.resetPasswordExpirationMinutes }); // Use luxon for date manipulation
   const resetPasswordToken = generateToken(user.id, expires, tokenTypes.RESET_PASSWORD);
   await saveToken(resetPasswordToken, user.id, expires, tokenTypes.RESET_PASSWORD);
   return resetPasswordToken;
@@ -107,7 +107,7 @@ const generateResetPasswordToken = async (email) => {
  * @returns {Promise<string>}
  */
 const generateVerifyEmailToken = async (user) => {
-  const expires = moment().add(config.jwt.verifyEmailExpirationMinutes, 'minutes');
+  const expires = DateTime.now().plus({ minutes: config.jwt.verifyEmailExpirationMinutes }); // Use luxon for date manipulation
   const verifyEmailToken = generateToken(user.id, expires, tokenTypes.VERIFY_EMAIL);
   await saveToken(verifyEmailToken, user.id, expires, tokenTypes.VERIFY_EMAIL);
   return verifyEmailToken;

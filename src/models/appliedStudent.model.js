@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { toJSON, paginate, slug, mongooseHistory } = require('./plugins');
+const { toJSON, paginate, slug, trackable } = require('./plugins');
 
 const appliedStudentSchema = new mongoose.Schema(
   {
@@ -18,6 +18,6 @@ const appliedStudentSchema = new mongoose.Schema(
 appliedStudentSchema.plugin(toJSON);
 appliedStudentSchema.plugin(paginate);
 appliedStudentSchema.plugin(slug);
-appliedStudentSchema.plugin(mongooseHistory);
+appliedStudentSchema.plugin(trackable);
 
 module.exports = mongoose.model('AppliedStudent', appliedStudentSchema);

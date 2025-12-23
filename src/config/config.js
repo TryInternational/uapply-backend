@@ -32,6 +32,7 @@ const envVarsSchema = Joi.object()
     SLACK_WEB_HOOK_ULEARN: Joi.string().description('Ulearn slack web hook for uapply qualified users'),
     SLACK_NOTIFICATION: Joi.string().description('Uapply slack app token'),
     SLACK_ALERT: Joi.string().description('Uapply alert on new application'),
+    IELTS_REGISTRATION_GOOGLE_SHEET_ID: Joi.string().description('IELTS registration google sheet id'),
   })
   .unknown();
 
@@ -47,7 +48,6 @@ module.exports = {
   mongoose: {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
     options: {
-      useCreateIndex: true,
       useNewUrlParser: true,
       useUnifiedTopology: true,
     },
@@ -95,6 +95,7 @@ module.exports = {
   },
   googlesheet: {
     booking: envVars.BOOKING_GOOGLE_SHEET_ID,
+    ieltsRegistration: envVars.IELTS_REGISTRATION_GOOGLE_SHEET_ID,
   },
   slack: {
     slackApiKey: envVars.SLACK_KEY,

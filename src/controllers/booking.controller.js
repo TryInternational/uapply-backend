@@ -3,7 +3,7 @@
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
 
-const moment = require('moment-timezone');
+const { DateTime } = require('luxon');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
@@ -44,18 +44,20 @@ const createBooking = catchAsync(async (req, res) => {
         paymentMode: req.body.formOfPayment === 'Free' ? 'Gift Option Included' : req.body.formOfPayment,
         paymentModeImg: '',
         price: booking.price - 200,
-        year: moment().year(),
+        year: DateTime.now().year,
         packageType: booking.packageType,
-        startDate: moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-        endDate: moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+        startDate: DateTime.fromJSDate(new Date(booking.startDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'),
+        endDate: DateTime.fromJSDate(new Date(booking.endDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'),
         signature: booking.signature,
         civilId: booking.civilId,
         today: new Date().toLocaleDateString(),
       };
       const payload = {
-        'Date of Booking': moment(booking.createdAt).tz('Asia/Kuwait').format('MMM DD YYYY [at] hh:mm a'),
-        'Start Date': moment(new Date(booking.startDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
-        'End Date': moment(new Date(booking.endDate)).tz('Asia/Kuwait').format('MMM DD YYYY'),
+        'Date of Booking': DateTime.fromISO(booking.createdAt) // or DateTime.fromJSDate(new Date(booking.createdAt)) if it's a Date object
+          .setZone('Asia/Kuwait')
+          .toFormat('MMM dd yyyy [at] hh:mm a'),
+        'Start Date': DateTime.fromJSDate(new Date(booking.startDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'),
+        'End Date': DateTime.fromJSDate(new Date(booking.endDate)).setZone('Asia/Kuwait').toFormat('MMM dd yyyy'),
         'Full Name': booking.fullname,
         'Phone Number': booking.phoneNo,
         'Alternate Number': booking.alternatePhoneNo,
@@ -97,7 +99,6 @@ const createBooking = catchAsync(async (req, res) => {
       res.status(httpStatus.CREATED).send({ paymentUrl: transaction.PaymentURL, orderNo: booking.orderNo });
     }
   } catch (error) {
-    console.log(error);
     res.status(500).send(error);
   }
 });
@@ -203,7 +204,9 @@ const exportFile = catchAsync(async (req, res) => {
     }),
     COURSE: doc.course ? doc.course.name : 'Course not found',
     'amount paid': doc.amountPaid,
-    'Date of Booking': moment(doc.createdAt).tz('Asia/Kuwait').format('MMM DD YYYY [at] hh:mm a'),
+    'Date of Booking': DateTime.fromJSDate(new Date(doc.createdAt))
+      .setZone('Asia/Kuwait')
+      .toFormat('MMM dd yyyy [at] hh:mm a'),
     'days per week': doc.daysPerWeek,
     'hours per day': doc.hoursPerDay,
     'course type': doc.ageGroup,

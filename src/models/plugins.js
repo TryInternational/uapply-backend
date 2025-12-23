@@ -8,7 +8,7 @@
 
 const slug = require('mongoose-slug-generator');
 const populate = require('mongoose-autopopulate');
-const mongooseHistory = require('mongoose-history');
+const trackable = require('mongoose-trackable');
 
 const toJSON = (schema) => {
   let transform;
@@ -117,5 +117,5 @@ module.exports = {
   paginate,
   slug,
   populate,
-  mongooseHistory,
+  trackable,
 };

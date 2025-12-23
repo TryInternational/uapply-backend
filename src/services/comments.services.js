@@ -82,6 +82,131 @@ const deleteCommentById = async (commentId) => {
 //   return comment;
 // };
 
+/**
+ * Migrate old reaction format to new format
+ * @returns {Promise<Object>} migration result
+ */ const migrateReactions = async () => {
+  try {
+    console.log('Starting reactions migration...');
+
+    // 1. First verify pre-migration state
+    const preMigrationStats = {
+      totalComments: await Comments.countDocuments(),
+      oldStringFormat: await Comments.countDocuments({ reactions: { $type: 'string' } }),
+      hasReactedBy: await Comments.countDocuments({ reactedBy: { $exists: true } }),
+      emptyReactions: await Comments.countDocuments({ reactions: { $exists: false } }),
+      emptyArray: await Comments.countDocuments({ reactions: { $eq: [] } }),
+    };
+    console.log('Pre-migration stats:', preMigrationStats);
+
+    // 2. Execute migration in batches for safety
+    const BATCH_SIZE = 500;
+    let migratedCount = 0;
+    let skippedCount = 0;
+    let lastProcessedId = null;
+    let hasMore = true;
+
+    while (hasMore) {
+      const query = {};
+      if (lastProcessedId) {
+        query._id = { $gt: lastProcessedId };
+      }
+
+      const comments = await Comments.find({
+        ...query,
+        $or: [
+          { reactions: { $type: 'string' } },
+          { reactedBy: { $exists: true } },
+          { reactions: { $exists: false } },
+          { reactions: { $eq: [] } },
+        ],
+      })
+        .sort({ _id: 1 })
+        .limit(BATCH_SIZE)
+        .lean();
+
+      if (comments.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      const bulkOps = comments.map((comment) => {
+        let newReactions = [];
+
+        // Determine migration case
+        if (typeof comment.reactions === 'string' && comment.reactions) {
+          newReactions = [
+            {
+              emoji: comment.reactions,
+              users: comment.reactedBy
+                ? [
+                    {
+                      userId: comment.userId?._id || comment.userId,
+                      name: comment.reactedBy,
+                    },
+                  ]
+                : [],
+            },
+          ];
+        } else if (comment.reactedBy) {
+          newReactions = [
+            {
+              emoji: '👍',
+              users: [
+                {
+                  userId: comment.userId?._id || comment.userId,
+                  name: comment.reactedBy,
+                },
+              ],
+            },
+          ];
+        } else {
+          newReactions = [];
+        }
+
+        return {
+          updateOne: {
+            filter: { _id: comment._id },
+            update: {
+              $set: { reactions: newReactions },
+              $unset: { reactedBy: '' },
+            },
+          },
+        };
+      });
+
+      // Execute bulk operation
+      const result = await Comments.bulkWrite(bulkOps);
+      migratedCount += result.modifiedCount;
+      lastProcessedId = comments[comments.length - 1]._id;
+
+      console.log(`Processed batch up to ${lastProcessedId}. Migrated ${result.modifiedCount} in this batch.`);
+    }
+
+    // 3. Verify post-migration state
+    const postMigrationStats = {
+      newFormatCount: await Comments.countDocuments({ 'reactions.0': { $exists: true } }),
+      oldStringRemaining: await Comments.countDocuments({ reactions: { $type: 'string' } }),
+      reactedByRemaining: await Comments.countDocuments({ reactedBy: { $exists: true } }),
+    };
+    console.log('Post-migration stats:', postMigrationStats);
+
+    return {
+      success: true,
+      message: `Reactions migration completed. ${migratedCount} comments migrated.`,
+      preMigrationStats,
+      postMigrationStats,
+      anyRemainingOldFormat: postMigrationStats.oldStringRemaining > 0 || postMigrationStats.reactedByRemaining > 0,
+    };
+  } catch (error) {
+    console.error('Migration error:', error);
+    return {
+      success: false,
+      message: 'Migration failed',
+      error: error.message,
+    };
+  }
+};
 module.exports = {
   createComments,
   queryComments,
@@ -90,4 +215,5 @@ module.exports = {
   deleteCommentById,
   //   searchComment,
   getCommentByStudentId,
+  migrateReactions,
 };

@@ -128,26 +128,29 @@ const updateFeesById = async (id, updateBody) => {
   await fees.save();
   return fees;
 };
-
 const searchFees = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
   const regex = new RegExp(text, 'i');
+
+  const searchConditions = [
+    { 'tag.fullName': regex },
+    { 'tag.phoneNo': regex },
+    { 'tag.typeOfTest': regex },
+    { 'tag.passportNo': regex },
+    { 'tag.vfsRefNo': regex },
+    { 'tag.email': regex },
+    { 'tag.vfsEmail': regex },
+    { 'tag.location': regex },
+    { 'tag.school': regex },
+    { 'tag.type.label': regex },
+  ];
+
   const fees = await Fees.paginate(
     {
       $and: [
         {
           feeType: options.feeType,
-          $or: [
-            { 'tag.fullName': regex },
-            { 'tag.phoneNo': regex },
-            { 'tag.typeOfTest': regex },
-            { 'tag.passportNo': regex },
-            { 'tag.vfsRefNo': regex },
-            { 'tag.email': regex },
-            { 'tag.vfsEmail': regex },
-            { 'tag.location': regex },
-            { 'tag.school': regex },
-          ],
+          $or: searchConditions,
         },
       ],
     },
@@ -170,6 +173,12 @@ const deleteFeesById = async (id) => {
 };
 
 const getSales = async (feeType, groupByFields, startDate, endDate) => {
+  const date = new Date(startDate);
+  const eDate = new Date(endDate);
+
+  const formatted = date.toISOString().split('T')[0];
+  const formattedEnd = eDate.toISOString().split('T')[0];
+
   const matchStage = {
     $match: {
       feeType,
@@ -187,8 +196,8 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
         ? {
             $expr: {
               $and: [
-                { $gte: [{ $toDate: '$tag.dateOfTest' }, new Date(startDate)] },
-                { $lte: [{ $toDate: '$tag.dateOfTest' }, new Date(endDate)] },
+                { $gte: [{ $toDate: '$tag.dateOfTest' }, new Date(formatted)] },
+                { $lte: [{ $toDate: '$tag.dateOfTest' }, new Date(formattedEnd)] },
               ],
             },
           }
@@ -210,9 +219,9 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
     },
   });
 
-  const buildProjectStage = (groupByField) => ({
+  const buildProjectStage = (groupByField, fieldName) => ({
     $project: {
-      [groupByField.replace(/\./g, '_')]: '$_id',
+      [fieldName]: '$_id',
       totalAmount: 1,
       bookings: 1,
       ...(feeType === 'english-self-funded' && { totalNoOfWeeks: 1 }),
@@ -223,20 +232,50 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
   let pipelines;
 
   if (feeType === 'student-visa') {
+    // Incharge pipeline
     const inchargePipeline = [
       matchStage,
-      { $group: { _id: { incharge: '$tag.incharge' }, totalAmount: { $sum: '$tag.amount' }, bookings: { $sum: 1 } } },
+      {
+        $group: {
+          _id: '$tag.incharge',
+          totalAmount: { $sum: '$tag.amount' },
+          bookings: { $sum: 1 },
+        },
+      },
       sortStage,
       limitStage,
-      { $project: { incharge: '$_id.incharge', totalAmount: 1, bookings: 1, _id: 0 } },
+      {
+        $project: {
+          incharge: '$_id',
+          totalAmount: 1,
+          bookings: 1,
+          _id: 0,
+        },
+      },
     ];
+
+    // CheckedBy pipeline
     const checkedByPipeline = [
       matchStage,
-      { $group: { _id: { checkedBy: '$tag.checkedBy' }, totalAmount: { $sum: '$tag.amount' }, bookings: { $sum: 1 } } },
+      {
+        $group: {
+          _id: '$tag.checkedBy',
+          totalAmount: { $sum: '$tag.amount' },
+          bookings: { $sum: 1 },
+        },
+      },
       sortStage,
       limitStage,
-      { $project: { checkedBy: '$_id.checkedBy', totalAmount: 1, bookings: 1, _id: 0 } },
+      {
+        $project: {
+          checkedBy: '$_id',
+          totalAmount: 1,
+          bookings: 1,
+          _id: 0,
+        },
+      },
     ];
+
     pipelines = [inchargePipeline, checkedByPipeline];
   } else if (feeType === 'english-self-funded') {
     const groupStage = {
@@ -265,17 +304,31 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
     pipelines = [[matchStage, groupStage, sortStage, limitStage, projectStage]];
   } else if (feeType === 'office-fees') {
     const groupStage = buildGroupStage('tag.salesPerson');
-    const projectStage = buildProjectStage('tag.salesPerson');
+    const projectStage = buildProjectStage('tag.salesPerson', 'salesPerson');
     pipelines = [[matchStage, groupStage, sortStage, limitStage, projectStage]];
+  } else if (feeType === 'ielts-booking') {
+    const inchargePipeline = [
+      matchStage,
+      { $group: { _id: '$tag.incharge', bookings: { $sum: 1 } } },
+      sortStage,
+      limitStage,
+      { $project: { incharge: '$_id', bookings: 1, _id: 0 } },
+    ];
+    pipelines = [inchargePipeline];
   } else {
     const groupStage = buildGroupStage(groupByFields[0]);
-    const projectStage = buildProjectStage(groupByFields[0]);
+    const projectStage = buildProjectStage(groupByFields[0], groupByFields[0].split('.').pop());
     pipelines = [[matchStage, groupStage, sortStage, limitStage, projectStage]];
   }
 
   const results = await Promise.all(pipelines.map((pipeline) => Fees.aggregate(pipeline)));
 
-  // Flatten the results array if there are multiple pipelines
+  // For student-visa, combine both arrays into one
+  if (feeType === 'student-visa') {
+    return [...results[0], ...results[1]];
+  }
+
+  // For other fee types, return the flattened array
   return results.flat();
 };
 
@@ -370,11 +423,16 @@ const getTopTypes = async ({ startDate, endDate }) => {
 
 const getTopTests = async ({ startDate, endDate }) => {
   const query = { feeType: 'ielts-booking' };
+  const date = new Date(startDate);
+  const eDate = new Date(endDate);
+
+  const formatted = date.toISOString().split('T')[0];
+  const formattedEnd = eDate.toISOString().split('T')[0];
 
   if (startDate && endDate) {
     query['tag.dateOfTest'] = {
-      $gte: new Date(startDate),
-      $lte: new Date(endDate),
+      $gte: new Date(formatted),
+      $lte: new Date(formattedEnd),
     };
   }
 

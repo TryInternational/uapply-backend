@@ -28,6 +28,14 @@ const appliedStudentRoute = require('./appliedStudent.route');
 const quotesRoute = require('./quotes.route');
 const englishLangSchoolRoute = require('./englishLangSchool.route');
 const ambassadorsRoute = require('./ambassadors.route');
+const notificationRoute = require('./notification.route');
+const aptitudeTest = require('./aptitudeTest.route');
+const eventSystemRouter = require('./eventSystem.route');
+const ieltsRegistrationRouter = require('./ieltsRegistration.route');
+const eventRoute = require('./event.route');
+const registrationRoute = require('./registration.route');
+const testQuestionsRoute = require('./testQuestions.routes');
+const emailRoute = require('./email.route');
 
 const router = express.Router();
 
@@ -37,8 +45,20 @@ const defaultRoutes = [
     route: authRoute,
   },
   {
+    path: '/aptitude-tests',
+    route: aptitudeTest,
+  },
+  {
+    path: '/testQuestions',
+    route: testQuestionsRoute,
+  },
+  {
     path: '/englishLangSchool',
     route: englishLangSchoolRoute,
+  },
+  {
+    path: '/notifications',
+    route: notificationRoute,
   },
   {
     path: '/ambassadors',
@@ -134,6 +154,26 @@ const defaultRoutes = [
   {
     path: '/fees',
     route: feesRoute,
+  },
+  {
+    path: '/event-system',
+    route: eventSystemRouter,
+  },
+  {
+    path: '/events',
+    route: eventRoute,
+  },
+  {
+    path: '/registrations',
+    route: registrationRoute,
+  },
+  {
+    path: '/ielts-registration',
+    route: ieltsRegistrationRouter,
+  },
+  {
+    path: '/email',
+    route: emailRoute,
   },
 ];
 

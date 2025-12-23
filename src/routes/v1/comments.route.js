@@ -9,7 +9,7 @@ router.route('/').post(commentsController.createComment);
 router.route('/').get(commentsController.getComments);
 
 // router.route('/search/:text').get(commentsController.searchCountries);
-
+router.post('/migrate-reactions', commentsController.migrateReactions);
 router.route('/:commentId').patch(commentsController.updateComment).delete(commentsController.deleteComment);
 router.post('/:commentId/tag', commentsController.tagUserInComment);
 

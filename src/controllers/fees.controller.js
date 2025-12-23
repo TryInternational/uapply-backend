@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const { pick } = require('lodash');
-const moment = require('moment');
+const { DateTime } = require('luxon');
+const { convertASTToUTC } = require('../utils/Common');
 
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -56,7 +57,6 @@ const getSalesData = catchAsync(async (req, res) => {
   try {
     const { feeType, startDate, endDate } = req.query;
 
-    // Validate startDate and endDate
     if (!startDate || !endDate) {
       return res.status(400).send('startDate and endDate are required');
     }
@@ -75,8 +75,9 @@ const getSalesData = catchAsync(async (req, res) => {
       return res.status(400).send('Invalid feeType');
     }
 
-    const leaderboard = await feesService.getSales(feeType, groupByFields, startDate, endDate);
-    res.json(leaderboard);
+    const result = await feesService.getSales(feeType, groupByFields, startDate, endDate);
+
+    res.json(result);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -111,17 +112,21 @@ const topCities = catchAsync(async (req, res) => {
 });
 
 const getDashboardData = catchAsync(async (req, res) => {
-  const startDate = moment(req.query.startDate).utc().startOf('day').subtract(3, 'hours').toDate();
-  const endDate = moment(req.query.endDate).utc().endOf('day').subtract(3, 'hours').toDate();
+  const startDate = DateTime.fromISO(new Date(req.query.startDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).startOf('day');
+  const endDate = DateTime.fromISO(new Date(req.query.endDate).toISOString(), {
+    zone: 'Asia/Riyadh',
+  }).endOf('day');
+
   // Validate startDate and endDate
   if (!startDate || !endDate) {
     return res.status(400).send('startDate and endDate are required');
   }
+  const sd = convertASTToUTC(startDate, true).toString();
+  const ed = convertASTToUTC(endDate, true).toString();
 
-  const data = await feesService.getDashboardData({
-    startDate,
-    endDate,
-  });
+  const data = await feesService.getDashboardData({ startDate: sd, endDate: ed });
   res.send(data);
 });
 
