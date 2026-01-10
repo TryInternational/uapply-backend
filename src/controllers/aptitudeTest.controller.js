@@ -11,6 +11,7 @@ const { aptitudeTestService } = require('../services');
  */
 const createAptitudeTest = async (req, res, next) => {
   try {
+
     const testResult = await aptitudeTestService.createAptitudeTest(req.body);
     res.status(httpStatus.CREATED).json({
       success: true,
