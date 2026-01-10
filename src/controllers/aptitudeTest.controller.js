@@ -11,7 +11,6 @@ const { aptitudeTestService } = require('../services');
  */
 const createAptitudeTest = async (req, res, next) => {
   try {
-
     const testResult = await aptitudeTestService.createAptitudeTest(req.body);
     res.status(httpStatus.CREATED).json({
       success: true,
@@ -39,7 +38,7 @@ const getAptitudeTests = async (req, res, next) => {
       page: result.page,
       limit: result.limit,
       totalPages: result.totalPages,
-      totalResults: result.totalResults
+      totalResults: result.totalResults,
     });
   } catch (error) {
     next(error);
