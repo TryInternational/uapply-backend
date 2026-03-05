@@ -95,6 +95,7 @@ const studentsSchema = mongoose.Schema(
       {
         user: { type: mongoose.SchemaTypes.ObjectId, ref: User },
         role: { type: String, required: true },
+        userRole: { type: mongoose.SchemaTypes.ObjectId, ref: 'Role' },
       },
     ],
 

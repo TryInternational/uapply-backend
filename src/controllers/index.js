@@ -30,3 +30,4 @@ module.exports.registrationController = require('./registration.controller');
 module.exports.eventAuthController = require('./eventAuth.controller');
 module.exports.analyticsController = require('./analytics.controller');
 module.exports.aptitudeTestController = require('./aptitudeTest.controller');
+module.exports.ieltsTestController = require('./ieltsTest.controller');

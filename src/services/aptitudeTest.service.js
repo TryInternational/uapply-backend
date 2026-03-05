@@ -46,11 +46,20 @@ const updateAptitudeTest = async (id, updateData) => {
 const deleteAptitudeTest = async (id) => {
   return AptitudeTest.findByIdAndDelete(id);
 };
-
+const searchAptitudeTest = async (text, options) => {
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  const regex = new RegExp(text, 'i');
+  const leads = await AptitudeTest.paginate(
+    { $and: [{ qualified: options.qualified, $or: [{ name: regex }, { number: regex }, { email: regex }] }] },
+    options
+  );
+  return leads;
+};
 module.exports = {
   createAptitudeTest,
   getAptitudeTests,
   getAptitudeTestById,
   updateAptitudeTest,
-  deleteAptitudeTest
+  deleteAptitudeTest,
+  searchAptitudeTest,
 };

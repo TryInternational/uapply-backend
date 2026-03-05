@@ -116,10 +116,9 @@ const getTop5ByDegree = async (data) => {
       $sort: { count: -1 }, // Sort by count in descending order
     },
     {
-      $limit: 10, // Limit to top 5 countries
+      $limit: 5, // Limit to top 5 countries
     },
   ];
-
   const result = await Leads.aggregate(aggregationPipeline);
 
   return result;

@@ -33,3 +33,4 @@ module.exports.Registration = require('./registration.model');
 module.exports.EventUser = require('./eventUser.model');
 module.exports.IeltsRegistration = require('./ieltsRegistration.model');
 module.exports.AptitudeTest = require('./aptitudeTest.model');
+module.exports.IeltsTest = require('./ieltsTest.model');

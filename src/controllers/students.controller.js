@@ -119,12 +119,124 @@ const getStudents = catchAsync(async (req, res) => {
   if (req.query.ambassadorName) {
     filter.ambassadorName = req.query.ambassadorName;
   }
+
+  // Handle assigned user filters
   if (req.query.assignedUserId) {
     try {
       const assignedUserId = mongoose.Types.ObjectId(req.query.assignedUserId);
       filter['assignedTo.user'] = assignedUserId;
     } catch (error) {
       return res.status(400).send({ message: 'Invalid assignedUserId format.' });
+    }
+  }
+
+  // NEW: Filter by assigned userRole (ID field)
+  if (req.query.assignedUserRoleId) {
+    try {
+      // Check if userRole ID is provided
+      if (!req.query.assignedUserRoleId) {
+        return res.status(400).send({ message: 'assignedUserRoleId is required.' });
+      }
+
+      // Parse the userRole parameter (can be a single ID or comma-separated list of IDs)
+      const userRoleIds = req.query.assignedUserRoleId.split(',').map((id) => id.trim());
+
+      // Convert string IDs to ObjectId if they're valid MongoDB ObjectIds
+      const objectIdUserRoleIds = userRoleIds.map((id) => {
+        try {
+          return mongoose.Types.ObjectId(id);
+        } catch (error) {
+          // If it's not a valid ObjectId, keep it as string
+          return id;
+        }
+      });
+
+      // Filter by userRole field in the assignedTo array
+      filter['assignedTo.userRole'] = { $in: objectIdUserRoleIds };
+    } catch (error) {
+      return res.status(400).send({ message: 'Invalid assignedUserRoleId format.' });
+    }
+  }
+
+  // NEW: Filter by both userId and userRole together
+  if (req.query.assignedUserId && req.query.assignedUserRoleId) {
+    try {
+      const assignedUserId = mongoose.Types.ObjectId(req.query.assignedUserId);
+
+      // Parse userRole IDs
+      const userRoleIds = req.query.assignedUserRoleId.split(',').map((id) => id.trim());
+      const objectIdUserRoleIds = userRoleIds.map((id) => {
+        try {
+          return mongoose.Types.ObjectId(id);
+        } catch (error) {
+          return id;
+        }
+      });
+
+      // Use $elemMatch to find array elements that match both conditions
+      filter.assignedTo = {
+        $elemMatch: {
+          user: assignedUserId,
+          userRole: { $in: objectIdUserRoleIds },
+        },
+      };
+
+      // Remove the individual filters to avoid conflicts
+      delete filter['assignedTo.user'];
+      delete filter['assignedTo.userRole'];
+    } catch (error) {
+      return res.status(400).send({ message: 'Invalid userId or userRoleId format.' });
+    }
+  }
+
+  // NEW: Advanced filtering with multiple user-role combinations
+  if (req.query.assignedUsersWithRoles) {
+    try {
+      // Expected format: [{user: "userId", userRole: "roleId"}, ...] as JSON string
+      const assignedUsersFilter = JSON.parse(req.query.assignedUsersWithRoles);
+
+      if (Array.isArray(assignedUsersFilter) && assignedUsersFilter.length > 0) {
+        // Create an array of $elemMatch conditions for each user-userRole pair
+        const elemMatchConditions = assignedUsersFilter.map((item) => {
+          if (!item.user || !item.userRole) {
+            throw new Error('Each assigned user must have both user and userRole properties');
+          }
+
+          const condition = {};
+
+          if (item.user) {
+            condition.user = mongoose.Types.ObjectId(item.user);
+          }
+
+          if (item.userRole) {
+            const userRoleIds = Array.isArray(item.userRole) ? item.userRole : [item.userRole];
+
+            condition.userRole = {
+              $in: userRoleIds.map((id) => {
+                try {
+                  return mongoose.Types.ObjectId(id);
+                } catch (error) {
+                  return id;
+                }
+              }),
+            };
+          }
+
+          return { $elemMatch: condition };
+        });
+
+        // Combine conditions with $and to match all specified user-userRole pairs
+        if (elemMatchConditions.length === 1) {
+          filter.assignedTo = elemMatchConditions[0];
+        } else {
+          filter.$and = elemMatchConditions.map((condition) => ({ assignedTo: condition }));
+        }
+      }
+    } catch (error) {
+      return res.status(400).send({
+        message: 'Invalid assignedUsersWithRoles format. Expected JSON array with user and userRole properties.',
+        error: error.message,
+      });
     }
   }
 

@@ -24,8 +24,8 @@ const createStudent = async (studentBody) => {
  * @returns {Promise<QueryResult>}
  */
 const queryStudents = async (filter, options) => {
-  const users = await Students.paginate(filter, options);
-  return users;
+  const students = await Students.paginate(filter, options);
+  return students;
 };
 
 /**

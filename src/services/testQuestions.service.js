@@ -66,7 +66,7 @@ const searchTestQuestions = async (text, options) => {
   return subject;
 };
 
-const getQuestionsByTestType = async (testType, language = 'English') => {
+const getQuestionsByTestType = async (testType, language) => {
   const result = await TestQuestion.find({ testType, language });
   return result;
 };

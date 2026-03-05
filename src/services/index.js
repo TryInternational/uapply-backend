@@ -37,3 +37,5 @@ module.exports.eventEmailService = require('./eventEmail.service');
 module.exports.ieltsRegistrationService = require('./ieltsRegistration.service');
 module.exports.googleSheetsService = require('./googleSheets.service');
 module.exports.aptitudeTestService = require('./aptitudeTest.service');
+module.exports.ieltsTestService = require('./ieltsTest.service');
+module.exports.openAIService = require('./openAIService.service');

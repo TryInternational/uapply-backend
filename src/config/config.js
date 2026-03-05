@@ -3,7 +3,7 @@ const path = require('path');
 const Joi = require('joi');
 
 dotenv.config({ path: path.join(__dirname, `../../.env.${process.env.APP_ENV}`) });
-
+console.log('NODE_ENV:', process.env);
 const envVarsSchema = Joi.object()
   .keys({
     NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
@@ -32,6 +32,7 @@ const envVarsSchema = Joi.object()
     SLACK_WEB_HOOK_ULEARN: Joi.string().description('Ulearn slack web hook for uapply qualified users'),
     SLACK_NOTIFICATION: Joi.string().description('Uapply slack app token'),
     SLACK_ALERT: Joi.string().description('Uapply alert on new application'),
+    OPENAI_API_KEY: Joi.string().description('API key for OpenAI'),
     IELTS_REGISTRATION_GOOGLE_SHEET_ID: Joi.string().description('IELTS registration google sheet id'),
   })
   .unknown();
@@ -45,6 +46,9 @@ if (error) {
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  openai: {
+    apiKey: envVars.OPENAI_API_KEY,
+  },
   mongoose: {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
     options: {

@@ -9,6 +9,7 @@ router.route('/').get(appliedStudentController.getAppliedStudent);
 router.route('/counselor').get(appliedStudentController.getAppliedPerCounselor);
 
 router.route('/months').get(appliedStudentController.getAmountPermonth);
+router.route('/degree-count').get(appliedStudentController.getStudentCountByDegree);
 
 router
   .route('/:id')

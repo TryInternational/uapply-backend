@@ -16,5 +16,6 @@ router
   .get(aptitudeTestController.getAptitudeTest)
   .patch(/* validate(aptitudeTestValidation.updateAptitudeTest), */ aptitudeTestController.updateAptitudeTest)
   .delete(aptitudeTestController.deleteAptitudeTest);
+router.route('/search/:text').get(aptitudeTestController.searchAptitudeTest);
 
 module.exports = router;

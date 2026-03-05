@@ -58,6 +58,24 @@ const deleteAppliedStudent = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getStudentCountByDegree = catchAsync(async (req, res) => {
+  const filters = pick(req.query, ['startDate', 'endDate']);
+
+  // Convert dates if provided
+  if (filters.startDate) {
+    filters.startDate = DateTime.fromISO(filters.startDate).toJSDate();
+  }
+  if (filters.endDate) {
+    filters.endDate = DateTime.fromISO(filters.endDate).toJSDate();
+  }
+
+  const result = await appliedStudentService.getStudentCountByDegree(filters);
+  res.send({
+    success: true,
+    data: result,
+    totalDegrees: result.length,
+  });
+});
 module.exports = {
   getAppliedStudent,
   getAppliedStudentById,
@@ -66,4 +84,5 @@ module.exports = {
   createAppliedStudent,
   getAmountPermonth,
   getAppliedPerCounselor,
+  getStudentCountByDegree,
 };

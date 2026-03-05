@@ -66,7 +66,7 @@ const createLead = catchAsync(async (req, res) => {
 });
 const getLeads = catchAsync(async (req, res) => {
   const filter = pick(req.query, [
-    'name',
+    'fullname',
     'destination.en_name',
     'role',
     'qualified',
@@ -87,11 +87,16 @@ const getLeads = catchAsync(async (req, res) => {
   if (req.query.degree) {
     filter['degree.en_name'] = req.query.degree;
   }
+  if (req.query.degree && req.query.degree !== 'All') {
+    filter['degree.en_name'] = req.query.degree;
+  } else if (req.query.degree === 'All') {
+    // Remove the degree filter if it was already added by pick()
+    delete filter['degree.en_name'];
+  }
   if (req.query.destination && req.query.destination.en_name) {
     filter['destination.en_name'] = req.query.destination.en_name;
   }
 
-  console.log(filter);
   if (req.query.startDate && req.query.endDate) {
     filter.createdAt = {
       $gte: DateTime.fromJSDate(new Date(req.query.startDate), { zone: 'utc' })
@@ -126,6 +131,7 @@ const getTop5ByContry = catchAsync(async (req, res) => {
   res.send(lead);
 });
 const getTop5ByDegrees = catchAsync(async (req, res) => {
+  console.log(req.query);
   const lead = await leadsService.getTop5ByDegree({
     ...req.query,
   });

@@ -93,7 +93,6 @@ const deleteAppliedStudentById = async (id) => {
   await student.remove();
   return student;
 };
-
 const getUserNumberSums = async (startDate, endDate) => {
   if (!startDate || !endDate) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Start date and end date are required');
@@ -115,15 +114,67 @@ const getUserNumberSums = async (startDate, endDate) => {
       },
     },
     {
+      $lookup: {
+        from: 'users', // Assuming your users collection is named 'users'
+        localField: '_id',
+        foreignField: '_id',
+        as: 'userInfo',
+      },
+    },
+    {
+      $unwind: {
+        path: '$userInfo',
+        preserveNullAndEmptyArrays: true, // Keep counsellors even if user not found
+      },
+    },
+    {
       $project: {
         _id: 0,
         counsellor: '$_id',
         totalNumber: 1,
+        role: { $ifNull: ['$userInfo.role', 'unknown'] }, // Get role from user info, default to 'unknown' if not found
       },
     },
   ]);
 
   return sums;
+};
+
+const getStudentCountByDegree = async (filters = {}) => {
+  const matchStage = {};
+
+  // Add date range filter if provided
+  if (filters.startDate && filters.endDate) {
+    matchStage.createdDate = {
+      $gte: new Date(filters.startDate),
+      $lte: new Date(filters.endDate),
+    };
+  }
+  const degreeCounts = await AppliedStudent.aggregate([
+    {
+      $match: matchStage,
+    },
+    {
+      $group: {
+        _id: '$degree',
+        count: { $sum: 1 },
+        totalNumber: { $sum: '$number' }, // Sum of number field
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        degree: '$_id',
+        count: 1,
+        number: '$totalNumber', // Rename totalNumber to number
+      },
+    },
+    {
+      $sort: { degree: 1 },
+    },
+  ]);
+
+  return degreeCounts;
 };
 
 module.exports = {
@@ -134,4 +185,5 @@ module.exports = {
   deleteAppliedStudentById,
   getAmounts,
   getUserNumberSums,
+  getStudentCountByDegree,
 };

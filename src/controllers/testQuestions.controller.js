@@ -37,10 +37,7 @@ const getTestQuestion = catchAsync(async (req, res) => {
 
 const getQuestionsByTestType = async (req, res) => {
   try {
-    const questions = await testQuestionsService.getQuestionsByTestType(
-      req.params.testType,
-      req.params.lang || 'English'
-    );
+    const questions = await testQuestionsService.getQuestionsByTestType(req.params.testType, req.params.lang || 'English');
     res.json(questions);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -66,7 +63,6 @@ const getQuestionsBySection = async (req, res) => {
 
 const updateTestQuestion = catchAsync(async (req, res) => {
   const result = await testQuestionsService.updateTestQuestionById(req.params.subjectId, req.body);
-
   res.send(result);
 });
 

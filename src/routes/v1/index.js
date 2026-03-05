@@ -36,6 +36,7 @@ const eventRoute = require('./event.route');
 const registrationRoute = require('./registration.route');
 const testQuestionsRoute = require('./testQuestions.routes');
 const emailRoute = require('./email.route');
+const ieltsTestRoute = require('./ieltsTest.route');
 
 const router = express.Router();
 
@@ -43,6 +44,10 @@ const defaultRoutes = [
   {
     path: '/auth',
     route: authRoute,
+  },
+  {
+    path: '/ielts-tests',
+    route: ieltsTestRoute,
   },
   {
     path: '/aptitude-tests',
