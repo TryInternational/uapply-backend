@@ -61,6 +61,9 @@ universityDetailsSchema.plugin(toJSON);
 universityDetailsSchema.plugin(paginate);
 universityDetailsSchema.plugin(slug);
 
+// Performance index — universityDetails are looked up by slug (measured ~500-800ms scan).
+universityDetailsSchema.index({ slug: 1 });
+
 const UniversityDetails = mongoose.model('UniversityDetails', universityDetailsSchema);
 
 module.exports = UniversityDetails;

@@ -2,7 +2,14 @@ const express = require('express');
 
 const commentsController = require('../../controllers/comments.controller');
 
+const { softAuth, scopeSubAgentToOwnStudent } = require('../../middlewares/subAgentScope');
+
 const router = express.Router();
+
+// A sub-agent may reach these only for a student it owns; see
+// scopeSubAgentToOwnStudent. softAuth only identifies the caller, so behaviour
+// for every other role is unchanged.
+router.use(softAuth, scopeSubAgentToOwnStudent);
 
 router.route('/').post(commentsController.createComment);
 

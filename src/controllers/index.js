@@ -31,3 +31,7 @@ module.exports.eventAuthController = require('./eventAuth.controller');
 module.exports.analyticsController = require('./analytics.controller');
 module.exports.aptitudeTestController = require('./aptitudeTest.controller');
 module.exports.ieltsTestController = require('./ieltsTest.controller');
+module.exports.whatsappController = require('./whatsapp.controller');
+module.exports.majorController = require('./major.controller');
+module.exports.ulearnStudentController = require('./ulearnStudent.controller');
+module.exports.accessRequestController = require('./accessRequest.controller');

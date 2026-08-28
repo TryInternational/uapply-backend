@@ -3,6 +3,14 @@ const { toJSON, paginate } = require('./plugins');
 
 const aptitudeTestSchema = new mongoose.Schema(
   {
+    studentId: {
+      // optional link to the UlearnStudent who took this attempt (additive:
+      // anonymous submissions leave it null). Indexed for history/progress.
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'UlearnStudent',
+      default: null,
+      index: true,
+    },
     name: {
       type: String,
       required: true,

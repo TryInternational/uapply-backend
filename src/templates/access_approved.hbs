@@ -1,0 +1,52 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your portal is ready</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f2fa;font-family:Helvetica,Arial,sans-serif;color:#1a1628;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2fa;padding:32px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e6e2f0;">
+            <tr>
+              <td style="background:#6b4ee6;padding:22px 28px;">
+                <span style="color:#ffffff;font-size:17px;font-weight:bold;letter-spacing:-0.2px;">Ulearn</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:30px 28px 8px;">
+                <h1 style="margin:0 0 12px;font-size:21px;line-height:1.3;color:#1a1628;">Your portal is ready</h1>
+                <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#3f3a52;">
+                  Good news, {{name}} &mdash; your {{roleLabel}} access has been approved. Choose a password and you&rsquo;re in.
+                </p>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0;">
+                  <tr>
+                    <td style="background:#6b4ee6;border-radius:10px;">
+                      <a href="{{setPasswordUrl}}" style="display:inline-block;padding:13px 26px;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;">Set your password</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#75708a;">
+                  This link expires in {{expiryHours}} hours and can be used once. If it has expired, reply to this email and we&rsquo;ll send a fresh one.
+                </p>
+                <p style="margin:0 0 6px;font-size:13px;line-height:1.6;color:#8e88a3;">
+                  If the button doesn&rsquo;t work, paste this into your browser:
+                </p>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;word-break:break-all;color:#6b4ee6;">{{setPasswordUrl}}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 28px 28px;">
+                <div style="border-top:1px solid #ece9f4;padding-top:16px;font-size:12.5px;color:#8e88a3;">
+                  Sign in any time at <a href="{{portalUrl}}" style="color:#6b4ee6;text-decoration:none;">{{portalUrl}}</a><br />
+                  Ulearn Abroad &middot; This message was sent to {{email}}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

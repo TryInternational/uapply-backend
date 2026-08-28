@@ -7,7 +7,7 @@ ENV NODE_ENV=${APP_ENV} APP_ENV=${APP_ENV}
 # Install dependencies
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci --only=production  # Skip devDependencies in production
+RUN npm install --only=production  # Skip devDependencies in production
 
 # Copy app and .env file
 COPY . .

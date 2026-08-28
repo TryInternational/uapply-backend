@@ -4,7 +4,7 @@ const { toJSON, paginate, slug, trackable } = require('./plugins');
 const commentSchema = new mongoose.Schema(
   {
     studentId: { type: mongoose.SchemaTypes.ObjectId, ref: 'Students' },
-    content: { type: String, required: true },
+    content: { type: String },
     dateTime: { type: Date, default: Date.now },
     updatedDate: { type: Date },
     createdBy: { type: String, required: true },
@@ -46,5 +46,8 @@ commentSchema.plugin(toJSON);
 commentSchema.plugin(paginate);
 commentSchema.plugin(slug);
 commentSchema.plugin(trackable);
+
+// Performance index — comments are fetched per student on every profile open.
+commentSchema.index({ studentId: 1 });
 
 module.exports = mongoose.model('Comment', commentSchema);

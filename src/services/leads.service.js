@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const { DateTime } = require('luxon');
-const { Leads } = require('../models');
+const { Leads, Students } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { convertASTToUTC } = require('../utils/Common');
 
@@ -189,6 +189,66 @@ const searchLead = async (text, options) => {
   return leads;
 };
 
+/**
+ * Convert a lead into a student. Maps the lead's fields onto a new Students doc
+ * (channel = 'lead' so it shows under "Online lead"), links the lead to the new
+ * student, and marks the lead 'Converted'. Guards against double-conversion and
+ * duplicate emails.
+ * @param {ObjectId} leadId
+ * @returns {Promise<Students>} the created student
+ */
+const convertLeadToStudent = async (leadId) => {
+  const lead = await Leads.findById(leadId);
+  if (!lead) throw new ApiError(httpStatus.NOT_FOUND, 'Lead not found');
+  if (lead.convertedStudentId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'This lead has already been converted to a student');
+  }
+  if (lead.email && (await Students.isEmailTaken(lead.email))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'A student with this email already exists');
+  }
+
+  const name = String(lead.fullname || '').trim();
+  const parts = name.split(/\s+/).filter(Boolean);
+  const firstName = parts.shift() || name || 'Lead';
+  const lastName = parts.join(' ');
+  const dest = lead.destination;
+  const destName =
+    dest && typeof dest === 'object' ? dest.name || dest.label || dest.value : typeof dest === 'string' ? dest : undefined;
+
+  // Reference number — same scheme the students controller uses (ddMMyy-000N).
+  const studentCount = await Students.countDocuments();
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const refrenceNo = `${pad(now.getDate())}${pad(now.getMonth() + 1)}${String(now.getFullYear()).slice(-2)}-000${studentCount + 1}`;
+
+  const student = await Students.create({
+    firstName,
+    lastName,
+    refrenceNo,
+    email: lead.email || undefined,
+    phoneNo: lead.phoneNo,
+    city: lead.city,
+    cgpa: lead.cgpa,
+    testScore: lead.iltesScore,
+    source: lead.source || 'uapply',
+    channel: 'lead',
+    stage: 'NotApplied',
+    qualified: lead.qualified,
+    preference: {
+      studyDestinations: destName,
+      subjects: lead.subjects ? [lead.subjects] : undefined,
+    },
+    applications: [],
+  });
+
+  lead.convertedStudentId = student._id;
+  lead.status = 'Converted';
+  lead.convertedAt = new Date();
+  await lead.save();
+
+  return student;
+};
+
 module.exports = {
   createLead,
   queryLeads,
@@ -200,4 +260,5 @@ module.exports = {
   getTop5ByContries,
   getTop5ByDegree,
   countLeads,
+  convertLeadToStudent,
 };

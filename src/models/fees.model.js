@@ -23,6 +23,9 @@ const feesSchema = mongoose.Schema(
 feesSchema.plugin(toJSON);
 feesSchema.plugin(paginate);
 
+// Performance index — fees stats aggregations match/sort on creation date.
+feesSchema.index({ createdAt: -1 });
+
 /**
  * Check if password matches the user's password
  * @returns {Promise<boolean>}

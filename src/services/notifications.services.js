@@ -26,6 +26,28 @@ const createNotification = async (io, userIds, message, type, studentId, applica
   }
 };
 
+// Create a WhatsApp notification (assignment / new message / note mention) and
+// push it to each user's socket room. Reuses the shared 'notification' event so
+// the existing toast + bell handle it. studentId/conversationId are optional.
+const createWhatsappNotification = async (io, userIds, message, { studentId, conversationId, createdBy } = {}) => {
+  const ids = [...new Set((userIds || []).map((u) => u && u.toString()).filter(Boolean))];
+  if (!ids.length) return null;
+  try {
+    const notification = await Notifications.create({
+      userIds: ids,
+      message,
+      studentId,
+      conversationId,
+      createdBy,
+      type: 'whatsapp',
+    });
+    if (io) ids.forEach((userId) => io.to(userId).emit('notification', notification));
+    return notification;
+  } catch (error) {
+    return null;
+  }
+};
+
 // Get notifications for a specific user
 const getNotifications = async (userId) => {
   const notifications = await Notifications.find({ userIds: userId }).sort({ createdAt: -1 });
@@ -63,4 +85,4 @@ const markAsUnread = async (notificationId, userId) => {
   return notification;
 };
 
-module.exports = { createNotification, getNotifications, markAsRead, markAsUnread };
+module.exports = { createNotification, createWhatsappNotification, getNotifications, markAsRead, markAsUnread };

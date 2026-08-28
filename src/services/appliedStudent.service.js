@@ -93,19 +93,27 @@ const deleteAppliedStudentById = async (id) => {
   await student.remove();
   return student;
 };
-const getUserNumberSums = async (startDate, endDate) => {
+const getUserNumberSums = async (startDate, endDate, degree = null) => {
   if (!startDate || !endDate) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Start date and end date are required');
   }
 
+  // Build match stage
+  const matchStage = {
+    createdDate: {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    },
+  };
+
+  // Add degree filter if provided and not 'all'
+  if (degree && degree !== 'all' && degree !== 'null' && degree !== 'undefined') {
+    matchStage.degree = degree;
+  }
+
   const sums = await AppliedStudent.aggregate([
     {
-      $match: {
-        createdDate: {
-          $gte: new Date(startDate),
-          $lte: new Date(endDate),
-        },
-      },
+      $match: matchStage,
     },
     {
       $group: {
@@ -139,9 +147,16 @@ const getUserNumberSums = async (startDate, endDate) => {
 
   return sums;
 };
-
 const getStudentCountByDegree = async (filters = {}) => {
-  const matchStage = {};
+  const matchStage = {
+    // Only include documents with valid degree field
+    degree: {
+      $exists: true,
+      $ne: null,
+      $type: 'string', // Ensure it's a string
+      $ne: '', // Not empty string
+    },
+  };
 
   // Add date range filter if provided
   if (filters.startDate && filters.endDate) {
@@ -150,6 +165,7 @@ const getStudentCountByDegree = async (filters = {}) => {
       $lte: new Date(filters.endDate),
     };
   }
+
   const degreeCounts = await AppliedStudent.aggregate([
     {
       $match: matchStage,
@@ -158,7 +174,27 @@ const getStudentCountByDegree = async (filters = {}) => {
       $group: {
         _id: '$degree',
         count: { $sum: 1 },
-        totalNumber: { $sum: '$number' }, // Sum of number field
+        totalNumber: { $sum: '$number' }, // Sum of number field (includes negatives)
+        positiveNumber: {
+          $sum: {
+            $cond: [{ $gt: ['$number', 0] }, '$number', 0],
+          },
+        },
+        negativeNumber: {
+          $sum: {
+            $cond: [{ $lt: ['$number', 0] }, '$number', 0],
+          },
+        },
+        zeroNumber: {
+          $sum: {
+            $cond: [{ $eq: ['$number', 0] }, 1, 0],
+          },
+        },
+        // For detailed analysis - get min and max values
+        minValue: { $min: '$number' },
+        maxValue: { $max: '$number' },
+        // Store sample records for debugging
+        sampleNumbers: { $push: '$number' },
       },
     },
     {
@@ -166,7 +202,15 @@ const getStudentCountByDegree = async (filters = {}) => {
         _id: 0,
         degree: '$_id',
         count: 1,
-        number: '$totalNumber', // Rename totalNumber to number
+        number: '$totalNumber', // Rename totalNumber to number (includes negatives)
+        positiveTotal: '$positiveNumber',
+        negativeTotal: '$negativeNumber',
+        zeroCount: '$zeroNumber',
+        minValue: 1,
+        maxValue: 1,
+        netValue: { $subtract: ['$positiveNumber', { $abs: '$negativeNumber' }] },
+        // Optional: include sample for debugging (remove in production)
+        sampleNumbers: { $slice: ['$sampleNumbers', 5] },
       },
     },
     {

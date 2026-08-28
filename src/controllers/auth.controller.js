@@ -1,18 +1,43 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { authService, userService, tokenService, emailService } = require('../services');
+const { authService, userService, tokenService, emailService, roleAccessService } = require('../services');
+
+/**
+ * What the CRM is allowed to do, decided here and sent as booleans.
+ *
+ * The client used to hold the five role ObjectIds itself and compare them, so
+ * recreating the roles broke the front end too and needed its own redeploy.
+ * It now receives capabilities and never sees a role id, which means the
+ * server is the only place that decides who may do what — and the only place
+ * that has to be told when roles change.
+ */
+const withPermissions = (user) => ({
+  ...(typeof user.toJSON === 'function' ? user.toJSON() : user),
+  permissions: roleAccessService.permissionsFor(user),
+});
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
   const tokens = await tokenService.generateAuthTokens(user);
-  res.status(httpStatus.CREATED).send({ user, tokens });
+  res.status(httpStatus.CREATED).send({ user: withPermissions(user), tokens });
 });
 
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
   const tokens = await tokenService.generateAuthTokens(user);
-  res.send({ user, tokens });
+  res.send({ user: withPermissions(user), tokens });
+});
+
+/**
+ * GET /auth/me — the signed-in user and their current permissions.
+ *
+ * Permissions are computed per call, not baked into the token: a role change
+ * takes effect on the next page load rather than on the next login, and a
+ * revoked capability cannot be carried around inside a JWT until it expires.
+ */
+const me = catchAsync(async (req, res) => {
+  res.send(withPermissions(req.user));
 });
 
 const logout = catchAsync(async (req, res) => {
@@ -48,6 +73,7 @@ const verifyEmail = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+  me,
   register,
   login,
   logout,

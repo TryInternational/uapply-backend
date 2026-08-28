@@ -86,4 +86,8 @@ bookingSchema.plugin(slug);
 bookingSchema.plugin(trackable);
 bookingSchema.plugin(AutoIncrement, { inc_field: 'orderNo' });
 
+// Performance indexes — booking availability + email lookups.
+bookingSchema.index({ status: 1, blocked: 1 });
+bookingSchema.index({ email: 1 });
+
 module.exports = mongoose.model('Booking', bookingSchema);

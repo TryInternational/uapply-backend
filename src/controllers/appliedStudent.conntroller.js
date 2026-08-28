@@ -12,7 +12,7 @@ const createAppliedStudent = catchAsync(async (req, res) => {
 });
 
 const getAppliedStudent = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'slug', 'feeType']);
+  const filter = pick(req.query, ['name', 'slug', 'feeType', 'degree']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await appliedStudentService.queryFees(filter, options);
   res.send(result);
@@ -48,7 +48,8 @@ const getAppliedPerCounselor = catchAsync(async (req, res) => {
         zone: 'Asia/Riyadh',
       }).endOf('day'),
       true
-    ).toString()
+    ).toString(),
+    req.query.degree // Pass degree parameter to service
   );
   res.send(data);
 });

@@ -31,7 +31,29 @@ const errorHandler = (err, req, res, next) => {
     ...(config.env === 'development' && { stack: err.stack }),
   };
 
-  if (config.env === 'development') {
+  // ALWAYS log server-side. The response above deliberately hides the real
+  // message outside development, which is right for the client — but the log
+  // used to be gated on development too, so in staging and production every
+  // 500 was completely silent and undiagnosable. The client still sees only
+  // "Internal Server Error"; the operator now sees what actually happened.
+  const detail = {
+    method: req.method,
+    path: req.originalUrl,
+    statusCode: err.statusCode,
+    name: err.name,
+    message: err.message,
+  };
+  // Mongo duplicate-key errors carry the offending index, which is the single
+  // most useful field when an insert starts failing after a schema change.
+  if (err.code === 11000 || err.code === 11001) {
+    detail.mongoCode = err.code;
+    detail.keyPattern = err.keyPattern;
+    detail.keyValue = err.keyValue;
+  }
+  if (statusCode >= 500) {
+    logger.error(`${detail.method} ${detail.path} → ${statusCode}`, detail);
+    logger.error(err.stack || err);
+  } else if (config.env === 'development') {
     logger.error(err);
   }
 

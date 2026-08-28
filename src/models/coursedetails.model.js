@@ -89,6 +89,10 @@ coursedetailsSchema.plugin(toJSON);
 coursedetailsSchema.plugin(paginate);
 coursedetailsSchema.plugin(slug);
 
+// Performance indexes — course-detail lookups by institution slug / refId.
+coursedetailsSchema.index({ 'institution.slug': 1 });
+coursedetailsSchema.index({ courseRefId: 1 });
+
 const CourseDetails = mongoose.model('CourseDetails', coursedetailsSchema);
 
 module.exports = CourseDetails;

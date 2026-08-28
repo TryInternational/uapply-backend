@@ -18,6 +18,7 @@ router
   .get(leadController.getLead)
   .patch(leadController.updateLead)
   .delete(auth('manageUsers'), leadController.deleteLead);
+router.route('/:leadId/convert').post(leadController.convertLead);
 router.route('/search/:text').get(leadController.searchLeads);
 
 module.exports = router;

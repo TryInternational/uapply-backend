@@ -3,13 +3,16 @@ const { default: axios } = require('axios');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { ieltsTestService, openAIService } = require('../services');
+const { ieltsTestService, openAIService, ulearnStudentService, ieltsWritingEvaluationService } = require('../services');
 const config = require('../config/config');
 
 /**
- * Evaluate writing tasks using AI
+ * Evaluate writing tasks using AI — LEGACY internal helper (OpenAI-only),
+ * still used by createIELTSTest's server-side fallback evaluation. The
+ * public /evaluate-writing endpoint is the provider-agnostic
+ * evaluateWriting below.
  */
-const evaluateWriting = catchAsync(async (req, res) => {
+const legacyEvaluateWriting = catchAsync(async (req, res) => {
   const { task1, task2, task1Type = 'academic', task2Type = 'essay' } = req.body;
 
   if (!task1 || !task2) {
@@ -266,6 +269,44 @@ const checkTestEligibility = catchAsync(async (req, res) => {
 /**
  * Create a new IELTS test record with AI evaluation
  */
+/**
+ * POST /v1/ielts-tests/evaluate-writing — AI writing scorer used by the
+ * frontend on staging/production (dev uses the same handler inside CRA's
+ * setupProxy). Response contract matches src/utils/ieltsWritingScorer.js:
+ *   200 { task1, task2, summary }
+ *   503 { error: 'scoring_not_configured' }   no provider key on the server
+ *   502 { error: 'invalid_model_output' | 'scoring_failed' }
+ *   429 { error: 'rate_limited' } + Retry-After
+ * Not catchAsync: the error bodies here are part of the contract.
+ */
+const evaluateWriting = async (req, res) => {
+  try {
+    if (!ieltsWritingEvaluationService.isConfigured()) {
+      return res.status(503).json({ error: 'scoring_not_configured' });
+    }
+    const result = await ieltsWritingEvaluationService.evaluateWriting(req.body || {});
+    if (!result) {
+      return res.status(502).json({ error: 'invalid_model_output' });
+    }
+    return res.json(result);
+  } catch (error) {
+    if (error.response?.status === 429) {
+      res.set('Retry-After', error.response.headers['retry-after'] || '30');
+      return res.status(429).json({ error: 'rate_limited' });
+    }
+    const upstreamStatus = error.response?.status;
+    // provider error messages are safe to surface in dev (never echo the key)
+    const upstreamMessage = error.response?.data?.error?.message || error.message;
+    console.error(`evaluate-writing failed (upstream ${upstreamStatus || error.code}): ${upstreamMessage}`);
+    const body = { error: 'scoring_failed' };
+    if (config.env !== 'production') {
+      body.upstreamStatus = upstreamStatus || error.code || null;
+      body.upstreamMessage = String(upstreamMessage).slice(0, 300);
+    }
+    return res.status(502).json(body);
+  }
+};
+
 const createIELTSTest = catchAsync(async (req, res) => {
   const { phone } = req.body;
 
@@ -282,7 +323,7 @@ const createIELTSTest = catchAsync(async (req, res) => {
   if (req.body.answers?.writing && !req.body.scores?.writing) {
     try {
       console.log('🤖 Evaluating writing with AI...');
-      const writingEvaluation = await evaluateWriting(
+      const writingEvaluation = await legacyEvaluateWriting(
         {
           body: {
             task1: req.body.answers.writing.task1 || '',
@@ -317,7 +358,18 @@ const createIELTSTest = catchAsync(async (req, res) => {
     }
   }
 
+  // Link the attempt to the signed-in ulearn student (optional auth middleware);
+  // anonymous submissions leave studentId null and work exactly as before.
+  if (req.ulearnStudent) {
+    req.body.studentId = req.ulearnStudent.id;
+  }
+
   const ieltsTest = await ieltsTestService.createIELTSTest(req.body);
+
+  if (req.ulearnStudent) {
+    // fire-and-forget summary cache update — never blocks or fails the response
+    ulearnStudentService.recordAttempt(req.ulearnStudent._id, 'ielts', ieltsTest);
+  }
 
   // Send Slack notification for completed tests
   if (ieltsTest.status === 'Completed') {

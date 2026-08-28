@@ -1,17 +1,26 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const ieltsTestController = require('../../controllers/ieltsTest.controller');
+const { optionalUlearnStudentAuth } = require('../../middlewares/ulearnStudentAuth');
 
 const router = express.Router();
 
 // Public routes (no authentication required)
 router.route('/eligibility').post(ieltsTestController.checkTestEligibility);
+// AI writing scorer (frontend constant IELTS_EVALUATE_WRITING) — this is the
+// endpoint staging/production builds call; dev runs the same logic in CRA
+router.route('/evaluate-writing').post(ieltsTestController.evaluateWriting);
 
 // Protected routes (require authentication)
 // router.use(auth());
 
 // Main IELTS test routes
-router.route('/').post(ieltsTestController.createIELTSTest).get(ieltsTestController.getIELTSTests);
+// optionalUlearnStudentAuth: links the attempt to a signed-in ulearn student
+// when a valid Bearer token is present; anonymous submissions work unchanged.
+router
+  .route('/')
+  .post(optionalUlearnStudentAuth(), ieltsTestController.createIELTSTest)
+  .get(ieltsTestController.getIELTSTests);
 
 // Search route
 router.route('/search/:text').get(ieltsTestController.searchIELTSTests);

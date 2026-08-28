@@ -25,8 +25,25 @@ const userSchema = mongoose.Schema(
     slackMemberId: {
       type: String,
     },
+    // The partner organisation this user belongs to — a school for a school
+    // counsellor, an agency for a sub-agent. Denormalised from their access
+    // request at approval time so the portal nav can name it; the User model
+    // otherwise has no link back to the request.
+    organisation: {
+      type: String,
+      trim: true,
+    },
     avatar: {
       type: String,
+    },
+    // The partner ORGANISATION's logo (an agency's, a school's) -- not this
+    // person's photo, which is `avatar`. Staff upload it from the partner
+    // directory; the file itself lives in storage, this holds the URL. Kept on
+    // the user because `organisation` is, for the same reason: there is no
+    // Partner model to hang either on.
+    organisationLogo: {
+      type: String,
+      trim: true,
     },
     password: {
       type: String,
@@ -43,7 +60,22 @@ const userSchema = mongoose.Schema(
     role: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: 'Roles',
-      default: '63c92057dab279194bab8d8f',
+      // NO DEFAULT. This used to default to 63c92057dab279194bab8d8f, an ADMIN
+      // role id — so any code path that created a user without naming a role
+      // produced an administrator. POST /auth/register is public and its Joi
+      // schema accepts only name/email/password, which made that a way in.
+      //
+      // A user with no role now fails every gate rather than passing all of
+      // them: services/roleAccess.service.js answers false for an empty role,
+      // so the failure mode is a powerless account instead of a silent admin.
+      // Every legitimate creation path names a role explicitly — user.validation
+      // requires it, and provisionUserForRequest resolves it through
+      // roleIdForRequestedRole.
+      //
+      // `autopopulate: true` is a no-op and always has been: mongoose-autopopulate
+      // is imported in models/plugins.js but never registered on this schema, so
+      // `user.role` is a bare ObjectId everywhere. Left in place because removing
+      // it changes nothing and several comments still reference it.
       autopopulate: true,
     },
     // isEmailVerified: {

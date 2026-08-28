@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const { DateTime } = require('luxon');
 const ApiError = require('../utils/ApiError');
 const pick = require('../utils/pick');
-const { aptitudeTestService } = require('../services');
+const { aptitudeTestService, ulearnStudentService } = require('../services');
 const catchAsync = require('../utils/catchAsync');
 
 /**
@@ -13,7 +13,16 @@ const catchAsync = require('../utils/catchAsync');
  */
 const createAptitudeTest = async (req, res, next) => {
   try {
+    // Link the attempt to the signed-in ulearn student (optional auth middleware);
+    // anonymous submissions leave studentId null and work exactly as before.
+    if (req.ulearnStudent) {
+      req.body.studentId = req.ulearnStudent.id;
+    }
     const testResult = await aptitudeTestService.createAptitudeTest(req.body);
+    if (req.ulearnStudent) {
+      // fire-and-forget summary cache update — never blocks or fails the response
+      ulearnStudentService.recordAttempt(req.ulearnStudent._id, 'aptitude', testResult);
+    }
     res.status(httpStatus.CREATED).json({
       success: true,
       data: testResult,

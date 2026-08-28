@@ -5,14 +5,10 @@ env: flex
 manual_scaling:
   instances: 1
 
-# Environment variables (WARNING: Not secure for sensitive data)
 env_variables:
-  # Application configuration
+  APP_ENV: 'production'
 
-  resources:
+resources:
   cpu: 1
   memory_gb: 2.3
   disk_size_gb: 10
-
-beta_settings:
-  cloud_sql_instances: 'your-project:region:instance-name'

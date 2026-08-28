@@ -44,8 +44,16 @@ const leadsSchema = mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['New', 'Sent Whatsapp', 'Applied'],
+      enum: ['New', 'Sent Whatsapp', 'Applied', 'Converted'],
       default: 'New',
+    },
+    // Set when the lead is converted into a student.
+    convertedStudentId: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Students',
+    },
+    convertedAt: {
+      type: Date,
     },
     sponsored: {
       type: String,
@@ -118,6 +126,13 @@ const leadsSchema = mongoose.Schema(
 // add plugin that converts mongoose to json
 leadsSchema.plugin(toJSON);
 leadsSchema.plugin(paginate);
+
+// Performance indexes — lead lookup by email; the list filters by `qualified`
+// and sorts by date, so a compound index serves both (avoids an in-memory sort;
+// a lone `qualified` index is low-selectivity and can mislead the planner).
+leadsSchema.index({ email: 1 });
+leadsSchema.index({ qualified: 1, createdAt: -1 });
+leadsSchema.index({ createdAt: -1 });
 
 // /**
 //  * Check if email is taken

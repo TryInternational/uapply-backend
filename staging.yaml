@@ -1,12 +1,12 @@
 service: uapply-staging-api
-runtime: custom # Updated runtime
+runtime: custom
 env: flex
 manual_scaling:
   instances: 1
 env_variables:
   APP_ENV: 'staging'
 network:
-  session_affinity: true # Helps maintain WebSocket connections
+  session_affinity: true
 resources:
   cpu: 1
   memory_gb: 2.3

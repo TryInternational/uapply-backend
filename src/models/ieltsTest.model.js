@@ -5,6 +5,14 @@ const { toJSON } = require('./plugins');
 const ieltsTestSchema = new mongoose.Schema(
   {
     // User Information
+    studentId: {
+      // optional link to the UlearnStudent who took this attempt (additive:
+      // anonymous submissions leave it null). Indexed for history/progress.
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'UlearnStudent',
+      default: null,
+      index: true,
+    },
     name: {
       type: String,
       required: true,
@@ -20,6 +28,7 @@ const ieltsTestSchema = new mongoose.Schema(
       type: String,
       trim: true,
       lowercase: true,
+      required: false,
     },
     dob: {
       type: Date,

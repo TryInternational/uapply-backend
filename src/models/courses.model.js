@@ -73,6 +73,11 @@ coursesSchema.plugin(paginate);
 coursesSchema.plugin(slug);
 coursesSchema.plugin(trackable);
 
+// Performance indexes — the course list filters/sorts on these.
+coursesSchema.index({ institutionSlug: 1 });
+coursesSchema.index({ courseLevel: 1 });
+coursesSchema.index({ createdDate: -1 });
+
 /**
  * @typedef Booking
  */

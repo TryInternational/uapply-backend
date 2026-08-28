@@ -124,6 +124,11 @@ const updateLead = catchAsync(async (req, res) => {
   res.send(lead);
 });
 
+const convertLead = catchAsync(async (req, res) => {
+  const student = await leadsService.convertLeadToStudent(req.params.leadId);
+  res.status(httpStatus.CREATED).send(student);
+});
+
 const getTop5ByContry = catchAsync(async (req, res) => {
   const lead = await leadsService.getTop5ByContries({
     ...req.query,
@@ -267,6 +272,7 @@ module.exports = {
   getLeads,
   getLead,
   updateLead,
+  convertLead,
   deleteLead,
   searchLeads,
   getLeadsByMonths,

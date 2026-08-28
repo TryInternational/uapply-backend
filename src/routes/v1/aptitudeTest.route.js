@@ -2,13 +2,16 @@ const express = require('express');
 const { auth } = require('../../middlewares/auth');
 const { aptitudeTestController } = require('../../controllers');
 const validate = require('../../middlewares/validate');
+const { optionalUlearnStudentAuth } = require('../../middlewares/ulearnStudentAuth');
 // const { aptitudeTestValidation } = require('../../validations');
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(/* validate(aptitudeTestValidation.createAptitudeTest), */ aptitudeTestController.createAptitudeTest)
+  // optionalUlearnStudentAuth: links the attempt to a signed-in ulearn student
+  // when a valid Bearer token is present; anonymous submissions work unchanged.
+  .post(optionalUlearnStudentAuth(), /* validate(aptitudeTestValidation.createAptitudeTest), */ aptitudeTestController.createAptitudeTest)
   .get(aptitudeTestController.getAptitudeTests);
 
 router

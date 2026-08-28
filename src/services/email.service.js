@@ -48,9 +48,12 @@ const sendEmail = async (to, subject, text, context, file, htmlString) => {
  * @param {string} token
  * @returns {Promise}
  */
-const sendResetPasswordEmail = async (to, token) => {
+const sendResetPasswordEmail = async (to, token, baseUrl) => {
   const subject = 'Reset password';
-  const resetPasswordUrl = `https://backoffice.uapplyabroad.com/reset-password?token=${token}`;
+  // Was hardcoded to the back-office host, which is the wrong one for a
+  // sub-agent -- and the invite email tells them to use this flow when their
+  // link expires. `baseUrl` lets the caller pass the portal they belong to.
+  const resetPasswordUrl = `${baseUrl || config.appUrls.backoffice}/reset-password?token=${token}`;
 
   const text = `Dear user,
 To reset your password, click on this link: ${resetPasswordUrl}
@@ -176,7 +179,84 @@ if (config.env !== 'test') {
   testResendConnection();
 }
 
+
+// ---------------------------------------------------------------------------
+// Partner onboarding (school counsellor / sub-agent access requests)
+// ---------------------------------------------------------------------------
+
+// User-facing label for each requestable role. Kept here so the emails and the
+// portal say the same thing.
+const ACCESS_ROLE_LABEL = {
+  subAgent: 'Sub Agent',
+  schoolCounselor: 'School Counselor',
+};
+
+/**
+ * Acknowledge a request. Sent to the applicant immediately, before any review.
+ * Says explicitly that no account exists yet, so a person who did not make the
+ * request is not left wondering.
+ */
+const sendAccessRequestReceivedEmail = async (request) => {
+  const roleLabel = ACCESS_ROLE_LABEL[request.requestedRole] || 'portal';
+  await sendEmail(
+    request.email,
+    'We have your access request',
+    `Thanks, ${request.name}. Your request for ${roleLabel} access is with the Ulearn team. We'll email you a link to set your password as soon as it's approved.`,
+    {
+      name: request.name,
+      email: request.email,
+      roleLabel,
+      organisation: request.organisation,
+    },
+    'access_request_received'
+  );
+};
+
+/**
+ * The invite. `setPasswordUrl` carries a one-time reset-password token, so the
+ * account this email refers to cannot be signed into until the recipient
+ * follows it -- no credential is ever transmitted.
+ */
+const sendAccessApprovedEmail = async (request, { setPasswordUrl, portalUrl, expiryHours }) => {
+  const roleLabel = ACCESS_ROLE_LABEL[request.requestedRole] || 'portal';
+  await sendEmail(
+    request.email,
+    'Your Ulearn portal is ready',
+    `Good news, ${request.name} - your ${roleLabel} access has been approved. Set your password here: ${setPasswordUrl}`,
+    {
+      name: request.name,
+      email: request.email,
+      roleLabel,
+      setPasswordUrl,
+      portalUrl,
+      expiryHours,
+    },
+    'access_approved'
+  );
+};
+
+const sendAccessDeclinedEmail = async (request, reason) => {
+  const roleLabel = ACCESS_ROLE_LABEL[request.requestedRole] || 'portal';
+  await sendEmail(
+    request.email,
+    'About your access request',
+    `Thanks for your interest, ${request.name}. We're not able to open a ${roleLabel} portal for ${request.organisation} at the moment.${reason ? ` ${reason}` : ''}`,
+    {
+      name: request.name,
+      email: request.email,
+      roleLabel,
+      organisation: request.organisation,
+      reason,
+    },
+    'access_declined'
+  );
+};
+
 module.exports = {
+  ACCESS_ROLE_LABEL,
+  sendAccessRequestReceivedEmail,
+  sendAccessApprovedEmail,
+  sendAccessDeclinedEmail,
   resend,
   sendEmail,
   sendResetPasswordEmail,

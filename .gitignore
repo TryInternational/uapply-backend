@@ -10,3 +10,10 @@ yarn-error.log
 
 # Code coverage
 coverage
+
+# Scratch: files parked for manual deletion (device_bash cannot rm)
+_to_delete/
+
+# macOS + local agent config
+.DS_Store
+.claude/

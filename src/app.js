@@ -16,6 +16,18 @@ const ApiError = require('./utils/ApiError');
 
 const app = express();
 
+// Deployment is App Engine flex, so every request arrives through a front-end
+// proxy and req.ip would otherwise be that proxy for ALL callers -- collapsing
+// every rate limiter onto a single bucket.
+//
+// A HOP COUNT, never `true`. Trusting every hop makes Express take the
+// left-most X-Forwarded-For entry, which the caller writes, so a spoofed header
+// would hand out a fresh rate-limit bucket per request -- and would do it to
+// authLimiter on /v1/auth too, weakening login brute-force protection that has
+// nothing to do with this feature. Confirm the real hop count on the deployed
+// instance before changing TRUST_PROXY_HOPS.
+app.set('trust proxy', config.trustProxyHops);
+
 if (config.env !== 'test') {
   app.use(morgan.successHandler);
   app.use(morgan.errorHandler);
@@ -24,8 +36,15 @@ if (config.env !== 'test') {
 // Set security HTTP headers
 app.use(helmet());
 
-// Parse JSON request body
-app.use(express.json());
+// Parse JSON request body. Capture the raw buffer so the WhatsApp webhook can
+// verify Meta's X-Hub-Signature-256 HMAC (the parsed body can't be re-hashed).
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 // Parse URL-encoded request body
 app.use(express.urlencoded({ extended: true }));

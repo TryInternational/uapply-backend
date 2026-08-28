@@ -5,6 +5,8 @@ const cors = require('cors');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const roleAccessService = require('./services/roleAccess.service');
+const ensureUlearnStudentIndexes = require('./utils/ensureUlearnStudentIndexes');
 
 let server;
 
@@ -57,8 +59,21 @@ const sendNotification = (userIds, message) => {
 global.sendNotification = sendNotification;
 
 // Connect to MongoDB and start the server
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => {
   logger.info('Connected to MongoDB');
+
+  // Self-healing: drop the obsolete non-partial unique indexes on
+  // ulearnstudents. Without this, the SECOND phone-only student to sign in
+  // fails with E11000 on googleId_1 (every document missing the field indexes
+  // as the same null). Idempotent, and never blocks startup.
+  await ensureUlearnStudentIndexes();
+
+  // Load the roles collection before accepting traffic, so the very first
+  // request is answered from real rights rather than from an empty cache.
+  // Never throws: on failure the gates fall back to LEGACY_*_ROLE_IDS, which
+  // is exactly the behaviour that shipped before roleAccess existed.
+  await roleAccessService.warm();
+
   httpServer.listen(config.port, () => {
     logger.info(`Listening to port ${config.port}`);
   });
