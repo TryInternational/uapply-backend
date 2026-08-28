@@ -111,6 +111,7 @@ const SPECS = [
     const marks = [
       rights.includes(ADMIN_RIGHT) ? 'ADMIN' : '',
       rights.includes(REVIEWER_RIGHT) ? 'REVIEWER' : '',
+      rights.includes(COUNSELOR_TOOLS_RIGHT) ? 'TOOLS' : '',
     ]
       .filter(Boolean)
       .join(' + ');
