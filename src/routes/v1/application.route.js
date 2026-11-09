@@ -1,4 +1,5 @@
 const express = require('express');
+const responseCache = require('../../middlewares/responseCache');
 
 const applicationsController = require('../../controllers/application.controller');
 const {
@@ -36,9 +37,7 @@ router.route('/:applicationId/resubmit').patch(requireAuth, requireSubAgent, app
 // counsellor's applications are found through the STUDENTS they own, not
 // through application.createdBy, because Ulearn staff may create applications
 // for a referred student.
-router
-  .route('/mine-school')
-  .get(requireAuth, requireSchoolCounselor, applicationsController.getMySchoolApplications);
+router.route('/mine-school').get(requireAuth, requireSchoolCounselor, applicationsController.getMySchoolApplications);
 
 // ---- counsellor review (always authenticated) ----
 router.route('/pending-review').get(requireAuth, requireReviewer, applicationsController.getPendingReviewApplications);
@@ -58,9 +57,12 @@ router.route('/application-counts-university').get(legacyGate, denySubAgent, app
 router
   .route('/application-enrolled-university')
   .get(legacyGate, denySubAgent, applicationsController.getEnrolledUniversities);
-router.route('/application-dashboard-data').get(legacyGate, denySubAgent, applicationsController.getDashboardData);
+router
+  .route('/application-dashboard-data')
+  .get(legacyGate, denySubAgent, responseCache(), applicationsController.getDashboardData);
 router.route('/dashboard-drilldown').get(legacyGate, denySubAgent, applicationsController.getDashboardDrilldown);
 router.route('/count-by-month').get(legacyGate, denySubAgent, applicationsController.getApplicationsCountByMonth);
+router.route('/applied-students').get(legacyGate, denySubAgent, responseCache(), applicationsController.getAppliedStudents);
 router
   .route('/enrolled-count-by-month')
   .get(legacyGate, denySubAgent, applicationsController.getEnrolledApplicationsCountByMonth);

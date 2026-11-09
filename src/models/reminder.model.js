@@ -9,6 +9,9 @@ const reminderSchema = new mongoose.Schema(
     user: { type: mongoose.SchemaTypes.ObjectId, ref: 'User', required: true },
     // Optional linked student.
     student: { type: mongoose.SchemaTypes.ObjectId, ref: 'Students' },
+    // Optional linked lead — a follow-up set from the Leads page before the
+    // lead is a student. On conversion the reminder also gets `student`.
+    lead: { type: mongoose.SchemaTypes.ObjectId, ref: 'Leads' },
     title: { type: String, required: true, trim: true },
     note: { type: String, trim: true },
     dueDate: { type: Date, required: true },
@@ -27,5 +30,6 @@ reminderSchema.plugin(paginate);
 // Per-counselor list, sorted/filtered by due date + status.
 reminderSchema.index({ user: 1, status: 1, dueDate: 1 });
 reminderSchema.index({ student: 1 });
+reminderSchema.index({ lead: 1 });
 
 module.exports = mongoose.model('Reminder', reminderSchema);

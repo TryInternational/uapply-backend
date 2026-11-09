@@ -98,7 +98,10 @@ const ulearnStudentSchema = mongoose.Schema(
     // ── durable answers collected by the test onboarding flows. All optional:
     //    a student only ever fills the ones their chosen tests ask for, and
     //    every one of them is asked at most once (fill-once profile).
-    degree: { type: String }, // degree sought — aptitude + major onboarding
+    degree: {
+      en_name: { type: String, trim: true },
+      ar_name: { type: String, trim: true },
+    },
     previousSchool: { type: String }, // last school / university attended
     cgpa: { type: String }, // GPA or percentage, free-form by design
     englishProficiency: {
@@ -211,18 +214,9 @@ ulearnStudentSchema.index(
   { firebaseUid: 1 },
   { unique: true, partialFilterExpression: { firebaseUid: { $type: 'string' } } }
 );
-ulearnStudentSchema.index(
-  { phone: 1 },
-  { unique: true, partialFilterExpression: { phoneVerified: true } }
-);
-ulearnStudentSchema.index(
-  { googleId: 1 },
-  { unique: true, partialFilterExpression: { googleId: { $type: 'string' } } }
-);
-ulearnStudentSchema.index(
-  { email: 1 },
-  { unique: true, partialFilterExpression: { email: { $type: 'string' } } }
-);
+ulearnStudentSchema.index({ phone: 1 }, { unique: true, partialFilterExpression: { phoneVerified: true } });
+ulearnStudentSchema.index({ googleId: 1 }, { unique: true, partialFilterExpression: { googleId: { $type: 'string' } } });
+ulearnStudentSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: 'string' } } });
 
 // add plugin that converts mongoose to json
 ulearnStudentSchema.plugin(toJSON);

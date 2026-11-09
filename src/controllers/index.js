@@ -35,3 +35,4 @@ module.exports.whatsappController = require('./whatsapp.controller');
 module.exports.majorController = require('./major.controller');
 module.exports.ulearnStudentController = require('./ulearnStudent.controller');
 module.exports.accessRequestController = require('./accessRequest.controller');
+module.exports.agreementController = require('./agreement.controller');

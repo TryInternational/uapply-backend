@@ -308,6 +308,11 @@ const evaluateWriting = async (req, res) => {
 };
 
 const createIELTSTest = catchAsync(async (req, res) => {
+  // A signed-in student's verified phone is authoritative: never save an
+  // attempt under whatever number the client happened to send.
+  if (req.ulearnStudent && req.ulearnStudent.phoneVerified && req.ulearnStudent.phone) {
+    req.body.phone = req.ulearnStudent.phone;
+  }
   const { phone } = req.body;
 
   console.log('📝 Creating IELTS test:', req.body);
@@ -376,14 +381,14 @@ const createIELTSTest = catchAsync(async (req, res) => {
     const slackBody = {
       attachments: [
         {
-          pretext: `*New IELTS Test Completed - Attempt ${ieltsTest.attemptNumber}/5*`,
+          pretext: `*New IELTS Test Completed - Attempt ${ieltsTest.attemptNumber}*`,
           text: `\nName: ${ieltsTest.name}\nPhone: ${ieltsTest.phone}\nOverall Score: ${
             ieltsTest.scores?.overall?.bandScore || 'N/A'
           } (${ieltsTest.scores?.overall?.level || 'N/A'})\nSections: Reading(${
             ieltsTest.scores?.reading?.bandScore || 'N/A'
           }), Writing(${ieltsTest.scores?.writing?.bandScore || 'N/A'}), Listening(${
             ieltsTest.scores?.listening?.bandScore || 'N/A'
-          })\nTime Taken: ${ieltsTest.timeTaken?.formatted || 'N/A'}\nAttempts Used: ${ieltsTest.attemptsUsed || 1}/5\n${
+          })\nTime Taken: ${ieltsTest.timeTaken?.formatted || 'N/A'}\nAttempts Used: ${ieltsTest.attemptsUsed || 1}\n${
             ieltsTest.aiEvaluated ? '🤖 AI Evaluated' : '📝 Basic Evaluation'
           }`,
           color: ieltsTest.aiEvaluated ? '#36a64f' : '#ff9800',

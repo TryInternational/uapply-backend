@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { accessRequestService, userService, emailService, notificationsService } = require('../services');
+const { accessRequestService, userService, emailService, notificationsService, agreementService } = require('../services');
 const { User } = require('../models');
 // NOT destructured: the reviewer id list is now read from the roles collection
 // and can change while the process runs. Pulling it apart at import time would
@@ -41,6 +41,10 @@ const ACK = {
 const submitAccessRequest = catchAsync(async (req, res) => {
   const email = String(req.body.email).toLowerCase();
 
+  // Verified before anything is written: a forged or expired receipt is a 400
+  // the applicant can act on (re-attach the file), not a half-saved request.
+  const civilId = req.body.civilIdUpload ? accessRequestService.verifyCivilIdReceipt(req.body.civilIdUpload) : undefined;
+
   const [existingUser, pending, latest] = await Promise.all([
     userService.getUserByEmail(email),
     accessRequestService.findLiveRequestByEmail(email),
@@ -62,8 +66,20 @@ const submitAccessRequest = catchAsync(async (req, res) => {
         // reappear in the queue looking brand new.
         previousStatus: latest && latest.status !== 'Pending' ? latest.status : undefined,
         previousReason: latest && latest.decision ? latest.decision.reason : undefined,
+        civilId,
       }
     );
+  } else if (civilId || req.body.organisationDetails || req.body.personInCharge) {
+    // A resubmission while the first is pending: keep the one row, but let the
+    // newer paperwork win -- this is how an applicant fixes a wrong upload.
+    const refresh = {};
+    if (civilId) refresh.civilId = civilId;
+    if (req.body.organisationDetails) refresh.organisationDetails = req.body.organisationDetails;
+    if (req.body.personInCharge) refresh.personInCharge = req.body.personInCharge;
+    if (req.body.title) refresh.title = req.body.title;
+    if (req.body.nameAr) refresh.nameAr = req.body.nameAr;
+    if (req.body.organisationAr) refresh.organisationAr = req.body.organisationAr;
+    await accessRequestService.updatePendingPaperwork(request.id, refresh);
   }
 
   res.status(httpStatus.ACCEPTED).send(ACK);
@@ -177,6 +193,60 @@ const decideAccessRequest = catchAsync(async (req, res) => {
     );
   }
 
+  // ---- sub-agents: the agreement comes first --------------------------------
+  // Approving a sub-agent sends them the agreement with the deal the reviewer
+  // just set. Nothing is provisioned until it is signed by both parties: that
+  // happens in agreementService.complete, which creates the account and sends
+  // the set-password invite. `skipAgreement` is the escape hatch for a partner
+  // whose contract already exists on paper.
+  if (request.requestedRole === 'subAgent' && !req.body.skipAgreement) {
+    if (!req.body.agreement) {
+      request.status = 'Pending';
+      request.decision = undefined;
+      await request.save();
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'Set the commission for this sub-agent before approving, or tick "no agreement needed".'
+      );
+    }
+    const existingAgreement = await agreementService.getByAccessRequest(request._id);
+    if (existingAgreement && !['Voided', 'Declined', 'Expired'].includes(existingAgreement.status)) {
+      request.status = 'Pending';
+      request.decision = undefined;
+      await request.save();
+      throw new ApiError(
+        httpStatus.CONFLICT,
+        `This partner already has agreement ${existingAgreement.agreementNo} (${existingAgreement.status}).`
+      );
+    }
+    let agreement;
+    try {
+      agreement = await agreementService.createDraft({
+        request,
+        commission: req.body.agreement.commission,
+        extraTerms: req.body.agreement.extraTerms,
+        autoCountersign: req.body.agreement.autoCountersign,
+        by: req.user,
+      });
+      agreement = await agreementService.send(agreement, {
+        by: req.user,
+        ip: req.ip,
+        userAgent: String(req.get('user-agent') || '').slice(0, 300),
+      });
+    } catch (err) {
+      request.status = 'Pending';
+      request.decision = undefined;
+      await request.save();
+      if (agreement && agreement.status === 'Draft') {
+        await agreementService.voidAgreement(agreement, `Sending failed: ${err.message}`, { by: req.user }).catch(() => {});
+      }
+      throw err instanceof ApiError ? err : new ApiError(httpStatus.BAD_REQUEST, err.message);
+    }
+    request.agreement = agreement._id;
+    await request.save();
+    return res.send({ ...request.toJSON(), agreement: agreement.toJSON() });
+  }
+
   let user;
   try {
     user = await accessRequestService.provisionUserForRequest(request);
@@ -235,9 +305,38 @@ const resendInvite = catchAsync(async (req, res) => {
   res.send({ message: `A new set-password link has been emailed to ${request.email}.` });
 });
 
+/**
+ * POST /access-requests/civil-id  (public, rate-limited, multipart "file")
+ *
+ * Stores the scan privately and answers with a signed receipt the form sends
+ * back inside the request body. Nothing is written to the database here.
+ */
+const uploadCivilId = catchAsync(async (req, res) => {
+  const result = await accessRequestService.storeCivilIdUpload(req.file);
+  res.status(httpStatus.CREATED).send(result);
+});
+
+/**
+ * GET /access-requests/:requestId/civil-id  (reviewers only)
+ *
+ * A ten-minute read link for the scan. Issued per view and logged, because
+ * this is an identity document.
+ */
+const civilIdLink = catchAsync(async (req, res) => {
+  const request = await accessRequestService.getAccessRequestById(req.params.requestId);
+  if (!request) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Access request not found');
+  }
+  const link = await accessRequestService.civilIdLink(request);
+  logger.info(`Civil ID of access request ${request.id} viewed by ${req.user.email || req.user.id}`);
+  res.send(link);
+});
+
 module.exports = {
   submitAccessRequest,
   getAccessRequests,
   decideAccessRequest,
   resendInvite,
+  uploadCivilId,
+  civilIdLink,
 };

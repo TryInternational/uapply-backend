@@ -6,9 +6,21 @@ const { DateTime } = require('luxon');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
+const { Leads } = require('../models');
 const { leadsService } = require('../services');
 const config = require('../config/config');
 const { convertASTToUTC } = require('../utils/Common');
+const { actorOf } = require('../utils/actor');
+
+// A residence filter may name one country or several spellings of it
+// ("United Arab Emirates,UAE") — the Leads filter drawer sends the latter.
+const residenceMatch = (v) => {
+  const names = String(v)
+    .split(',')
+    .map((x) => x.trim())
+    .filter(Boolean);
+  return names.length > 1 ? { $in: names } : names[0];
+};
 
 const createLead = catchAsync(async (req, res) => {
   const checkQualified =
@@ -82,7 +94,7 @@ const getLeads = catchAsync(async (req, res) => {
     filter['nationality.english_name'] = req.query.nationality;
   }
   if (req.query.residence) {
-    filter['residence.english_name'] = req.query.residence;
+    filter['residence.english_name'] = residenceMatch(req.query.residence);
   }
   if (req.query.degree) {
     filter['degree.en_name'] = req.query.degree;
@@ -95,7 +107,11 @@ const getLeads = catchAsync(async (req, res) => {
   }
   if (req.query.destination && req.query.destination.en_name) {
     filter['destination.en_name'] = req.query.destination.en_name;
+  } else if (typeof req.query.destination === 'string' && req.query.destination) {
+    filter['destination.en_name'] = req.query.destination;
   }
+  const adSource = leadsService.adSourceFilter(req.query.adSource);
+  if (adSource) Object.assign(filter, adSource);
 
   if (req.query.startDate && req.query.endDate) {
     filter.createdAt = {
@@ -105,6 +121,25 @@ const getLeads = catchAsync(async (req, res) => {
         .toJSDate(), // Start date filter
       $lte: DateTime.fromJSDate(new Date(req.query.endDate), { zone: 'utc' }).endOf('day').minus({ hours: 3 }).toJSDate(), // End date filter
     };
+  }
+
+  // countsByStatus=all,New,… → { counts } for the Leads status tabs in one
+  // request ("all" = no status constraint); every other filter still applies.
+  if (req.query.countsByStatus) {
+    const keys = String(req.query.countsByStatus)
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 12);
+    const base = { ...filter };
+    delete base.status;
+    if (req.query.webUrl) base.webUrl = { $regex: req.query.webUrl };
+    const ns = await Promise.all(keys.map((k) => Leads.countDocuments(k === 'all' ? base : { ...base, status: k })));
+    const counts = {};
+    keys.forEach((k, i) => {
+      counts[k] = ns[i];
+    });
+    return res.send({ counts });
   }
 
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'webUrl']);
@@ -125,8 +160,20 @@ const updateLead = catchAsync(async (req, res) => {
 });
 
 const convertLead = catchAsync(async (req, res) => {
-  const student = await leadsService.convertLeadToStudent(req.params.leadId);
+  const student = await leadsService.convertLeadToStudent(req.params.leadId, actorOf(req));
   res.status(httpStatus.CREATED).send(student);
+});
+
+// POST /leads/:leadId/assign { userId } — "Reassign counselor".
+const assignLead = catchAsync(async (req, res) => {
+  const lead = await leadsService.assignLead(req.params.leadId, req.body.userId);
+  res.send(lead);
+});
+
+// POST /leads/:leadId/follow-up { dueDate, note? } — "Set follow-up".
+const setLeadFollowUp = catchAsync(async (req, res) => {
+  const lead = await leadsService.setLeadFollowUp(req.params.leadId, req.body, actorOf(req).id);
+  res.send(lead);
 });
 
 const getTop5ByContry = catchAsync(async (req, res) => {
@@ -186,9 +233,38 @@ const getLeadsByMonths = catchAsync(async (req, res) => {
   res.send(result);
 });
 const searchLeads = catchAsync(async (req, res) => {
-  const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'qualified', { searchString: req.params.text }]);
-  const results = await leadsService.searchLead(req.params.text, options);
+  const options = pick(req.query, [
+    'sortBy',
+    'limit',
+    'page',
+    'populate',
+    'qualified',
+    'status',
+    { searchString: req.params.text },
+  ]);
+  // the filter drawer's choices apply to a search as well
+  const q = req.query;
+  const extra = {};
+  if (q.degree && q.degree !== 'All') extra['degree.en_name'] = q.degree;
+  if (typeof q.destination === 'string' && q.destination) extra['destination.en_name'] = q.destination;
+  if (q.nationality) extra['nationality.english_name'] = q.nationality;
+  if (q.residence) extra['residence.english_name'] = residenceMatch(q.residence);
+  if (q.source) extra.source = q.source;
+  if (q.startDate && q.endDate) {
+    extra.createdAt = {
+      $gte: DateTime.fromJSDate(new Date(q.startDate), { zone: 'utc' }).startOf('day').minus({ hours: 3 }).toJSDate(),
+      $lte: DateTime.fromJSDate(new Date(q.endDate), { zone: 'utc' }).endOf('day').minus({ hours: 3 }).toJSDate(),
+    };
+  }
+  const adSource = leadsService.adSourceFilter(q.adSource);
+  const filters = [extra, ...(adSource ? [adSource] : [])].filter((f) => Object.keys(f).length);
+  const results = await leadsService.searchLead(req.params.text, options, filters.length ? { $and: filters } : undefined);
   res.status(200).send(results);
+});
+
+// GET /leads/facets?qualified=&status= — options + counts for the filter drawer.
+const getLeadFacets = catchAsync(async (req, res) => {
+  res.send(await leadsService.leadFacets(pick(req.query, ['qualified', 'status'])));
 });
 
 const getLeadsCountByDates = async (filter) => {
@@ -273,8 +349,11 @@ module.exports = {
   getLead,
   updateLead,
   convertLead,
+  assignLead,
+  setLeadFollowUp,
   deleteLead,
   searchLeads,
+  getLeadFacets,
   getLeadsByMonths,
   getTop5ByContry,
   getTop5ByDegrees,

@@ -3,6 +3,9 @@ const ulearnStudentController = require('../../controllers/ulearnStudent.control
 const { ulearnStudentAuth } = require('../../middlewares/ulearnStudentAuth');
 const auth = require('../../middlewares/auth');
 const config = require('../../config/config');
+const validate = require('../../middlewares/validate');
+const ulearnStudentValidation = require('../../validations/ulearnStudent.validation');
+const { otpFallbackIpLimiter, otpFallbackPhoneLimiter } = require('../../middlewares/rateLimiter');
 
 const router = express.Router();
 
@@ -20,14 +23,31 @@ const router = express.Router();
  * sibling routes, since this data (names, phone numbers, results) is no more
  * or less sensitive than the leads sitting open beside it.
  */
-const backOfficeGate = config.ulearnStudents.backOfficeAuth
-  ? auth('getUsers')
-  : (req, res, next) => next();
+const backOfficeGate = config.ulearnStudents.backOfficeAuth ? auth('getUsers') : (req, res, next) => next();
 
 // Phone sign-in (primary): verifies the Firebase ID token server-side, upserts
 // the student on the verified phone identity, claims historical attempts, and
 // returns the service JWT.
 router.post('/auth/phone', ulearnStudentController.phoneAuth);
+
+// SMS fallback via Twilio Verify, for carriers Firebase's own SMS route
+// refuses (STC Kuwait → "Error code: 39"). /start texts the code; /check
+// confirms it and returns a Firebase custom token, after which the frontend
+// goes through /auth/phone above like any other phone sign-in. Both answer
+// 503 until TWILIO_* and the ULEARN_FIREBASE_* service-account key are set.
+router.post(
+  '/auth/phone/otp/start',
+  otpFallbackIpLimiter,
+  otpFallbackPhoneLimiter,
+  validate(ulearnStudentValidation.otpFallbackStart),
+  ulearnStudentController.otpFallbackStart
+);
+router.post(
+  '/auth/phone/otp/check',
+  otpFallbackIpLimiter,
+  validate(ulearnStudentValidation.otpFallbackCheck),
+  ulearnStudentController.otpFallbackCheck
+);
 
 // Google sign-in (legacy): kept mounted so a rollback is an env flag, not a
 // redeploy. Returns 503 unless ULEARN_GOOGLE_AUTH_ENABLED is true.
@@ -38,16 +58,8 @@ router.post('/auth/google', ulearnStudentController.googleAuth);
 // role rights check. Deliberately NOT ulearnStudentAuth — a student token must
 // never reach these, or one student could read another's attempts.
 router.get('/back-office/students', backOfficeGate, ulearnStudentController.listStudentsForBackOffice);
-router.get(
-  '/back-office/students/:studentId/tests',
-  backOfficeGate,
-  ulearnStudentController.getStudentTestsForBackOffice
-);
-router.patch(
-  '/back-office/students/:studentId',
-  backOfficeGate,
-  ulearnStudentController.updateStudentFromBackOffice
-);
+router.get('/back-office/students/:studentId/tests', backOfficeGate, ulearnStudentController.getStudentTestsForBackOffice);
+router.patch('/back-office/students/:studentId', backOfficeGate, ulearnStudentController.updateStudentFromBackOffice);
 
 // authenticated student endpoints
 router.get('/me', ulearnStudentAuth(), ulearnStudentController.getMe);

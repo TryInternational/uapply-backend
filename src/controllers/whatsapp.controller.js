@@ -5,7 +5,9 @@ const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const config = require('../config/config');
 const logger = require('../config/logger');
-const { whatsappService, whatsappAnalyticsService } = require('../services');
+const { whatsappService, whatsappAnalyticsService, whatsappBroadcastService, whatsappCallService } = require('../services');
+const roleAccess = require('../services/roleAccess.service');
+const { whatsapp: waClient } = require('../thirdparty');
 
 // --- Webhook (public — Meta calls these) ---
 
@@ -52,6 +54,11 @@ const getConversations = catchAsync(async (req, res) => {
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await whatsappService.queryConversations(filter, options, req.user);
   res.send(result);
+});
+
+const startConversation = catchAsync(async (req, res) => {
+  const conv = await whatsappService.startConversation(req.body.phone, req.body.name, req.user);
+  res.status(httpStatus.CREATED).send(conv);
 });
 
 const getConversation = catchAsync(async (req, res) => {
@@ -113,7 +120,7 @@ const addNote = catchAsync(async (req, res) => {
   const io = req.app.get('io');
   res
     .status(httpStatus.CREATED)
-    .send(await whatsappService.addNote(io, req.params.id, req.body.text, req.body.mentions, req.user));
+    .send(await whatsappService.addNote(io, req.params.id, req.body.text, req.body.mentions, req.user, req.body.clientRef));
 });
 
 const sendVoice = catchAsync(async (req, res) => {
@@ -132,6 +139,10 @@ const sendVoice = catchAsync(async (req, res) => {
     if (e && e.code === 'WINDOW_CLOSED') return res.status(httpStatus.CONFLICT).send({ code: 'WINDOW_CLOSED' });
     throw e;
   }
+});
+
+const saveMessageAsDocument = catchAsync(async (req, res) => {
+  res.status(httpStatus.CREATED).send(await whatsappService.saveMessageAsDocument(req.params.messageId, req.body, req.user));
 });
 
 const updateMeta = catchAsync(async (req, res) => {
@@ -161,10 +172,103 @@ const getIntegration = catchAsync(async (req, res) => {
   res.send(whatsappService.getIntegrationStatus(baseUrl));
 });
 
+// Admin-only: register the configured number with the Cloud API / read its status.
+const registerPhone = catchAsync(async (req, res) => {
+  if (!roleAccess.isAdmin(req.user)) throw new ApiError(httpStatus.FORBIDDEN, 'Admins only');
+  const result = await waClient.registerPhoneNumber(req.body.pin);
+  const status = await waClient.getPhoneNumberStatus();
+  res.send({ registered: Boolean(result && result.success), status });
+});
+
+const getPhoneStatus = catchAsync(async (req, res) => {
+  if (!roleAccess.isAdmin(req.user)) throw new ApiError(httpStatus.FORBIDDEN, 'Admins only');
+  res.send({ status: await waClient.getPhoneNumberStatus() });
+});
+
+// --- Broadcasts (Phase 3) ---
+
+const getAudienceSegments = catchAsync(async (req, res) => {
+  res.send({ results: await whatsappBroadcastService.listSegments(req.user) });
+});
+
+const createBroadcast = catchAsync(async (req, res) => {
+  const io = req.app.get('io');
+  res.status(httpStatus.CREATED).send(await whatsappBroadcastService.createBroadcast(io, req.body, req.user));
+});
+
+const listBroadcasts = catchAsync(async (req, res) => {
+  res.send(await whatsappBroadcastService.listBroadcasts(req.user, pick(req.query, ['sortBy', 'limit', 'page'])));
+});
+
+const getBroadcast = catchAsync(async (req, res) => {
+  res.send(await whatsappBroadcastService.getBroadcast(req.params.id, req.user));
+});
+
+// --- Calling (Phase 4) ---
+
+const getCallPermission = catchAsync(async (req, res) => {
+  res.send(await whatsappCallService.getPermission(req.params.id));
+});
+
+const requestCallPermission = catchAsync(async (req, res) => {
+  res.send(await whatsappCallService.requestPermission(req.params.id, req.body && req.body.text));
+});
+
+const startCall = catchAsync(async (req, res) => {
+  const io = req.app.get('io');
+  res.status(httpStatus.CREATED).send(await whatsappCallService.startCall(io, req.params.id, req.body.sdpOffer, req.user));
+});
+
+const acceptCall = catchAsync(async (req, res) => {
+  const io = req.app.get('io');
+  res.send(await whatsappCallService.acceptCall(io, req.params.callId, req.body.sdpAnswer));
+});
+
+const rejectCall = catchAsync(async (req, res) => {
+  const io = req.app.get('io');
+  res.send(await whatsappCallService.rejectCall(io, req.params.callId));
+});
+
+const terminateCall = catchAsync(async (req, res) => {
+  const io = req.app.get('io');
+  res.send(await whatsappCallService.terminateCall(io, req.params.callId));
+});
+
+const listCalls = catchAsync(async (req, res) => {
+  res.send({ results: await whatsappCallService.listCalls(req.params.id) });
+});
+
+const getCallSettings = catchAsync(async (req, res) => {
+  if (!roleAccess.isAdmin(req.user)) throw new ApiError(httpStatus.FORBIDDEN, 'Admins only');
+  res.send(await whatsappCallService.getSettings());
+});
+
+const enableCalling = catchAsync(async (req, res) => {
+  if (!roleAccess.isAdmin(req.user)) throw new ApiError(httpStatus.FORBIDDEN, 'Admins only');
+  const result = await whatsappCallService.enableCalling();
+  res.send({ result, settings: await whatsappCallService.getSettings() });
+});
+
 module.exports = {
+  getAudienceSegments,
+  createBroadcast,
+  listBroadcasts,
+  getBroadcast,
+  getCallPermission,
+  requestCallPermission,
+  startCall,
+  acceptCall,
+  rejectCall,
+  terminateCall,
+  listCalls,
+  getCallSettings,
+  enableCalling,
+  registerPhone,
+  getPhoneStatus,
   verifyWebhook,
   receiveWebhook,
   getConversations,
+  startConversation,
   getConversation,
   markRead,
   assign,
@@ -175,6 +279,7 @@ module.exports = {
   addNote,
   sendVoice,
   updateMeta,
+  saveMessageAsDocument,
   uploadMedia,
   getTemplates,
   getOverviewAnalytics,

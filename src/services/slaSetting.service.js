@@ -1,4 +1,4 @@
-const { SlaSetting } = require('../models');
+const { SlaSetting, User } = require('../models');
 
 /**
  * The eight pipeline phases and the allowances the CRM shipped with.
@@ -40,6 +40,16 @@ const DEFAULTS = {
  * Any phase missing from a stored document is filled in from the defaults, so
  * adding a phase to the pipeline later cannot leave the settings half-formed.
  */
+/** The levels that carry a number (the schema stores the rest as null). */
+const plainLevels = (raw) => {
+  const src = raw && typeof raw.toObject === 'function' ? raw.toObject() : raw || {};
+  const out = {};
+  ['Foundation', 'Bachelor', 'Master', 'PhD'].forEach((lvl) => {
+    if (typeof src[lvl] === 'number') out[lvl] = src[lvl];
+  });
+  return out;
+};
+
 const getSettings = async () => {
   let doc = await SlaSetting.findOne({ key: 'default' });
   if (!doc) doc = await SlaSetting.create(DEFAULTS);
@@ -52,9 +62,16 @@ const getSettings = async () => {
       status: d.status,
       value: typeof stored.value === 'number' ? stored.value : d.value,
       unit: stored.unit || d.unit,
-      levels: stored.levels || {},
+      levels: plainLevels(stored.levels),
     };
   });
+
+  // who saved last (the settings screen shows "Saved 12 Oct by …")
+  let updatedBy = null;
+  if (doc.updatedBy) {
+    const u = await User.findById(doc.updatedBy, { name: 1 }).lean();
+    updatedBy = { id: String(doc.updatedBy), name: (u && u.name) || null };
+  }
 
   return {
     phases: merged,
@@ -63,6 +80,7 @@ const getSettings = async () => {
     workEndHour: typeof doc.workEndHour === 'number' ? doc.workEndHour : DEFAULTS.workEndHour,
     atRiskAt: typeof doc.atRiskAt === 'number' ? doc.atRiskAt : DEFAULTS.atRiskAt,
     updatedAt: doc.updatedAt,
+    updatedBy,
   };
 };
 

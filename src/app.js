@@ -8,6 +8,7 @@ const passport = require('passport');
 const httpStatus = require('http-status');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
+const logger = require('./config/logger');
 const { jwtStrategy } = require('./config/passport');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
@@ -63,6 +64,11 @@ const corsOptions = {
   credentials: true,
   preflightContinue: false,
   optionsSuccessStatus: 204,
+  // Let the browser reuse a preflight answer for a day (Chrome caps it at 2 h).
+  // Without it Chrome re-asks after 5 s, so nearly every call from the back
+  // office (another origin, with an Authorization header) cost an extra round
+  // trip to App Engine before the real request — ~0.4 s each from Kuwait/India.
+  maxAge: 86400,
 };
 
 // Apply CORS middleware
@@ -72,9 +78,34 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 passport.use('jwt', jwtStrategy);
 
-// Limit repeated failed requests to auth endpoints
-if (config.env === 'production') {
+/**
+ * Limit repeated failed requests to auth endpoints.
+ *
+ * Gated on the deployment being a REAL one, not on NODE_ENV. `npm run dev`
+ * runs with NODE_ENV=production (against APP_ENV=staging), so the old
+ * `config.env === 'production'` check armed a 20-failures-per-15-minutes
+ * brute-force limiter against localhost — where the only person hitting it is
+ * a developer signing in as six demo accounts in a row, who then gets 429s
+ * with no explanation for a quarter of an hour.
+ *
+ * The test is the configured back-office URL, which is a property of the
+ * deployment and cannot be influenced by a caller — unlike req.ip, which
+ * depends on trust-proxy being right. A deployed host never matches it, so
+ * production protection is unchanged.
+ */
+const isLocalDeployment = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(config.appUrls.backoffice || '');
+if (config.env === 'production' && !isLocalDeployment) {
   app.use('/v1/auth', authLimiter);
+} else if (isLocalDeployment) {
+  logger.warn('auth rate limiter DISABLED — local deployment detected from appUrls.backoffice');
+}
+
+// One-off check of TRUST_PROXY_HOPS on a new host (Cloud Run behind the load
+// balancer): with DEBUG_IP_ECHO=true, GET /v1/_ip shows the caller the address
+// the API takes as theirs next to the raw X-Forwarded-For. req.ip must equal
+// your own public IP. Off unless the variable is set; switch it off after.
+if (process.env.DEBUG_IP_ECHO === 'true') {
+  app.get('/v1/_ip', (req, res) => res.json({ ip: req.ip, xff: req.headers['x-forwarded-for'] || null }));
 }
 
 // v1 API routes

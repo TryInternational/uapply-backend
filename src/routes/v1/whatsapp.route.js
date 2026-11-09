@@ -15,6 +15,10 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 
 router.route('/webhook').get(whatsappController.verifyWebhook).post(whatsappController.receiveWebhook);
 
 router.route('/integration').get(auth(), whatsappController.getIntegration);
+router.route('/integration/phone').get(auth(), whatsappController.getPhoneStatus);
+router
+  .route('/integration/phone/register')
+  .post(auth(), validate(whatsappValidation.registerPhone), whatsappController.registerPhone);
 router
   .route('/analytics/overview')
   .get(auth(), validate(whatsappValidation.analytics), whatsappController.getOverviewAnalytics);
@@ -24,11 +28,15 @@ router.route('/media').post(auth(), upload.single('file'), whatsappController.up
 
 router
   .route('/conversations')
-  .get(auth(), validate(whatsappValidation.getConversations), whatsappController.getConversations);
+  .get(auth(), validate(whatsappValidation.getConversations), whatsappController.getConversations)
+  .post(auth(), validate(whatsappValidation.startConversation), whatsappController.startConversation);
 router
   .route('/conversations/:id')
   .get(auth(), validate(whatsappValidation.conversationId), whatsappController.getConversation)
   .patch(auth(), validate(whatsappValidation.updateMeta), whatsappController.updateMeta);
+router
+  .route('/messages/:messageId/save-document')
+  .post(auth(), validate(whatsappValidation.saveMessageAsDocument), whatsappController.saveMessageAsDocument);
 router.route('/conversations/:id/notes').post(auth(), validate(whatsappValidation.addNote), whatsappController.addNote);
 router
   .route('/conversations/:id/messages/voice')
@@ -49,5 +57,28 @@ router
 router
   .route('/conversations/:id/messages/media')
   .post(auth(), validate(whatsappValidation.sendMedia), whatsappController.sendMedia);
+
+// --- Broadcasts (Phase 3) ---
+router.route('/audience-segments').get(auth(), whatsappController.getAudienceSegments);
+router
+  .route('/broadcasts')
+  .get(auth(), whatsappController.listBroadcasts)
+  .post(auth(), validate(whatsappValidation.createBroadcast), whatsappController.createBroadcast);
+router.route('/broadcasts/:id').get(auth(), validate(whatsappValidation.broadcastId), whatsappController.getBroadcast);
+
+// --- Calling (Phase 4) ---
+router
+  .route('/conversations/:id/call-permission')
+  .get(auth(), validate(whatsappValidation.conversationId), whatsappController.getCallPermission)
+  .post(auth(), validate(whatsappValidation.requestCallPermission), whatsappController.requestCallPermission);
+router
+  .route('/conversations/:id/calls')
+  .get(auth(), validate(whatsappValidation.conversationId), whatsappController.listCalls)
+  .post(auth(), validate(whatsappValidation.startCall), whatsappController.startCall);
+router.route('/calls/:callId/accept').post(auth(), validate(whatsappValidation.acceptCall), whatsappController.acceptCall);
+router.route('/calls/:callId/reject').post(auth(), validate(whatsappValidation.callId), whatsappController.rejectCall);
+router.route('/calls/:callId/terminate').post(auth(), validate(whatsappValidation.callId), whatsappController.terminateCall);
+router.route('/integration/calling').get(auth(), whatsappController.getCallSettings);
+router.route('/integration/calling/enable').post(auth(), whatsappController.enableCalling);
 
 module.exports = router;

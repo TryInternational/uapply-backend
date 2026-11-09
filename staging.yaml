@@ -1,13 +1,29 @@
 service: uapply-staging-api
 runtime: custom
 env: flex
-manual_scaling:
-  instances: 1
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 2
+  cool_down_period_sec: 180
+  cpu_utilization:
+    target_utilization: 0.7
+
 env_variables:
   APP_ENV: 'staging'
+
 network:
   session_affinity: true
+
 resources:
   cpu: 1
-  memory_gb: 2.3
-  disk_size_gb: 10
+  # Chromium (agreement PDFs) needs headroom on top of node; 1 GB was tight
+  # even before it. Production runs 2.3.
+  memory_gb: 2
+  # The boot disk holds Container-Optimized OS, App Engine's own sidecar
+  # containers, and our image twice over while it is pulled and unpacked.
+  # 10 GB (the minimum) ran out in August; 20 GB ran out on 8 Nov 2026
+  # ("No sufficient free disk space left for your App Engine Flexible
+  # application" at flex_await_healthy). Persistent disk is cheap -- a few
+  # dollars a month at this size -- so leave headroom rather than chase it.
+  disk_size_gb: 50

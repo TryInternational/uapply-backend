@@ -43,8 +43,12 @@ const getCourses = catchAsync(async (req, res) => {
     };
   }
   if (req.query.courseDurationValues) {
+    // A comma list ("360,720"): parseInt of the split array only ever read the first value.
     courseDurationValues = {
-      $in: parseInt(req.query.courseDurationValues.split(','), 10),
+      $in: String(req.query.courseDurationValues)
+        .split(',')
+        .map((v) => parseInt(v, 10))
+        .filter((v) => !Number.isNaN(v)),
     };
   }
   if (req.query.intakeMonths) {
@@ -70,9 +74,35 @@ const getCourses = catchAsync(async (req, res) => {
     subjects,
     placementAvailable,
   };
+  // Free-text search over course name + university (the Courses toolbar box).
+  if (req.query.search && String(req.query.search).trim()) {
+    const words = String(req.query.search)
+      .trim()
+      .split(/\s+/)
+      .slice(0, 6)
+      .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    // every word must hit the name or the university
+    filter.$and = words.map((w) => {
+      // eslint-disable-next-line security/detect-non-literal-regexp
+      const rx = new RegExp(w, 'i');
+      return { $or: [{ name: rx }, { institution: rx }] };
+    });
+  }
+  // Annual fee band: feeMin inclusive, feeMax exclusive.
+  const feeMin = parseFloat(req.query.feeMin);
+  const feeMax = parseFloat(req.query.feeMax);
+  if (!Number.isNaN(feeMin) || !Number.isNaN(feeMax)) {
+    filter.approxAnnualFee = {};
+    if (!Number.isNaN(feeMin)) filter.approxAnnualFee.$gte = feeMin;
+    if (!Number.isNaN(feeMax)) filter.approxAnnualFee.$lt = feeMax;
+  }
   Object.keys(filter).forEach((key) => (filter[key] === undefined ? delete filter[key] : {}));
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await coursesService.queryCourses(filter, options);
+  // The Courses toolbar shows "N courses · M universities" for the filtered set.
+  if (req.query.withUniCount === 'true') {
+    result.universityCount = await coursesService.countUniversities(filter);
+  }
   res.send(result);
 });
 
@@ -95,6 +125,10 @@ const deleteCourse = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const getCourseFacets = catchAsync(async (req, res) => {
+  res.send(await coursesService.getCourseFacets());
+});
+
 const searchCourses = catchAsync(async (req, res) => {
   // const filter = pick(req.query, ['name', 'status', 'stage']);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
@@ -109,4 +143,5 @@ module.exports = {
   deleteCourse,
   updateCourse,
   searchCourses,
+  getCourseFacets,
 };

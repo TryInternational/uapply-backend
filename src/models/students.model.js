@@ -32,6 +32,12 @@ const Prefrences = mongoose.Schema({
   intakeMonth: {
     type: String,
   },
+  // Pathway provider for Foundation / pre-sessional students (Kaplan, INTO,
+  // Navitas…). Shown on the profile's label bar.
+  provider: {
+    type: String,
+    trim: true,
+  },
   sponsoredBy: {
     type: String,
   },
@@ -133,6 +139,19 @@ const studentsSchema = mongoose.Schema(
       type: String,
       enum: ['Yes', 'No', 'Waiting for results'],
     },
+    // English test detail (IELTS Test Report Form), read by the back office's
+    // "Add a student" document reader or typed in. `testScore` keeps the
+    // overall band for everything that already reads it.
+    englishTest: {
+      type: { type: String, trim: true }, // e.g. "IELTS UKVI Academic"
+      overall: { type: Number },
+      listening: { type: Number },
+      reading: { type: Number },
+      writing: { type: Number },
+      speaking: { type: Number },
+      testDate: { type: String, trim: true }, // ISO yyyy-mm-dd
+      trfNumber: { type: String, trim: true },
+    },
     gender: {
       type: String,
       enum: ['Male', 'Female', 'Others'],
@@ -157,6 +176,8 @@ const studentsSchema = mongoose.Schema(
       {
         startedAt: Date,
         closedAt: Date,
+        /** when this earlier journey reached Applied (see `appliedAt`) */
+        appliedAt: Date,
         // What the journey was for.
         degree: String,
         major: String,
@@ -172,8 +193,27 @@ const studentsSchema = mongoose.Schema(
         applications: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'Application' }],
         // Who asked for the next journey (partner or staff).
         openedBy: { type: mongoose.SchemaTypes.ObjectId, ref: User },
+        // Foundation provider (INTO, Study Group, …) — `preference.provider`
+        // at the time; the live preference is reset when the journey closes.
+        provider: String,
+        // Where it ended in a place: the application that reached Done.
+        enrolledApplication: { type: mongoose.SchemaTypes.ObjectId, ref: 'Application' },
+        enrolledUniversity: String,
+        enrolledCourse: String,
       },
     ],
+
+    // The journey in progress grew out of an earlier one that ended in a place
+    // — typically a Foundation year progressing to the Bachelor's. Set when a
+    // new journey opens after an Enrolled one; replaced by the next journey.
+    progressedFrom: {
+      journeyIndex: Number,
+      degree: String,
+      provider: String,
+      university: String,
+      course: String,
+      closedAt: Date,
+    },
 
     // Reason + timestamp captured when an admin/counselor denies a sub-agent
     // submission (createdAt/updatedAt are stripped by the toJSON plugin, so we
@@ -262,6 +302,17 @@ const studentsSchema = mongoose.Schema(
     dob: {
       type: Date,
     },
+    // When the student became Enrolled / Lost. Stamped by the save hook below
+    // when the stage changes (and set directly by the Trello import from the
+    // date the card moved). The dashboards count enrolments and losses in a
+    // period by these dates; empty means never, or not known.
+    // When the student became "applied" — the move out of Not applied (what a
+    // counsellor logs), not the creation of a university application, which
+    // can come days later or never. Stamped on the stage change; the Trello
+    // import fills it from the card's move out of 🔥 Hot.
+    appliedAt: { type: Date },
+    enrolledAt: { type: Date },
+    lostAt: { type: Date },
     isClosed: {
       type: Boolean,
       default: false,
@@ -326,6 +377,12 @@ const studentsSchema = mongoose.Schema(
     countriesTraveled: {
       type: Array,
     },
+    // Free-form tags on the profile's label bar ("Priority", "Scholarship",
+    // "Under 18"…). Purely descriptive — nothing keys off them server-side.
+    labels: {
+      type: [String],
+      default: [],
+    },
     onHold: {
       type: Boolean,
     },
@@ -383,7 +440,6 @@ const studentsSchema = mongoose.Schema(
 studentsSchema.plugin(toJSON);
 studentsSchema.plugin(paginate);
 
-
 // Performance indexes — the student list/dashboard filter and sort on these
 // fields; without them every query is a full collection scan.
 studentsSchema.index({ email: 1 });
@@ -396,6 +452,9 @@ studentsSchema.index({ stage: 1, createdAt: -1 });
 studentsSchema.index({ previousSchool: 1 });
 studentsSchema.index({ 'sharedWithCounselors.user': 1 });
 studentsSchema.index({ channel: 1 });
+// "My students" lists (a counselor's / ops person's students, newest first) and
+// the status-tab counts filter on the assignee AND stage, then sort by date.
+studentsSchema.index({ 'assignedTo.user': 1, stage: 1, createdAt: -1 });
 
 // /**
 //  * Check if email is taken
@@ -428,6 +487,36 @@ studentsSchema.pre('save', async function (next) {
   const student = this;
   if (student.isModified('password')) {
     student.password = await bcrypt.hash(student.password, 8);
+  }
+  next();
+});
+
+/**
+ * Date the stage changes. A value set explicitly on the same save (the Trello
+ * import, a correction) wins; otherwise:
+ *   → Enrolled   enrolledAt = now (a re-enrolment after a new journey gets its own date)
+ *   → Lost       lostAt = now; leaving Lost clears it
+ *   Enrolled → Applied / NotApplied with no enrolled journey behind it is an
+ *   undo, so enrolledAt is cleared; with one (a new journey) it is kept.
+ */
+studentsSchema.pre('save', function stampStageDates(next) {
+  const student = this;
+  if (student.isModified('stage')) {
+    const now = new Date();
+    if (['Applied', 'Enrolled'].includes(student.stage) && !student.appliedAt && !student.isModified('appliedAt'))
+      student.appliedAt = now;
+    if (student.stage === 'Enrolled' && !student.isModified('enrolledAt')) student.enrolledAt = now;
+    if (student.stage === 'Lost' && !student.isModified('lostAt')) student.lostAt = now;
+    if (student.stage !== 'Lost' && !student.isModified('lostAt') && student.lostAt) student.lostAt = undefined;
+    const enrolledBefore = Array.isArray(student.journeys) && student.journeys.some((j) => j && j.outcome === 'Enrolled');
+    if (
+      ['Applied', 'NotApplied'].includes(student.stage) &&
+      !student.isModified('enrolledAt') &&
+      student.enrolledAt &&
+      !enrolledBefore
+    ) {
+      student.enrolledAt = undefined;
+    }
   }
   next();
 });

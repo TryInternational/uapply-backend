@@ -42,21 +42,18 @@ const ieltsTestSchema = new mongoose.Schema(
     attemptNumber: {
       type: Number,
       min: 1,
-      max: 5,
       required: true,
       default: 1,
     },
     attemptsUsed: {
       type: Number,
       min: 0,
-      max: 5,
       default: 0,
     },
     attemptsLeft: {
       type: Number,
       min: 0,
-      max: 5,
-      default: 5,
+      default: 0,
     },
     lastAttemptDate: {
       type: Date,
@@ -294,46 +291,16 @@ ieltsTestSchema.statics.canUserTakeTest = async function (phone) {
       };
     }
 
+    // No attempt limit: users can take the test as many times as they like.
     const cleanedPhone = phone.replace(/[+\s]/g, '');
-    const userTests = await this.find({
-      phone: cleanedPhone,
-      status: { $in: ['Completed', 'Max Attempts Reached'] },
-    }).sort({ createdAt: -1 });
-
-    const totalAttempts = userTests.length;
-
-    if (totalAttempts >= 5) {
-      const lastTest = userTests[0];
-      if (lastTest && lastTest.createdAt) {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-        if (lastTest.createdAt > thirtyDaysAgo) {
-          return {
-            canTakeTest: false,
-            reason: 'MAX_ATTEMPTS_REACHED',
-            attemptsUsed: totalAttempts,
-            attemptsLeft: 0,
-            cooldownUntil: new Date(lastTest.createdAt.getTime() + 30 * 24 * 60 * 60 * 1000),
-            message: 'You have reached the maximum of 5 test attempts. Please try again after 30 days.',
-          };
-        }
-      }
-      return {
-        canTakeTest: true,
-        reason: 'COOLDOWN_PASSED',
-        attemptsUsed: 5,
-        attemptsLeft: 0,
-        message: 'Previous cooldown period has passed. You can take the test again.',
-      };
-    }
+    const attemptsUsed = await this.countDocuments({ phone: cleanedPhone });
 
     return {
       canTakeTest: true,
       reason: 'ATTEMPTS_AVAILABLE',
-      attemptsUsed: totalAttempts,
-      attemptsLeft: 5 - totalAttempts,
-      message: `You have ${5 - totalAttempts} attempt(s) left.`,
+      attemptsUsed,
+      attemptsLeft: null, // unlimited
+      message: 'You can take the test.',
     };
   } catch (error) {
     console.error('Error in canUserTakeTest:', error);
@@ -341,7 +308,7 @@ ieltsTestSchema.statics.canUserTakeTest = async function (phone) {
       canTakeTest: true,
       reason: 'ERROR',
       attemptsUsed: 0,
-      attemptsLeft: 5,
+      attemptsLeft: null,
       message: 'Unable to check eligibility. Please try again.',
     };
   }
@@ -384,27 +351,14 @@ ieltsTestSchema.pre('save', async function (next) {
 
       this.attemptNumber = completedTests.length + 1;
       this.attemptsUsed = completedTests.length;
-      this.attemptsLeft = Math.max(0, 5 - completedTests.length);
+      this.attemptsLeft = 0; // unused: no attempt limit
       this.isFirstAttempt = completedTests.length === 0;
-      this.isLastAttempt = completedTests.length === 4;
-
-      if (completedTests.length >= 5) {
-        this.testStatus = 'Max Attempts Reached';
-        const error = new Error('Maximum test attempts (5) reached');
-        error.name = 'MaxAttemptsError';
-        return next(error);
-      }
+      this.isLastAttempt = false;
     }
 
     if (this.isModified('testStatus') && this.testStatus === 'Completed') {
       this.lastAttemptDate = new Date();
       this.attemptsUsed = (this.attemptsUsed || 0) + 1;
-      this.attemptsLeft = Math.max(0, 5 - this.attemptsUsed);
-
-      if (this.attemptsUsed >= 5) {
-        this.testStatus = 'Max Attempts Reached';
-        this.cooldownUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-      }
     }
 
     next();

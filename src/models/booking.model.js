@@ -34,6 +34,50 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    /**
+     * Money actually received for the stay, excluding the refundable
+     * deposit. Set on every manual (back-office) booking; left null on
+     * bookings taken through the website, where `price` is what the
+     * guest paid online. Revenue reporting reads this first and only
+     * falls back to `price - DEPOSIT_KWD` when it is null, so a
+     * discounted or free stay reports what it really earned.
+     */
+    actualAmount: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+
+    /** Free-text reason for the actual amount (discount, gift, staff stay…). */
+    amountNote: {
+      type: String,
+      trim: true,
+    },
+
+    /* --- Refundable security deposit ------------------------------- */
+    depositStatus: {
+      type: String,
+      enum: ['collected', 'returned', 'waived'],
+      default: 'collected',
+    },
+    depositAmount: {
+      type: Number,
+      default: 200,
+      min: 0,
+    },
+    depositReturnedAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    depositReturnedAt: {
+      type: Date,
+    },
+    depositNote: {
+      type: String,
+      trim: true,
+    },
     blocked: {
       type: Boolean,
       default: false,
@@ -89,5 +133,7 @@ bookingSchema.plugin(AutoIncrement, { inc_field: 'orderNo' });
 // Performance indexes — booking availability + email lookups.
 bookingSchema.index({ status: 1, blocked: 1 });
 bookingSchema.index({ email: 1 });
+bookingSchema.index({ depositStatus: 1 });
+bookingSchema.index({ startDate: 1, endDate: 1 });
 
 module.exports = mongoose.model('Booking', bookingSchema);

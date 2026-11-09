@@ -77,6 +77,11 @@ const createPartner = catchAsync(async (req, res) => {
       city: req.body.city,
       website: req.body.website,
       note: req.body.note,
+      title: req.body.title,
+      nameAr: req.body.nameAr,
+      organisationAr: req.body.organisationAr,
+      organisationDetails: req.body.organisationDetails,
+      personInCharge: req.body.personInCharge,
     },
     {
       organisationLogo: req.body.organisationLogo,

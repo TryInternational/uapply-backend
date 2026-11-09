@@ -34,6 +34,13 @@ const whatsappConversationSchema = mongoose.Schema(
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     tags: [{ type: String }],
     nextFollowUpAt: { type: Date },
+    // Last known Calling API permission for this contact (from call_permission_reply
+    // webhooks / the call_permissions endpoint). 'temporary' carries an expiry.
+    callPermission: {
+      status: { type: String, enum: ['none', 'pending', 'temporary', 'permanent'] },
+      expiresAt: { type: Date },
+      requestedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );

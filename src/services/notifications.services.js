@@ -50,7 +50,9 @@ const createWhatsappNotification = async (io, userIds, message, { studentId, con
 
 // Get notifications for a specific user
 const getNotifications = async (userId) => {
-  const notifications = await Notifications.find({ userIds: userId }).sort({ createdAt: -1 });
+  // the newest 300 — the bell and the notifications page only show recent
+  // ones, and the full history grows with every student event for ever
+  const notifications = await Notifications.find({ userIds: userId }).sort({ createdAt: -1 }).limit(300);
   return notifications;
 };
 

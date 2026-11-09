@@ -1,0 +1,13 @@
+# What `deploy.sh release` uploads to Cloud Build (passed as --ignore-file).
+# Unlike the repo-root .gcloudignore used by App Engine deploys, the settings
+# files are NOT uploaded: on Cloud Run they live in Secret Manager.
+.git
+.gitignore
+node_modules/
+.env
+.env.*
+!.env.example
+_to_delete/
+.DS_Store
+.claude/
+*.log

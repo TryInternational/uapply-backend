@@ -47,14 +47,16 @@ const initials = (name = '') =>
  * first outbound that answers it. Returns global + per-responder response times.
  */
 const computeResponseTimes = async (start, end) => {
+  // internal notes are outbound rows too, but nothing reached the student
   const msgs = await WhatsappMessage.find(
-    { timestamp: { $gte: start, $lte: end } },
+    { timestamp: { $gte: start, $lte: end }, internal: { $ne: true } },
     'conversation direction timestamp sentByUser'
   )
     .sort({ conversation: 1, timestamp: 1 })
     .lean();
 
   const global = [];
+  let globalLate = 0;
   const byUser = {}; // userId -> { responses: [sec], late: n }
   let curConv = null;
   let pendingInboundAt = null;
@@ -70,6 +72,7 @@ const computeResponseTimes = async (start, end) => {
     } else if (m.direction === 'outbound' && pendingInboundAt !== null) {
       const sec = Math.max(0, Math.round((new Date(m.timestamp) - new Date(pendingInboundAt)) / 1000));
       global.push(sec);
+      if (sec > SLA_SECONDS) globalLate += 1;
       const uid = m.sentByUser ? String(m.sentByUser) : null;
       if (uid) {
         if (!byUser[uid]) byUser[uid] = { responses: [], late: 0 };
@@ -81,7 +84,7 @@ const computeResponseTimes = async (start, end) => {
   });
 
   const avg = (arr) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
-  return { globalAvg: avg(global), globalCount: global.length, byUser, avg };
+  return { globalAvg: avg(global), globalCount: global.length, globalLate, byUser, avg };
 };
 
 // ---------------------------------------------------------------------------
@@ -92,7 +95,7 @@ const overview = async (range = 'today') => {
   const { start, end } = rangeToWindow(range);
 
   const [msgAgg] = await WhatsappMessage.aggregate([
-    { $match: { timestamp: { $gte: start, $lte: end } } },
+    { $match: { timestamp: { $gte: start, $lte: end }, internal: { $ne: true } } },
     {
       $group: {
         _id: null,
@@ -112,6 +115,27 @@ const overview = async (range = 'today') => {
 
   const handled = await WhatsappMessage.distinct('conversation', {
     direction: 'outbound',
+    internal: { $ne: true },
+    timestamp: { $gte: start, $lte: end },
+  });
+
+  // the state of the inbox right now (not range-bound)
+  const nowDate = new Date();
+  const openConversations = await WhatsappConversation.countDocuments({ status: { $ne: 'resolved' } });
+  const unlinked = await WhatsappConversation.countDocuments({ status: { $ne: 'resolved' }, student: null });
+  const followUpsOverdue = await WhatsappConversation.countDocuments({
+    status: { $ne: 'resolved' },
+    nextFollowUpAt: { $lt: nowDate },
+  });
+  // what happened in the range
+  const resolved = await WhatsappConversation.countDocuments({ status: 'resolved', updatedAt: { $gte: start, $lte: end } });
+  const docsFiled = await WhatsappMessage.countDocuments({
+    'savedDocument.id': { $ne: null },
+    timestamp: { $gte: start, $lte: end },
+  });
+  const templatesSent = await WhatsappMessage.countDocuments({
+    direction: 'outbound',
+    type: 'template',
     timestamp: { $gte: start, $lte: end },
   });
 
@@ -119,7 +143,7 @@ const overview = async (range = 'today') => {
 
   const newConversations = await WhatsappConversation.countDocuments({ createdAt: { $gte: start, $lte: end } });
 
-  const waitingFilter = { 'lastMessage.direction': 'inbound' };
+  const waitingFilter = { 'lastMessage.direction': 'inbound', status: { $ne: 'resolved' } };
   const waitingCount = await WhatsappConversation.countDocuments(waitingFilter);
   const waitingDocs = await WhatsappConversation.find(waitingFilter)
     .sort({ lastMessageAt: 1 })
@@ -136,6 +160,7 @@ const overview = async (range = 'today') => {
       name: contact.name || studentName || contact.phone,
       stage: student.stage,
       assignee: c.assignees && c.assignees[0] ? String(c.assignees[0].userId) : null,
+      unlinked: !c.student,
       waitingSec: c.lastMessageAt ? Math.round((now - new Date(c.lastMessageAt)) / 1000) : 0,
     };
   });
@@ -150,7 +175,7 @@ const overview = async (range = 'today') => {
 
   // messages by hour (Kuwait time)
   const hourAgg = await WhatsappMessage.aggregate([
-    { $match: { timestamp: { $gte: start, $lte: end } } },
+    { $match: { timestamp: { $gte: start, $lte: end }, internal: { $ne: true } } },
     {
       $group: {
         _id: { h: { $hour: { date: '$timestamp', timezone: TZ } }, dir: '$direction' },
@@ -198,7 +223,7 @@ const overview = async (range = 'today') => {
 
   // messages sent/received per day, last 14 days (Kuwait time)
   const msgDayAgg = await WhatsappMessage.aggregate([
-    { $match: { timestamp: { $gte: trendStart } } },
+    { $match: { timestamp: { $gte: trendStart }, internal: { $ne: true } } },
     {
       $group: {
         _id: { d: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp', timezone: TZ } }, dir: '$direction' },
@@ -236,8 +261,15 @@ const overview = async (range = 'today') => {
       newConversations,
       waitingForReply: waitingCount,
       avgResponseSec: resp.globalAvg,
+      lateReplies: resp.globalLate,
       repeatedQuestions: rep ? rep.questions : 0,
       repeatedMessages: rep ? rep.messages : 0,
+      openConversations,
+      unlinked,
+      followUpsOverdue,
+      resolved,
+      docsFiled,
+      templatesSent,
     },
     messagesByHour,
     messagesPerDay,
@@ -255,7 +287,14 @@ const team = async (range = '7d') => {
   const { start, end } = rangeToWindow(range);
 
   const sentAgg = await WhatsappMessage.aggregate([
-    { $match: { direction: 'outbound', timestamp: { $gte: start, $lte: end }, sentByUser: { $ne: null } } },
+    {
+      $match: {
+        direction: 'outbound',
+        internal: { $ne: true },
+        timestamp: { $gte: start, $lte: end },
+        sentByUser: { $ne: null },
+      },
+    },
     {
       $group: {
         _id: '$sentByUser',
@@ -274,8 +313,52 @@ const team = async (range = '7d') => {
   ]);
   const pendingMap = Object.fromEntries(pendingAgg.map((p) => [String(p._id), p.pending]));
 
+  // overdue follow-ups and chats not yet on a student, per assignee (state now)
+  const stateAgg = await WhatsappConversation.aggregate([
+    { $match: { status: { $ne: 'resolved' } } },
+    { $unwind: '$assignees' },
+    {
+      $group: {
+        _id: '$assignees.userId',
+        open: { $sum: 1 },
+        overdue: { $sum: { $cond: [{ $lt: ['$nextFollowUpAt', new Date()] }, 1, 0] } },
+        unlinked: { $sum: { $cond: [{ $eq: ['$student', null] }, 1, 0] } },
+      },
+    },
+  ]);
+  const stateMap = Object.fromEntries(stateAgg.map((r) => [String(r._id), r]));
+
+  // replies per day, last 14 days, per person (the counsellor's own chart)
+  const trendStart = new Date();
+  trendStart.setDate(trendStart.getDate() - 13);
+  trendStart.setHours(0, 0, 0, 0);
+  const perDayAgg = await WhatsappMessage.aggregate([
+    {
+      $match: { direction: 'outbound', internal: { $ne: true }, sentByUser: { $ne: null }, timestamp: { $gte: trendStart } },
+    },
+    {
+      $group: {
+        _id: { u: '$sentByUser', d: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp', timezone: TZ } } },
+        c: { $sum: 1 },
+      },
+    },
+  ]);
+  const perDayMap = {};
+  perDayAgg.forEach((r) => {
+    const u = String(r._id.u);
+    if (!perDayMap[u]) perDayMap[u] = {};
+    perDayMap[u][r._id.d] = r.c;
+  });
+  const days = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(trendStart);
+    d.setDate(trendStart.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+
   const resp = await computeResponseTimes(start, end);
 
+  const extraIds = Object.keys({ ...pendingMap, ...stateMap }).filter((id) => !sentAgg.some((s) => String(s._id) === id));
+  extraIds.forEach((id) => sentAgg.push({ _id: id, sent: 0, voice: 0, conversations: [] }));
   const userIds = sentAgg.map((s) => s._id).filter(Boolean);
   const users = await User.find({ _id: { $in: userIds } }, 'name avatar').lean();
   const userMap = Object.fromEntries(users.map((u) => [String(u._id), u]));
@@ -293,8 +376,12 @@ const team = async (range = '7d') => {
       voiceSent: s.voice,
       conversationsHandled: s.conversations.length,
       pending: pendingMap[uid] || 0,
+      openConversations: (stateMap[uid] && stateMap[uid].open) || 0,
+      followUpsOverdue: (stateMap[uid] && stateMap[uid].overdue) || 0,
+      unlinked: (stateMap[uid] && stateMap[uid].unlinked) || 0,
       avgResponseSec: resp.avg(ru.responses),
       lateReplies: ru.late,
+      perDay: days.map((d) => ({ date: d, sent: (perDayMap[uid] && perDayMap[uid][d]) || 0 })),
     };
   });
 

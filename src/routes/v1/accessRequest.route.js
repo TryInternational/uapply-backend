@@ -1,5 +1,8 @@
 const express = require('express');
+const multer = require('multer');
+const httpStatus = require('http-status');
 const validate = require('../../middlewares/validate');
+const ApiError = require('../../utils/ApiError');
 const accessRequestValidation = require('../../validations/accessRequest.validation');
 const accessRequestController = require('../../controllers/accessRequest.controller');
 const { accessRequestIpLimiter, accessRequestLimiter, accessRequestEmailLimiter } = require('../../middlewares/rateLimiter');
@@ -36,6 +39,32 @@ router.post(
   accessRequestController.submitAccessRequest
 );
 
+// Public: the Civil ID scan, sent as soon as the applicant picks it. Memory
+// storage with a hard cap; the service re-checks type and size and stores the
+// object privately. Same per-network limiter as the submission itself.
+const civilIdUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024, files: 1 },
+}).single('file');
+router.post(
+  '/civil-id',
+  accessRequestIpLimiter,
+  (req, res, next) => {
+    civilIdUpload(req, res, (err) => {
+      if (err) {
+        return next(
+          new ApiError(
+            httpStatus.BAD_REQUEST,
+            err.code === 'LIMIT_FILE_SIZE' ? 'The Civil ID file is larger than 8 MB' : 'Could not read the uploaded file'
+          )
+        );
+      }
+      return next();
+    });
+  },
+  accessRequestController.uploadCivilId
+);
+
 // Reviewers: the queue.
 router.get(
   '/',
@@ -52,6 +81,15 @@ router.post(
   requireReviewer,
   validate(accessRequestValidation.decideAccessRequest),
   accessRequestController.decideAccessRequest
+);
+
+// Reviewers: a short-lived link to the Civil ID scan on one request.
+router.get(
+  '/:requestId/civil-id',
+  requireAuth,
+  requireReviewer,
+  validate(accessRequestValidation.civilIdLink),
+  accessRequestController.civilIdLink
 );
 
 // Reviewers: resend an expired or undelivered invite. Approved requests only.

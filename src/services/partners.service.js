@@ -38,8 +38,31 @@ const getPartnerDirectory = async (kind) => {
       $group: {
         _id: '$createdBy',
         students: { $sum: 1 },
-        applied: { $sum: { $cond: [{ $in: ['$stage', ['Applied', 'Enrolled']] }, 1, 0] } },
-        enrolled: { $sum: { $cond: [{ $eq: ['$stage', 'Enrolled'] }, 1, 0] } },
+        // applied / enrolled, or lost after at least one application
+        applied: {
+          $sum: {
+            $cond: [
+              {
+                $or: [
+                  { $in: ['$stage', ['Applied', 'Enrolled']] },
+                  { $and: [{ $eq: ['$stage', 'Lost'] }, { $gt: [{ $size: { $ifNull: ['$applications', []] } }, 0] }] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
+        // enrolled now, or in an earlier journey (a finished Foundation year)
+        enrolled: {
+          $sum: {
+            $cond: [
+              { $or: [{ $eq: ['$stage', 'Enrolled'] }, { $in: ['Enrolled', { $ifNull: ['$journeys.outcome', []] }] }] },
+              1,
+              0,
+            ],
+          },
+        },
         pending: { $sum: { $cond: [{ $eq: ['$stage', 'PendingReview'] }, 1, 0] } },
       },
     },

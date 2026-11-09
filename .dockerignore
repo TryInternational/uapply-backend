@@ -1,3 +1,15 @@
+# Keeps the build context (and so the image) to the app itself. gcloud already
+# leaves node_modules and .git out of the upload via .gcloudignore; this covers
+# local docker builds and anything else that should never ship.
 node_modules
 .git
 .gitignore
+.husky
+_to_delete
+tests
+coverage
+deploy
+*.md
+*.log
+.DS_Store
+plag-free.py

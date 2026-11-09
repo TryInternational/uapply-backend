@@ -6,6 +6,7 @@ const { convertASTToUTC } = require('../utils/Common');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { feesService } = require('../services');
+const Students = require('../models/students.model');
 
 const createFees = catchAsync(async (req, res) => {
   const fees = await feesService.createFees(req.body);
@@ -18,6 +19,28 @@ const getFees = catchAsync(async (req, res) => {
     const salesPersons = Array.isArray(req.query.user) ? req.query.user : req.query.user.split(',');
 
     filter['tag.salesPerson'] = { $in: salesPersons };
+  }
+  // Only fees tied to a student record (the Fees page's "Linked to a student").
+  if (req.query.linked === 'true' || req.query.linked === true) {
+    filter.student = { $exists: true, $ne: null };
+  }
+  // Everything one student paid for: the linked id, or — for rows recorded
+  // before the link existed — a tag.studentName that matches their full name.
+  if (req.query.student) {
+    const or = [{ student: req.query.student }, { 'tag.student': req.query.student }];
+    const stu = await Students.findById(req.query.student).select('firstName middleName lastName').lean();
+    if (stu) {
+      const esc = (x) =>
+        String(x || '')
+          .trim()
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const parts = [stu.firstName, stu.middleName, stu.lastName].map(esc).filter(Boolean);
+      if (parts.length) {
+        const name = { $regex: `^${parts.join('\\s+')}$`, $options: 'i' };
+        or.push({ 'tag.fullName': name }, { 'tag.studentName': name });
+      }
+    }
+    filter.$or = or;
   }
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
 

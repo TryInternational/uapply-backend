@@ -37,10 +37,16 @@ const updateUser = {
   body: Joi.object()
     .keys({
       email: Joi.string().email(),
-      avatar: Joi.string(),
+      // '' removes the photo (the portals' "Remove" button sends it)
+      avatar: Joi.string().allow(''),
       slackMemberId: Joi.string(),
       password: Joi.string().custom(password),
       name: Joi.string(),
+      // Settings › Users "Change role" — admins only, never your own (user.controller)
+      role: Joi.string().custom(objectId),
+      // partner portal "Rate your experience"
+      rating: Joi.number().integer().min(0).max(5),
+      feedback: Joi.string().allow('').max(2000),
     })
     .min(1),
 };

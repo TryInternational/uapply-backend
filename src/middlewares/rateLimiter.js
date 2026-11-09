@@ -51,8 +51,29 @@ const accessRequestEmailLimiter = rateLimit({
   message: { code: 429, message: 'Too many access requests for this email address. Please try again later.' },
 });
 
+/**
+ * OTP fallback (Twilio Verify). Every successful call here costs money and
+ * texts a stranger's phone, so — like the access-request limiters — successes
+ * are NOT skipped. Two ceilings: per network, and per destination number
+ * across all networks (SMS-pumping fraud rotates IPs, not numbers).
+ */
+const otpFallbackIpLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 30,
+  message: { code: 429, message: 'Too many verification requests from this network. Please try again later.' },
+});
+
+const otpFallbackPhoneLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  keyGenerator: (req) => String((req.body && req.body.phone) || '').replace(/\D/g, ''),
+  message: { code: 429, message: 'Too many codes sent to this number. Please wait before trying again.' },
+});
+
 module.exports = {
   authLimiter,
+  otpFallbackIpLimiter,
+  otpFallbackPhoneLimiter,
   accessRequestIpLimiter,
   accessRequestLimiter,
   accessRequestEmailLimiter,

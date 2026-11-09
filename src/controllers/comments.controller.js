@@ -6,6 +6,7 @@ const httpStatus = require('http-status');
 const { pick } = require('lodash');
 const axios = require('axios');
 const he = require('he'); // Library to decode HTML entities
+const { dmEnabled: slackDmEnabled } = require('../thirdparty/slack');
 
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -253,6 +254,8 @@ const updateComment = catchAsync(async (req, res) => {
 
     // Function to send Slack notification
     const sendSlackNotification = async (memberId, slackBody) => {
+      // Production only — see thirdparty/slack.js.
+      if (!slackDmEnabled) return;
       const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
       const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
       try {

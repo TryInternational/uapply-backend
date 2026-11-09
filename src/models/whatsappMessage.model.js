@@ -14,8 +14,12 @@ const whatsappMessageSchema = mongoose.Schema(
       required: true,
       index: true,
     },
-    waMessageId: { type: String, index: true },
+    // Unique per Meta wamid so a retried webhook can never double-insert; sparse
+    // because internal notes and stub-mode sends have no wamid.
+    waMessageId: { type: String, index: { unique: true, sparse: true } },
     clientRef: { type: String },
+    // Set when the message was produced by a broadcast (counters derive from it).
+    broadcast: { type: mongoose.SchemaTypes.ObjectId, ref: 'WhatsappBroadcast', index: true },
     direction: { type: String, enum: ['inbound', 'outbound'], required: true },
     type: {
       type: String,
@@ -49,6 +53,12 @@ const whatsappMessageSchema = mongoose.Schema(
     // Internal note (staff-only, never sent to WhatsApp) + voice-note duration.
     internal: { type: Boolean, default: false },
     durationSec: { type: Number },
+    // Set when staff filed this inbound photo/document into the student record.
+    savedDocument: {
+      id: { type: mongoose.SchemaTypes.ObjectId, ref: 'Documents' },
+      label: { type: String },
+      docTypeKey: { type: String },
+    },
     // Teammates @mentioned in an internal note (they get notified).
     mentions: [{ type: mongoose.SchemaTypes.ObjectId, ref: 'User' }],
   },

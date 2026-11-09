@@ -15,19 +15,29 @@ const resend = new Resend(config.email.resendApiKey || process.env.RESEND_API_KE
  * @param {string} text
  * @returns {Promise}
  */
-const sendEmail = async (to, subject, text, context, file, htmlString) => {
+const sendEmail = async (to, subject, text, context, file, htmlString, options = {}) => {
   try {
     const source = htmlString || fs.readFileSync(path.join(__dirname, `../templates/${file}.hbs`), 'utf8');
     const template = Handlebars.compile(source);
     const html = template(context);
 
-    const { data, error } = await resend.emails.send({
+    const payload = {
       from: "noreply@ulearnabroad.com",
       to,
       subject,
       text,
       html,
-    });
+    };
+    // Optional: cc / replyTo / attachments ([{ filename, content: Buffer }]).
+    if (options.cc) payload.cc = options.cc;
+    if (options.replyTo) payload.reply_to = options.replyTo;
+    if (Array.isArray(options.attachments) && options.attachments.length) {
+      payload.attachments = options.attachments.map((a) => ({
+        filename: a.filename,
+        content: Buffer.isBuffer(a.content) ? a.content.toString('base64') : a.content,
+      }));
+    }
+    const { data, error } = await resend.emails.send(payload);
 
     if (error) {
       logger.error('Error sending email:', error);
@@ -252,8 +262,109 @@ const sendAccessDeclinedEmail = async (request, reason) => {
   );
 };
 
+// ---------------------------------------------------------------------------
+// Sub-agent agreements
+// ---------------------------------------------------------------------------
+
+const fmtKw = (d) =>
+  d ? new Date(d).toLocaleString('en-GB', { timeZone: 'Asia/Kuwait', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+/** The signing link, with the unsigned PDF attached for the partner's records. */
+const sendAgreementSentEmail = async (agreement, { signUrl, expiresAt, pdf, resend: isResend }) => {
+  await sendEmail(
+    agreement.agent.email,
+    `${isResend ? 'New link: ' : ''}Your Ulearn sub-agent agreement ${agreement.agreementNo} is ready to sign`,
+    `Hello ${agreement.agent.nameEn} - your sub-agent agreement ${agreement.agreementNo} (${agreement.commission.textEn}) is ready. Review and sign it here: ${signUrl} (valid until ${fmtKw(expiresAt)}).`,
+    {
+      name: agreement.agent.nameEn,
+      email: agreement.agent.email,
+      agreementNo: agreement.agreementNo,
+      commissionEn: agreement.commission.textEn,
+      commissionAr: agreement.commission.textAr,
+      signUrl,
+      expiresAt: fmtKw(expiresAt),
+      resend: Boolean(isResend),
+    },
+    'agreement_sent',
+    null,
+    {
+      cc: agreement.agent.accountEmail && agreement.agent.accountEmail !== agreement.agent.email ? agreement.agent.accountEmail : undefined,
+      attachments: pdf ? [{ filename: `${agreement.agreementNo}.pdf`, content: pdf }] : undefined,
+    }
+  );
+};
+
+const sendAgreementReminderEmail = async (agreement, { signUrl, expiresAt }) => {
+  await sendEmail(
+    agreement.agent.email,
+    `Reminder: sign your Ulearn agreement ${agreement.agreementNo}`,
+    `Hello ${agreement.agent.nameEn} - your sub-agent agreement ${agreement.agreementNo} is waiting for your signature: ${signUrl} (valid until ${fmtKw(expiresAt)}).`,
+    {
+      name: agreement.agent.nameEn,
+      email: agreement.agent.email,
+      agreementNo: agreement.agreementNo,
+      commissionEn: agreement.commission.textEn,
+      signUrl,
+      expiresAt: fmtKw(expiresAt),
+    },
+    'agreement_reminder'
+  );
+};
+
+/**
+ * Both signed: the partner gets the signed PDF (and is told the portal invite
+ * follows); the Ulearn signatory / sender gets an internal copy for the file.
+ */
+const sendAgreementCompletedEmail = async (agreement, { pdf, inviteSent, settings }) => {
+  const attachments = pdf ? [{ filename: `${agreement.agreementNo}-signed.pdf`, content: pdf }] : undefined;
+  const base = {
+    agreementNo: agreement.agreementNo,
+    organisation: agreement.agent.organisationEn || agreement.agent.nameEn,
+    agentName: agreement.agent.nameEn,
+    commissionEn: agreement.commission.textEn,
+    commissionAr: agreement.commission.textAr,
+    agreementDate: agreement.agreementDate ? new Date(agreement.agreementDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '',
+    agentSignedAt: fmtKw(agreement.agentSignedAt),
+    companySignedAt: fmtKw(agreement.countersignedAt),
+  };
+  await sendEmail(
+    agreement.agent.email,
+    `Signed: Ulearn sub-agent agreement ${agreement.agreementNo}`,
+    `Hello ${agreement.agent.nameEn} - agreement ${agreement.agreementNo} has been signed by both parties. The signed PDF is attached.${inviteSent ? ' Your portal invitation follows in a separate email.' : ''}`,
+    { ...base, name: agreement.agent.nameEn, email: agreement.agent.email, accountEmail: agreement.agent.accountEmail || agreement.agent.email, inviteSent: Boolean(inviteSent), internal: false },
+    'agreement_completed',
+    null,
+    {
+      cc: agreement.agent.accountEmail && agreement.agent.accountEmail !== agreement.agent.email ? agreement.agent.accountEmail : undefined,
+      attachments,
+    }
+  );
+  // Internal copy: whoever sent it (falls back to the configured from-address owner).
+  try {
+    const { User } = require('../models'); // eslint-disable-line global-require
+    const sender = agreement.createdBy ? await User.findById(agreement.createdBy).select('email name') : null;
+    const internalTo = (sender && sender.email) || (settings && settings.signatory && settings.signatory.email) || config.email.from;
+    if (internalTo) {
+      await sendEmail(
+        internalTo,
+        `Signed by both parties: ${agreement.agreementNo} — ${agreement.agent.organisationEn || agreement.agent.nameEn}`,
+        `Agreement ${agreement.agreementNo} is complete. Signed PDF attached.`,
+        { ...base, name: (sender && sender.name) || 'team', email: internalTo, internal: true },
+        'agreement_completed',
+        null,
+        { attachments }
+      );
+    }
+  } catch (err) {
+    logger.error(`agreement internal copy failed: ${err.message}`);
+  }
+};
+
 module.exports = {
   ACCESS_ROLE_LABEL,
+  sendAgreementSentEmail,
+  sendAgreementReminderEmail,
+  sendAgreementCompletedEmail,
   sendAccessRequestReceivedEmail,
   sendAccessApprovedEmail,
   sendAccessDeclinedEmail,

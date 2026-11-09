@@ -36,6 +36,18 @@ const commentSchema = new mongoose.Schema(
         type: String, // Assuming the images are stored as URLs
       },
     ],
+    // Non-image attachments (the profile's comment composer): name, storage
+    // URL and a display size. Optional; older comments simply have none.
+    files: [
+      {
+        name: String,
+        url: String,
+        size: String,
+        _id: false,
+      },
+    ],
+    // Pinned comments sort to the top of the student's thread.
+    pinned: { type: Boolean, default: false },
   },
   {
     timestamps: true,

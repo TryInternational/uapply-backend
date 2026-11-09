@@ -1,5 +1,21 @@
 const httpStatus = require('http-status');
 const { Students } = require('../models');
+
+/**
+ * "A student who applied", for the dashboard's student-level stats: in the
+ * Applied or Enrolled stage now or in an earlier journey, OR lost after at
+ * least one application was made (a Lost student with applications applied;
+ * one who went 🔥 Hot → Lost with none did not). Same rule as the
+ * "Students who applied" chart, which works from the application rows.
+ */
+const APPLIED_STUDENT = {
+  $or: [
+    { stage: { $in: ['Applied', 'Enrolled'] } },
+    { 'journeys.outcome': { $in: ['Applied', 'Enrolled'] } },
+    { stage: 'Lost', 'applications.0': { $exists: true } },
+    { journeys: { $elemMatch: { outcome: 'Lost', 'applications.0': { $exists: true } } } },
+  ],
+};
 const ApiError = require('../utils/ApiError');
 
 /**
@@ -84,14 +100,18 @@ const deleteStudentById = async (studentId) => {
   await student.remove();
   return student;
 };
-const searchStudent = async (text, options) => {
+// typed text is matched literally — "+965…" or "(" used to throw and fail the search
+const literal = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const searchStudent = async (text, options, scope = {}) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
-  const regex = new RegExp(text, 'i');
+  const regex = new RegExp(literal(text), 'i');
   let students;
+  // an optional "My students" condition (counselor / operations), ANDed in
+  const scoped = (q) => (scope && Object.keys(scope).length ? { $and: [q, scope] } : q);
 
   if (options.stage) {
     students = await Students.paginate(
-      {
+      scoped({
         $and: [
           {
             stage: options.stage,
@@ -106,7 +126,7 @@ const searchStudent = async (text, options) => {
                 $expr: {
                   $regexMatch: {
                     input: { $concat: ['$firstName', ' ', '$middleName', ' ', '$lastName'] },
-                    regex: text,
+                    regex: literal(text),
                     options: 'i',
                   },
                 },
@@ -114,12 +134,12 @@ const searchStudent = async (text, options) => {
             ],
           },
         ],
-      },
+      }),
       options
     );
   } else {
     students = await Students.paginate(
-      {
+      scoped({
         $or: [
           { firstName: regex },
           { lastName: regex },
@@ -131,13 +151,13 @@ const searchStudent = async (text, options) => {
             $expr: {
               $regexMatch: {
                 input: { $concat: ['$firstName', ' ', '$middleName', ' ', '$lastName'] },
-                regex: text,
+                regex: literal(text),
                 options: 'i',
               },
             },
           },
         ],
-      },
+      }),
       options
     );
   }
@@ -159,7 +179,8 @@ const getTopNationalities = async ({ startDate, endDate }) => {
   }
   const topNationalities = await Students.aggregate([
     {
-      $match: { ...query, stage: 'Applied' },
+      // "the students who applied": Applied, and Enrolled (they applied too) — Enrolled was left out
+      $match: { ...query, ...APPLIED_STUDENT },
     },
     {
       $group: {
@@ -184,7 +205,7 @@ const getTopAppliedIntake = async () => {
     {
       $match: {
         ...query,
-        stage: { $in: ['Applied', 'Enrolled'] }, // Applied or Enrolled students
+        ...APPLIED_STUDENT, // applied / enrolled, or lost after applying
       },
     },
     {
@@ -252,7 +273,8 @@ const getCountByAssignedRole = async ({ startDate, endDate }) => {
 
     const enrolledPipeline = [
       {
-        $match: { ...query, stage: 'Enrolled' },
+        // enrolled now, or in an earlier journey (a finished Foundation year)
+        $match: { ...query, $or: [{ stage: 'Enrolled' }, { 'journeys.outcome': 'Enrolled' }] },
       },
       {
         $unwind: '$assignedTo',
@@ -339,7 +361,7 @@ const getStudentsByStudyLevel = async () => {
   // Students in the Applied or Enrolled stage — not date-scoped (mockup cards).
   const match = {
     'preference.courseLevel': { $nin: [null, ''] },
-    stage: { $in: ['Applied', 'Enrolled'] },
+    ...APPLIED_STUDENT,
   };
   const rows = await Students.aggregate([
     { $match: match },
@@ -431,7 +453,7 @@ const getStudentsByChannel = async ({ startDate, endDate }) => {
 const getStudentsByDestination = async () => {
   const match = {
     'preference.studyDestinations': { $nin: [null, ''] },
-    stage: { $in: ['Applied', 'Enrolled'] },
+    ...APPLIED_STUDENT,
   };
   return Students.aggregate([
     { $match: match },
@@ -442,109 +464,110 @@ const getStudentsByDestination = async () => {
   ]);
 };
 
-// Per-counselor funnel leaderboard for the counselor "My Desk" Season board.
-// Groups students by their assigned counselor (assignedTo slot with role
-// counselor) and counts Applied / Offers / Enrolled. "Offers" = students with
-// at least one application carrying a Conditional/Unconditional offer phase.
+// Sales leaderboard (Admin "Sales" panel, Counselor desk "Sales" card and
+// applied pulse). For a date range it ranks each counsellor / salesperson by
+// the students who APPLIED in that range — a student counts in the range of
+// their first LIVE application (the same rule as "Students who applied") —
+// and, of those students, how many have reached an offer and how many
+// enrolled:
+//
+//   applied   first LIVE application created in the range
+//   offers    of those: enrolled, or a LIVE application that is not rejected
+//             and has reached Conditional offer or later (an offer that moved
+//             on to Confirmation / CAS / Done still counts — the old rule only
+//             counted applications sitting AT an offer right now)
+//   enrolled  of those: Enrolled now or in an earlier journey
+//
+// It used to scope students by `createdAt` (a student added in August who
+// applied today never counted) and to count stage PendingReview (partner
+// submissions not yet accepted) as applied.
+//
+// Each row also carries the student ids behind it (`appliedStudents` with the
+// student's course-level name, `offerIds`, `enrolledIds`) so the client can total
+// DISTINCT students across people — summing per-person counts counted a
+// student with two salespeople twice — and filter by level.
 const getCounselorLeaderboard = async ({ startDate, endDate } = {}) => {
-  const OFFER_STATUSES = ['Conditional offer', 'Unconditional offer'];
-  const match = {};
-  if (startDate && endDate) {
-    match.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
-  }
-  const rows = await Students.aggregate([
-    { $match: match },
-    { $unwind: '$assignedTo' },
-    {
-      $match: {
-        'assignedTo.user': { $ne: null },
-        'assignedTo.role': { $in: ['counselor', 'counsellor'] },
-      },
-    },
-    {
-      $lookup: {
-        from: 'applications',
-        localField: 'applications',
-        foreignField: '_id',
-        as: '_apps',
-      },
-    },
-    {
-      $addFields: {
-        _hasOffer: {
-          $gt: [
-            {
-              $size: {
-                $filter: {
-                  input: '$_apps',
-                  as: 'a',
-                  cond: {
-                    $gt: [
-                      {
-                        $size: {
-                          $filter: {
-                            input: {
-                              $ifNull: ['$$a.portalApplicationStatus.applicationPhases', []],
-                            },
-                            as: 'p',
-                            // phaseState matters. Testing the status alone
-                            // matched EVERY application: all eight phases are
-                            // written into the array at creation, so
-                            // "has a phase called Conditional offer" is true
-                            // from the moment an application exists — which
-                            // made this leaderboard column count students with
-                            // any application at all, not students with offers.
-                            cond: {
-                              $and: [
-                                { $in: ['$$p.status', OFFER_STATUSES] },
-                                { $eq: ['$$p.phaseState', 'AwaitingResponseStudent'] },
-                              ],
-                            },
-                          },
-                        },
-                      },
-                      0,
-                    ],
-                  },
-                },
-              },
-            },
-            0,
-          ],
-        },
-      },
-    },
-    {
-      $group: {
-        _id: '$assignedTo.user',
-        applied: {
-          $sum: {
-            $cond: [{ $in: ['$stage', ['Applied', 'Enrolled', 'PendingReview']] }, 1, 0],
-          },
-        },
-        enrolled: { $sum: { $cond: [{ $eq: ['$stage', 'Enrolled'] }, 1, 0] } },
-        offers: { $sum: { $cond: ['$_hasOffer', 1, 0] } },
-        students: { $sum: 1 },
-      },
-    },
-    {
-      $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: '_u' },
-    },
-    { $unwind: { path: '$_u', preserveNullAndEmptyArrays: true } },
-    {
-      $project: {
-        _id: 0,
-        userId: '$_id',
-        name: { $ifNull: ['$_u.name', 'Unknown'] },
-        applied: 1,
-        offers: 1,
-        enrolled: 1,
-        students: 1,
-      },
-    },
-    { $sort: { applied: -1, offers: -1 } },
+  // required here: application.service and dashboardBreakdowns.service load models and each other
+  // eslint-disable-next-line global-require
+  const { Application, CourseLevels, User } = require('../models');
+  // eslint-disable-next-line global-require
+  const { LIVE_ONLY } = require('./application.service');
+  // eslint-disable-next-line global-require
+  const { reachedIdx } = require('./dashboardBreakdowns.service');
+  const OFFER_IDX = 2; // Conditional offer
+  const idOf = (x) => String((x && (x._id || x.id)) || x || '');
+
+  const s = startDate ? new Date(startDate) : null;
+  const e = endDate ? new Date(endDate) : null;
+  const ranged = s && e && !Number.isNaN(s.getTime()) && !Number.isNaN(e.getTime());
+  const firsts = await Application.aggregate([
+    { $match: { ...LIVE_ONLY, studentId: { $ne: null } } },
+    { $group: { _id: '$studentId', first: { $min: '$createdAt' } } },
+    ...(ranged ? [{ $match: { first: { $gte: s, $lte: e } } }] : []),
   ]);
-  return rows;
+  const ids = firsts.map((f) => f._id);
+  if (!ids.length) return [];
+
+  const [students, apps, levels] = await Promise.all([
+    Students.find(
+      { _id: { $in: ids } },
+      { assignedTo: 1, stage: 1, 'journeys.outcome': 1, 'preference.courseLevel': 1 },
+      { autopopulate: false }
+    ).lean(),
+    Application.find(
+      { ...LIVE_ONLY, studentId: { $in: ids } },
+      { studentId: 1, rejected: 1, courseLevel: 1, 'portalApplicationStatus.applicationPhases': 1 },
+      { autopopulate: false }
+    ).lean(),
+    CourseLevels.find({}, { en_name: 1 }).lean(),
+  ]);
+  const levelName = new Map(levels.map((l) => [idOf(l), l.en_name]));
+  // the course-level NAME (the client buckets it, as its Level filter options are)
+  const nameOfLevel = (raw) => (raw ? String(levelName.get(String(raw)) || raw) : null);
+  const appsBy = new Map();
+  apps.forEach((a) => appsBy.set(idOf(a.studentId), (appsBy.get(idOf(a.studentId)) || []).concat(a)));
+
+  const COUNSELOR_ROLE = /^\s*(counsell?or|sales)\s*$/i;
+  const rows = new Map();
+  students.forEach((st) => {
+    const sid = idOf(st);
+    const list = appsBy.get(sid) || [];
+    const enrolled =
+      st.stage === 'Enrolled' || (Array.isArray(st.journeys) && st.journeys.some((j) => j && j.outcome === 'Enrolled'));
+    const offer = enrolled || list.some((a) => !a.rejected && reachedIdx(a) >= OFFER_IDX);
+    const level =
+      nameOfLevel(st.preference && st.preference.courseLevel) ||
+      list.map((a) => nameOfLevel(a.courseLevel)).find(Boolean) ||
+      null;
+    const seen = new Set();
+    (st.assignedTo || []).forEach((slot) => {
+      const role = Array.isArray(slot && slot.role) ? slot.role.join(' ') : slot && slot.role;
+      const user = idOf(slot && slot.user);
+      if (!user || user === 'null' || !COUNSELOR_ROLE.test(String(role || '')) || seen.has(user)) return;
+      seen.add(user);
+      const row = rows.get(user) || { userId: user, appliedStudents: [], offerIds: [], enrolledIds: [] };
+      row.appliedStudents.push({ id: sid, level });
+      if (offer) row.offerIds.push(sid);
+      if (enrolled) row.enrolledIds.push(sid);
+      rows.set(user, row);
+    });
+  });
+
+  const users = await User.find({ _id: { $in: Array.from(rows.keys()) } }, { name: 1 }).lean();
+  const nameOf = new Map(users.map((u) => [idOf(u), u.name]));
+  return Array.from(rows.values())
+    .map((r) => ({
+      userId: r.userId,
+      name: nameOf.get(r.userId) || 'Unknown',
+      applied: r.appliedStudents.length,
+      offers: r.offerIds.length,
+      enrolled: r.enrolledIds.length,
+      students: r.appliedStudents.length,
+      appliedStudents: r.appliedStudents,
+      offerIds: r.offerIds,
+      enrolledIds: r.enrolledIds,
+    }))
+    .sort((a, b) => b.applied - a.applied || b.offers - a.offers);
 };
 
 // Maps a raw course-level name (courselevels.en_name) into one of the four
@@ -594,7 +617,7 @@ const bucketCourseLevel = (name) => {
 const getStudentsByDestinationAndIntake = async () => {
   const match = {
     'preference.studyDestinations': { $nin: [null, ''] },
-    stage: { $in: ['Applied', 'Enrolled'] },
+    ...APPLIED_STUDENT,
   };
   const rows = await Students.aggregate([
     { $match: match },
@@ -628,7 +651,7 @@ const getStudentsByDestinationAndIntake = async () => {
 const getStudyLevelMixByIntake = async () => {
   const match = {
     'preference.courseLevel': { $nin: [null, ''] },
-    stage: { $in: ['Applied', 'Enrolled'] },
+    ...APPLIED_STUDENT,
   };
   const rows = await Students.aggregate([
     { $match: match },
@@ -771,7 +794,11 @@ const getDashboardData = async ({ startDate, endDate, filterOptions }) => {
  * Returns true when the stage actually moved.
  */
 const advanceStageToApplied = async (studentId) => {
-  const res = await Students.updateOne({ _id: studentId, stage: 'NotApplied' }, { $set: { stage: 'Applied' } });
+  // updateOne skips the save hook that stamps appliedAt, so stamp it here
+  const res = await Students.updateOne(
+    { _id: studentId, stage: 'NotApplied' },
+    { $set: { stage: 'Applied', appliedAt: new Date() } }
+  );
   return !!(res && res.modifiedCount);
 };
 
@@ -787,12 +814,14 @@ const advanceStageToApplied = async (studentId) => {
 const advanceStageToEnrolled = async (studentId) => {
   const res = await Students.updateOne(
     { _id: studentId, stage: { $in: ['Applied', 'NotApplied'] } },
-    { $set: { stage: 'Enrolled' } }
+    // updateOne skips the model's save hook, so the enrolment date is stamped here
+    { $set: { stage: 'Enrolled', enrolledAt: new Date() }, $unset: { lostAt: 1 } }
   );
   return !!(res && res.modifiedCount);
 };
 
 module.exports = {
+  APPLIED_STUDENT,
   createStudent,
   advanceStageToApplied,
   advanceStageToEnrolled,

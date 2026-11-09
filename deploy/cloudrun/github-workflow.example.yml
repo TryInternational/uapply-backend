@@ -1,0 +1,69 @@
+# EXAMPLE ONLY: not active. GitHub only runs workflows in .github/workflows/.
+#
+# Deploys to Cloud Run with deploy/cloudrun/deploy.sh. To use it after the move
+# (README step 10):
+#   1. copy it to .github/workflows/cloudrun.yml
+#   2. give the CI identity these roles on digital-vim-270607:
+#        Cloud Build Editor, Cloud Run Admin, Artifact Registry Writer,
+#        Storage Admin (Cloud Build uploads the source to a bucket),
+#        Service Account User on uapply-api-run@digital-vim-270607.iam.gserviceaccount.com
+#      (Workload Identity Federation is preferred over a JSON key. With a key,
+#      store it as the repository secret GCP_DEPLOY_KEY.)
+#   3. once you trust it, add the push triggers below and delete the App Engine
+#      workflow (.github/workflows/main.yml)
+#
+# CI never needs the .env files: the settings are already in Secret Manager
+# (deploy.sh secret …), and the image is built without them.
+name: Cloud Run deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Service to deploy
+        required: true
+        default: uapply-staging-api
+        type: choice
+        options: [uapply-staging-api, uapply-api, ulearn-api]
+  # push:
+  #   branches: [develop, master]
+
+concurrency:
+  group: cloudrun-${{ inputs.service || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # for Workload Identity Federation
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_DEPLOY_KEY }}
+          # or, with Workload Identity Federation:
+          # workload_identity_provider: projects/<number>/locations/global/workloadIdentityPools/<pool>/providers/<provider>
+          # service_account: <ci-account>@digital-vim-270607.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Pick the service
+        id: svc
+        run: |
+          if [ -n "${{ inputs.service }}" ]; then echo "name=${{ inputs.service }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref_name }}" = "master" ]; then echo "name=uapply-api" >> "$GITHUB_OUTPUT"
+          else echo "name=uapply-staging-api" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Build and deploy
+        run: ./deploy/cloudrun/deploy.sh release "${{ steps.svc.outputs.name }}"
+
+      # master also runs ulearn-api (same code, same database)
+      - name: Deploy ulearn-api with the same image
+        if: steps.svc.outputs.name == 'uapply-api'
+        run: |
+          IMAGE=$(gcloud run services describe uapply-api --region=me-central1 \
+            --format='value(spec.template.spec.containers[0].image)')
+          ./deploy/cloudrun/deploy.sh deploy ulearn-api "$IMAGE"

@@ -28,6 +28,10 @@ const errorHandler = (err, req, res, next) => {
   const response = {
     code: statusCode,
     message,
+    // A string `code` is a machine-readable reason (e.g. WINDOW_CLOSED from the
+    // WhatsApp client); the numeric `code` above stays the HTTP status for callers
+    // that already read it.
+    ...(typeof err.code === 'string' && { errorCode: err.code }),
     ...(config.env === 'development' && { stack: err.stack }),
   };
 

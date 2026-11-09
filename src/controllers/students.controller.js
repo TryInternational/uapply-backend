@@ -3,6 +3,7 @@ const httpStatus = require('http-status');
 const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
 const axios = require('axios');
+const { dmEnabled: slackDmEnabled } = require('../thirdparty/slack');
 const { convertASTToUTC } = require('../utils/Common');
 // const { text } = require('express');
 const pick = require('../utils/pick');
@@ -10,13 +11,15 @@ const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { studentsService, userService, notificationsService, activitiesService } = require('../services');
 const { isSubAgent, isSchoolCounselor, isExternalPartner } = require('../middlewares/subAgentScope');
-const { Students } = require('../models');
+const { Students, Application } = require('../models');
 const { actorOf } = require('../utils/actor');
 
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
 const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
 
 const sendSlackNotification = async (memberId, slackBody) => {
+  // Production only — see thirdparty/slack.js.
+  if (!slackDmEnabled) return;
   try {
     const response = await axios.post(
       SLACK_API_URL,
@@ -80,13 +83,7 @@ const SUB_AGENT_EDITABLE_STUDENT_FIELDS = [
 // list above so the sub-agent portal's accepted field set is byte-for-byte what
 // it was — widening the shared list would have quietly granted sub-agents the
 // ability to write passport detail they never previously could.
-const SCHOOL_COUNSELOR_EXTRA_FIELDS = [
-  'passportExpiry',
-  'passportIssueDate',
-  'civilNumber',
-  'placeOfIssue',
-  'placeOfBirth',
-];
+const SCHOOL_COUNSELOR_EXTRA_FIELDS = ['passportExpiry', 'passportIssueDate', 'civilNumber', 'placeOfIssue', 'placeOfBirth'];
 
 /** The fields a given partner may set. Sub-agents get exactly the base list. */
 const partnerEditableFields = (user) =>
@@ -376,6 +373,29 @@ const startNewJourney = catchAsync(async (req, res) => {
         .join(', ') || undefined
     : undefined;
 
+  // The application this journey ended in (a place), if any: one of this
+  // cycle's applications whose current phase is Done. Read so the closed
+  // journey keeps where the student studied, and the next one can say what it
+  // progressed from.
+  let enrolledApp = null;
+  try {
+    const earlier = new Set((student.journeys || []).flatMap((j) => (j.applications || []).map((x) => String(x))));
+    const ids = (student.applications || []).map((x) => String(x)).filter((x) => /^[0-9a-f]{24}$/i.test(x));
+    const cycleApps = ids.length
+      ? await Application.find({ _id: { $in: ids } }).lean()
+      : (await Application.find({ studentId: student._id }).lean()).filter((a) => !earlier.has(String(a._id)));
+    const phaseOf = (a) => {
+      const ph = (a.portalApplicationStatus && a.portalApplicationStatus.applicationPhases) || [];
+      const cur = ph.find((x) => x && x.phaseState === 'AwaitingResponseStudent') || ph.find((x) => x && x.isCurrent);
+      return cur ? cur.status : null;
+    };
+    enrolledApp = cycleApps.find((a) => !a.rejected && phaseOf(a) === 'Done') || null;
+  } catch (err) {
+    enrolledApp = null;
+  }
+  const enrolledUniversity = enrolledApp && enrolledApp.institute ? enrolledApp.institute.name : undefined;
+  const enrolledCourse = enrolledApp ? enrolledApp.courseName : undefined;
+
   student.journeys = [
     ...(student.journeys || []),
     {
@@ -393,8 +413,26 @@ const startNewJourney = catchAsync(async (req, res) => {
       outcome: student.stage,
       applications: student.applications || [],
       openedBy: req.user ? req.user.id : undefined,
+      provider: pref.provider || undefined,
+      enrolledApplication: enrolledApp ? enrolledApp._id : undefined,
+      enrolledUniversity,
+      enrolledCourse,
     },
   ];
+
+  // A journey that ended in a place (a Foundation year, say) is what the new
+  // one progresses from; anything else leaves nothing to progress from.
+  student.progressedFrom =
+    student.stage === 'Enrolled'
+      ? {
+          journeyIndex: student.journeys.length - 1,
+          degree: degreeLabel,
+          provider: pref.provider || undefined,
+          university: enrolledUniversity,
+          course: enrolledCourse,
+          closedAt: new Date(),
+        }
+      : undefined;
 
   // Reset the live cycle. New preference comes from the body, whitelisted.
   const nextPref = {};
@@ -458,6 +496,126 @@ const getStudents = catchAsync(async (req, res) => {
 
   if (req.query.ambassadorName) {
     filter.ambassadorName = req.query.ambassadorName;
+  }
+
+  // ---- Back-office list facets (the redesigned Students page's Filters
+  // drawer). Every one of these is optional and multi-valued ("a,b,c"), and a
+  // single value behaves exactly as before, so older clients are unaffected.
+  const csv = (v) =>
+    String(v == null ? '' : v)
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean);
+  const inOrEq = (values) => (values.length === 1 ? values[0] : { $in: values });
+
+  // `degree` was picked raw but students have no `degree` field: it is the
+  // course-level id stored at preference.courseLevel.
+  if (filter.degree !== undefined) {
+    const levels = csv(filter.degree);
+    delete filter.degree;
+    if (levels.length) filter['preference.courseLevel'] = inOrEq(levels);
+  }
+  // `nationality` is an object on the document; match on its English name.
+  if (filter.nationality !== undefined) {
+    const names = csv(filter.nationality);
+    delete filter.nationality;
+    if (names.length) filter['nationality.english_name'] = inOrEq(names);
+  }
+  if (typeof filter.stage === 'string' && filter.stage.includes(',')) {
+    filter.stage = { $in: csv(filter.stage) };
+  }
+  if (typeof filter.status === 'string' && filter.status.includes(',')) {
+    filter.status = { $in: csv(filter.status) };
+  }
+  if (req.query.channel) {
+    const channels = csv(req.query.channel);
+    if (channels.length) filter.channel = inOrEq(channels);
+  }
+  // intake="September 2026,January 2027" → preference.intakeMonth/intakeYear pairs.
+  if (req.query.intake) {
+    const pairs = csv(req.query.intake)
+      .map((label) => {
+        const m = label.match(/^(\S+)\s+(\d{4})$/);
+        return m ? { 'preference.intakeMonth': m[1], 'preference.intakeYear': m[2] } : null;
+      })
+      .filter(Boolean);
+    if (pairs.length) {
+      filter.$and = [...(filter.$and || []), { $or: pairs }];
+    }
+  }
+  // ---- Profile-label facets (the drawer's "Profile labels" / "What they
+  // study" sections). All comma lists; absent = no constraint.
+  if (req.query.funding) {
+    const SELF = ['Personal Savings', 'Help From Family'];
+    const picks = csv(req.query.funding);
+    const wantSelf = picks.includes('Self Funded');
+    const wantSponsored = picks.includes('Sponsored');
+    if (wantSelf && !wantSponsored) filter.sourceOfFund = { $in: SELF };
+    else if (wantSponsored && !wantSelf) filter.sourceOfFund = { $nin: [...SELF, null, ''] };
+  }
+  if (req.query.school) {
+    const schools = csv(req.query.school);
+    if (schools.length) filter.previousSchool = inOrEq(schools);
+  }
+  if (req.query.provider) {
+    const providers = csv(req.query.provider);
+    if (providers.length) filter['preference.provider'] = inOrEq(providers);
+  }
+  if (req.query.labels) {
+    const labels = csv(req.query.labels);
+    if (labels.length) filter.labels = { $in: labels };
+  }
+  if (req.query.major) {
+    // courseSubjectIds holds bare strings in older records and { name, slug }
+    // objects in newer ones — match either shape.
+    const majors = csv(req.query.major);
+    if (majors.length) {
+      filter.$and = [
+        ...(filter.$and || []),
+        {
+          $or: [{ 'preference.courseSubjectIds': { $in: majors } }, { 'preference.courseSubjectIds.name': { $in: majors } }],
+        },
+      ];
+    }
+  }
+  // appStage / university: constraints on the student's applications. Resolve
+  // the matching application ids first; students.applications stores ids as
+  // strings in some records and ObjectIds in others, so both forms are matched.
+  const appQuery = {};
+  if (req.query.appStage) {
+    const stages = csv(req.query.appStage);
+    if (stages.length) {
+      appQuery['portalApplicationStatus.applicationPhases'] = { $elemMatch: { isCurrent: true, status: { $in: stages } } };
+    }
+  }
+  if (req.query.university) {
+    const unis = csv(req.query.university);
+    if (unis.length) appQuery['institute.name'] = { $in: unis };
+  }
+  if (Object.keys(appQuery).length) {
+    const ids = await Application.find(appQuery).distinct('_id');
+    const both = [...ids, ...ids.map((x) => String(x))];
+    filter.applications = { $in: both };
+  }
+
+  // assignedSlots='[{"user":"<id>","role":"sales"}]' → the student must have
+  // that user in that slot. `role` is the free-text slot name on assignedTo
+  // ("sales" / "account manager" / "operations"), matched case-insensitively.
+  if (req.query.assignedSlots) {
+    try {
+      const slots = JSON.parse(req.query.assignedSlots);
+      if (!Array.isArray(slots)) throw new Error('assignedSlots must be an array');
+      const conds = slots
+        .filter((sl) => sl && sl.user)
+        .map((sl) => {
+          const cond = { user: mongoose.Types.ObjectId(sl.user) };
+          if (sl.role) cond.role = { $regex: `^${String(sl.role).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' };
+          return { assignedTo: { $elemMatch: cond } };
+        });
+      if (conds.length) filter.$and = [...(filter.$and || []), ...conds];
+    } catch (error) {
+      return res.status(400).send({ message: 'Invalid assignedSlots format. Expected JSON array of {user, role}.' });
+    }
   }
 
   // Handle assigned user filters
@@ -569,7 +727,7 @@ const getStudents = catchAsync(async (req, res) => {
         if (elemMatchConditions.length === 1) {
           filter.assignedTo = elemMatchConditions[0];
         } else {
-          filter.$and = elemMatchConditions.map((condition) => ({ assignedTo: condition }));
+          filter.$and = [...(filter.$and || []), ...elemMatchConditions.map((condition) => ({ assignedTo: condition }))];
         }
       }
     } catch (error) {
@@ -580,9 +738,95 @@ const getStudents = catchAsync(async (req, res) => {
     }
   }
 
+  // countsByStage=PendingReview,NotApplied,… → { counts: { <stage>: n } } for the
+  // list's status tabs with every other filter applied: one round trip instead
+  // of one 1-row page per tab. Counted with countDocuments (schema casting, same
+  // as the list) in parallel on the server.
+  if (req.query.countsByStage) {
+    const stageList = csv(req.query.countsByStage).slice(0, 12);
+    const base = { ...filter };
+    delete base.stage;
+    const ns = await Promise.all(stageList.map((st) => Students.countDocuments({ ...base, stage: st })));
+    const counts = {};
+    stageList.forEach((st, i) => {
+      counts[st] = ns[i];
+    });
+    return res.send({ counts });
+  }
+
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await studentsService.queryStudents(filter, options);
   res.send(result);
+});
+
+/**
+ * Distinct values the Students page's Filters drawer offers — schools,
+ * providers, labels, majors, nationalities, intakes and the universities
+ * students have applied to. Small, uncached, one round-trip per page load.
+ */
+const getStudentFacets = catchAsync(async (req, res) => {
+  const clean = (arr) => arr.filter((x) => typeof x === 'string' && x.trim()).map((x) => x.trim());
+  const uniq = (arr) => Array.from(new Set(arr)).sort((a, b) => a.localeCompare(b));
+  const [schools, providers, labels, subjectNames, subjectStrings, nationalities, months, years, universities] =
+    await Promise.all([
+      Students.distinct('previousSchool'),
+      Students.distinct('preference.provider'),
+      Students.distinct('labels'),
+      Students.distinct('preference.courseSubjectIds.name'),
+      Students.distinct('preference.courseSubjectIds'),
+      Students.distinct('nationality.english_name'),
+      Students.distinct('preference.intakeMonth'),
+      Students.distinct('preference.intakeYear'),
+      Application.distinct('institute.name'),
+    ]);
+  const MO = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  const intakes = [];
+  clean(years.map(String)).forEach((y) => clean(months).forEach((m) => intakes.push(`${m} ${y}`)));
+  intakes.sort((a, b) => {
+    const [ma, ya] = a.split(' ');
+    const [mb, yb] = b.split(' ');
+    return Number(ya) - Number(yb) || MO.indexOf(ma) - MO.indexOf(mb);
+  });
+  res.send({
+    schools: uniq(clean(schools)),
+    providers: uniq(clean(providers)),
+    labels: uniq(clean(labels)),
+    majors: uniq(clean([...subjectNames, ...subjectStrings.filter((x) => typeof x === 'string')])),
+    nationalities: uniq(clean(nationalities)),
+    intakes,
+    universities: uniq(clean(universities)),
+  });
+});
+
+/**
+ * How many students each staff member is on (any slot), as { <userId>: n } —
+ * the Settings › Users list showed this with one request per user.
+ */
+const getStudentCountsByUser = catchAsync(async (req, res) => {
+  const rows = await Students.aggregate([
+    { $match: { 'assignedTo.0': { $exists: true } } },
+    { $project: { u: { $setUnion: [{ $ifNull: ['$assignedTo.user', []] }, []] } } },
+    { $unwind: '$u' },
+    { $group: { _id: '$u', n: { $sum: 1 } } },
+  ]);
+  const counts = {};
+  rows.forEach((r) => {
+    if (r._id) counts[String(r._id)] = r.n;
+  });
+  res.send({ counts });
 });
 
 const getStudent = catchAsync(async (req, res) => {
@@ -632,6 +876,121 @@ const shareStudentWithCounselor = catchAsync(async (req, res) => {
 
   res.status(httpStatus.OK).send({ message: 'Student shared with counselor', alreadyShared });
 });
+
+/**
+ * POST /students/:studentId/partner-resubmit — a partner sends back a student
+ * Ulearn returned to them ("Action needed"): Denied → PendingReview, and every
+ * reviewer gets the usual in-app "resubmitted for review" notice (no Slack).
+ *
+ * Its own route because a partner's PATCH cannot write `stage` (see
+ * SUB_AGENT_EDITABLE_STUDENT_FIELDS) — the portal's "Resubmit to Ulearn" used
+ * to PATCH a stage that was silently dropped. Only the owner, only from Denied.
+ */
+const partnerResubmit = catchAsync(async (req, res) => {
+  if (!isExternalPartner(req.user)) throw new ApiError(httpStatus.FORBIDDEN, 'Only partners resubmit their own students.');
+  const existing = await studentsService.getStudentById(req.params.studentId);
+  if (!existing || !studentOwnedBy(existing, req.user.id)) throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
+  if (existing.stage !== 'Denied') {
+    throw new ApiError(httpStatus.CONFLICT, 'Only a student Ulearn sent back to you can be resubmitted.');
+  }
+  const editor = actorOf(req);
+  const student = await studentsService.updateStudentById(req.params.studentId, {
+    stage: 'PendingReview',
+    denialReason: '',
+    editor: req.body && req.body.editor,
+  });
+  try {
+    await activitiesService.logActivity({
+      student: student.id,
+      type: 'stage',
+      text: `${editor.name} resubmitted the referral for review`,
+      actorId: editor.id,
+      actorName: editor.name,
+      meta: { stage: 'PendingReview' },
+    });
+    await notifyReviewersOfSubmission(req.app.get('io'), student, true);
+  } catch (err) {
+    console.error('Resubmit notification failed:', err.message);
+  }
+  res.send(student);
+});
+
+/**
+ * POST /students/:studentId/partner-withdraw { reason? } — a partner removes
+ * their own student before Ulearn has taken it on (PendingReview or Denied):
+ * the record moves to Lost with the reason, which the portal shows in its red
+ * "Denied" bucket ("Removed by sub agent"). Once Ulearn has accepted a student
+ * it is in the staff pipeline, so the partner is asked to contact Ulearn.
+ */
+const partnerWithdraw = catchAsync(async (req, res) => {
+  if (!isExternalPartner(req.user)) throw new ApiError(httpStatus.FORBIDDEN, 'Only partners remove their own students.');
+  const existing = await studentsService.getStudentById(req.params.studentId);
+  if (!existing || !studentOwnedBy(existing, req.user.id)) throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
+  if (!['PendingReview', 'Denied'].includes(existing.stage)) {
+    throw new ApiError(
+      httpStatus.CONFLICT,
+      'Ulearn is already working with this student — contact your Ulearn counselor to remove them.'
+    );
+  }
+  const given = String((req.body && req.body.reason) || '')
+    .trim()
+    .slice(0, 500);
+  const reason = given || 'Student removed by the sub agent.';
+  const editor = actorOf(req);
+  const student = await studentsService.updateStudentById(req.params.studentId, {
+    stage: 'Lost',
+    denialReason: reason,
+    lostReason: 'Removed by partner',
+    reviewedAt: new Date(),
+    editor: req.body && req.body.editor,
+  });
+  try {
+    await activitiesService.logActivity({
+      student: student.id,
+      type: 'stage',
+      text: `${editor.name} removed this student`,
+      actorId: editor.id,
+      actorName: editor.name,
+      meta: { stage: 'Lost', reason },
+    });
+  } catch (err) {
+    console.error('Withdraw activity failed:', err.message);
+  }
+  res.send(student);
+});
+
+/**
+ * "My students" scope for a search, from the same params GET /students takes:
+ * assignedUserId (any slot) and assignedSlots ([{user, role}]). Returns a Mongo
+ * condition, {} for none; throws 400 on a malformed value.
+ */
+const searchScopeOf = (query) => {
+  const conds = [];
+  if (query.assignedUserId) {
+    try {
+      conds.push({ 'assignedTo.user': mongoose.Types.ObjectId(query.assignedUserId) });
+    } catch (e) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid assignedUserId format.');
+    }
+  }
+  if (query.assignedSlots) {
+    let slots;
+    try {
+      slots = JSON.parse(query.assignedSlots);
+      if (!Array.isArray(slots)) throw new Error('not an array');
+      slots
+        .filter((sl) => sl && sl.user)
+        .forEach((sl) => {
+          const cond = { user: mongoose.Types.ObjectId(sl.user) };
+          if (sl.role) cond.role = { $regex: `^${String(sl.role).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' };
+          conds.push({ assignedTo: { $elemMatch: cond } });
+        });
+    } catch (e) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid assignedSlots format. Expected JSON array of {user, role}.');
+    }
+  }
+  return conds.length ? { $and: conds } : {};
+};
 
 const updateStudent = catchAsync(async (req, res) => {
   const existingStudent = await studentsService.getStudentById(req.params.studentId);
@@ -785,9 +1144,7 @@ const updateStudent = catchAsync(async (req, res) => {
   await activitiesService.logActivity({
     student: student.id,
     type: 'assignment',
-    text: `${editor.name} updated assignments: ${simplifiedUsers
-      .map((u) => `${u.name} (${u.assignedAs})`)
-      .join(', ')}`,
+    text: `${editor.name} updated assignments: ${simplifiedUsers.map((u) => `${u.name} (${u.assignedAs})`).join(', ')}`,
     actorId: editor.id,
     actorName: editor.name,
     meta: { assignments: simplifiedUsers.map((u) => ({ user: u._id, role: u.assignedAs })) },
@@ -833,7 +1190,8 @@ const getStudentsByMonths = catchAsync(async (req, res) => {
 
 const searchStudents = catchAsync(async (req, res) => {
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'stage']);
-  const results = await studentsService.searchStudent(req.params.text, options);
+  // counselor / operations "My students": the list's scope applies to search too
+  const results = await studentsService.searchStudent(req.params.text, options, searchScopeOf(req.query));
   res.status(200).send(results);
 });
 
@@ -895,6 +1253,10 @@ const getCounselorLeaderboard = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+  partnerResubmit,
+  partnerWithdraw,
+  getStudentFacets,
+  getStudentCountsByUser,
   createStudent,
   startNewJourney,
   getStudents,

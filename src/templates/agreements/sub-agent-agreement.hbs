@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sub-Agent Agreement {{agreement_no}} — Ulearn</title>
+<!--
+  ULEARN — SUB-AGENT AGREEMENT (bilingual EN/AR) — CRM template v{{template_version}}
+  --------------------------------------------------------------
+  Rendered by services/agreementRender.service.js (Handlebars → HTML → Puppeteer PDF).
+  Every value comes from the Agreement document + Agreement settings; nothing is
+  typed into this file. The page-number footer is added by Puppeteer, not here.
+
+  Placeholders
+    agreement_no, agreement_date, template_version
+    company_name_en/ar, company_city_en/ar, signatory_name_en/ar, signatory_civil_id
+    agent_org_en/ar (optional), agent_name_en/ar, agent_civil_id, agent_mobile, agent_email
+    commission_en/ar
+    extra_terms: [{ en, ar }] (optional)
+    company_signature_src, company_signed_class, company_signed_at, company_ip
+    agent_signature_src, agent_signed_class, agent_signed_at, agent_ip
+    certificate: { ... } (optional, appended as the last page once signed)
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1b1f24; --muted:#5c6470; --rule:#d5d9df; --accent:#0f2f5b; --accent-soft:#eef2f8; }
+  @page{ size:A4; margin:15mm 14mm 18mm 14mm; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; background:#fff; color:var(--ink); }
+  body{ font-family:"Inter","Helvetica Neue",Arial,sans-serif; font-size:9.6pt; line-height:1.45; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .page{ max-width:210mm; margin:0 auto; padding:15mm 14mm 16mm; }
+  @media print{ .page{ max-width:none; padding:0; } }
+
+  /* header */
+  .head{ display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:4mm; border-bottom:2px solid var(--accent); margin-bottom:4mm; }
+  .wordmark{ font-weight:700; font-size:22pt; letter-spacing:-0.03em; line-height:1; color:#111; }
+  .wordmark small{ display:block; font-size:7pt; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+  .logo{ height:12mm; }
+  .meta{ text-align:right; font-size:8.6pt; color:var(--muted); line-height:1.55; }
+  .meta b{ color:var(--ink); font-weight:600; }
+  .meta .ar{ font-family:"Noto Naskh Arabic","Tahoma",serif; font-size:10pt; direction:rtl; unicode-bidi:isolate; border:0; padding:0; }
+
+  /* two-column rows (table layout paginates reliably in Chrome) */
+  .row{ display:table; width:100%; table-layout:fixed; border-collapse:collapse; }
+  .row > .en, .row > .ar{ display:table-cell; width:50%; vertical-align:top; }
+  .row.keep{ break-inside:avoid; page-break-inside:avoid; }
+  .en{ padding-right:5mm; }
+  .ar{ direction:rtl; text-align:right; unicode-bidi:isolate; font-family:"Noto Naskh Arabic","Tahoma","Arial",serif; font-size:10.4pt; line-height:1.55; padding-left:5mm; border-left:1px solid var(--rule); }
+  .title .ar{ border-left:0; }
+  .ar .civ{ font-family:"Inter",Arial,sans-serif; font-size:9.6pt; direction:ltr; unicode-bidi:isolate; display:inline-block; }
+  .row + .row{ margin-top:2.2mm; }
+
+  .title{ margin-bottom:3mm; }
+  .title h1{ margin:0; font-size:15pt; font-weight:700; color:var(--accent); line-height:1.25; }
+  .title .ar h1{ font-size:16pt; }
+  .title .sub{ font-size:9pt; color:var(--muted); margin-top:.8mm; }
+
+  h2{ font-size:10.4pt; font-weight:700; color:var(--accent); margin:2.4mm 0 1.2mm; padding-bottom:.8mm; border-bottom:1px solid var(--rule); break-after:avoid; page-break-after:avoid; }
+  .ar h2{ font-size:11.8pt; }
+  p{ margin:0 0 1.4mm; }
+  ul{ margin:0; padding:0 0 0 4.5mm; }
+  .ar ul{ padding:0 4.5mm 0 0; }
+  li{ margin-bottom:.8mm; break-inside:avoid; page-break-inside:avoid; }
+
+  /* the deal, called out so nobody has to hunt for it in the prose */
+  .deal{ background:var(--accent-soft); border:1px solid #d6deea; border-radius:2px; padding:2mm 3mm; margin:1mm 0 2mm; break-inside:avoid; page-break-inside:avoid; }
+  .deal b{ color:var(--accent); }
+
+  /* signatures */
+  .sigs{ display:table; table-layout:fixed; border-spacing:8mm 0; margin:3mm -8mm 0; width:calc(100% + 16mm); break-inside:avoid; page-break-inside:avoid; }
+  .sig{ display:table-cell; width:50%; vertical-align:top; border:1px solid var(--rule); border-top:3px solid var(--accent); padding:3mm 4mm 2.5mm; border-radius:2px; }
+  .sig .who{ display:flex; justify-content:space-between; align-items:baseline; gap:4mm; margin-bottom:.6mm; }
+  .sig .who b{ color:var(--accent); font-size:10pt; }
+  .sig .who .ar{ border:0; padding:0; font-size:11.5pt; }
+  .sig .org{ display:flex; justify-content:space-between; gap:4mm; color:var(--muted); font-size:8.6pt; margin-bottom:2.5mm; }
+  .sig .org .ar{ border:0; padding:0; font-size:10pt; }
+  .sig .pad{ height:16mm; border-bottom:1px solid var(--ink); display:flex; align-items:flex-end; justify-content:center; position:relative; margin-bottom:2mm; }
+  .sig .pad img{ max-height:17mm; max-width:90%; object-fit:contain; }
+  .sig .pad .hint{ position:absolute; bottom:1.5mm; left:0; right:0; text-align:center; font-size:7.5pt; color:#b7bec8; letter-spacing:.1em; text-transform:uppercase; }
+  .sig .pad.signed .hint{ display:none; }
+  .sig table{ width:100%; border-collapse:collapse; font-size:8.8pt; }
+  .sig td{ padding:.6mm 0; vertical-align:top; }
+  .sig td.k{ color:var(--muted); width:26%; white-space:nowrap; }
+  .sig td.v{ font-weight:600; }
+  .sig td.ka{ color:var(--muted); text-align:right; direction:rtl; font-family:"Noto Naskh Arabic",serif; font-size:10pt; width:30%; white-space:nowrap; }
+  .sig .ar-inline{ font-family:"Noto Naskh Arabic",serif; font-size:10.5pt; direction:rtl; unicode-bidi:isolate; }
+
+  /* certificate of completion — its own page, appended once both have signed */
+  .cert{ break-before:page; page-break-before:always; }
+  .cert h2{ font-size:12pt; border:0; margin:0 0 1mm; }
+  .cert .lead{ color:var(--muted); font-size:8.8pt; margin-bottom:3mm; }
+  .cert table{ width:100%; border-collapse:collapse; font-size:8.8pt; }
+  .cert th, .cert td{ border-bottom:1px solid var(--rule); padding:1.4mm 1.6mm; text-align:left; vertical-align:top; }
+  .cert th{ color:var(--muted); font-weight:600; background:var(--accent-soft); }
+  .cert .mono{ font-family:"SF Mono",Menlo,Consolas,monospace; font-size:7.8pt; word-break:break-all; }
+  .cert .two{ display:table; width:100%; table-layout:fixed; margin-bottom:3mm; }
+  .cert .two > div{ display:table-cell; width:50%; vertical-align:top; padding-right:4mm; }
+  .cert .two > div + div{ padding-right:0; padding-left:4mm; }
+  .cert .kv td.k{ color:var(--muted); width:38%; }
+  .cert .note{ font-size:8pt; color:var(--muted); margin-top:3mm; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="head">
+    <div class="wordmark">ülearn<small>Ulearn Abroad · Kuwait</small></div>
+    <div class="meta">
+      <div>Agreement No. · <span class="ar">رقم الاتفاقية</span>: &nbsp;<b>{{agreement_no}}</b></div>
+      <div>Date · <span class="ar">التاريخ</span>: &nbsp;<b>{{agreement_date}}</b></div>
+      <div>{{company_city_en}}, State of Kuwait · <span class="ar">{{company_city_ar}}، دولة الكويت</span></div>
+    </div>
+  </header>
+
+  <div class="row title">
+    <div class="en"><h1>SUB-AGENT AGREEMENT</h1><div class="sub">Student referral &amp; commission</div></div>
+    <div class="ar"><h1>اتفاقية وكيل فرعي</h1><div class="sub">إحالة الطلبة والعمولة</div></div>
+  </div>
+
+  <!-- PARTIES -->
+  <section class="row">
+    <div class="en">
+      <p>This Agreement is made in the State of Kuwait on {{agreement_date}} between:</p>
+      <p><b>First Party:</b> {{company_name_en}}, {{company_city_en}}, represented by Mr. {{signatory_name_en}}, Civil ID No. {{signatory_civil_id}} (“Ulearn”).</p>
+      <p><b>Second Party:</b> {{#if agent_org_en}}{{agent_org_en}}{{#if agent_org_ar}} ({{agent_org_ar}}){{/if}}, represented by {{/if}}{{agent_name_en}}, Civil ID No. {{agent_civil_id}}, Mobile {{agent_mobile}}, Email {{agent_email}} (the “Sub-Agent”).</p>
+      <p>The Sub-Agent will refer students to Ulearn for study abroad, and Ulearn will pay the Sub-Agent a commission on the terms below.</p>
+    </div>
+    <div class="ar">
+      <p>أُبرمت هذه الاتفاقية في دولة الكويت بتاريخ {{agreement_date}} بين كلٍّ من:</p>
+      <p><b>الطرف الأول:</b> {{company_name_ar}}، {{company_city_ar}}، ويمثلها السيد/ {{signatory_name_ar}}، بطاقة مدنية رقم <span class="civ">{{signatory_civil_id}}</span> («يوليرن»).</p>
+      <p><b>الطرف الثاني:</b> {{#if agent_org_ar}}{{agent_org_ar}}، ويمثلها {{/if}}{{agent_name_ar}}، بطاقة مدنية رقم <span class="civ">{{agent_civil_id}}</span>، هاتف <span class="civ">{{agent_mobile}}</span>، بريد إلكتروني <span class="civ">{{agent_email}}</span> («الوكيل الفرعي»).</p>
+      <p>يقوم الوكيل الفرعي بإحالة الطلبة إلى يوليرن للدراسة في الخارج، وتدفع يوليرن للوكيل الفرعي عمولة وفق الشروط التالية.</p>
+    </div>
+  </section>
+
+  <!-- 1. ULEARN -->
+  <section class="row">
+    <div class="en">
+      <h2>1. Ulearn provides</h2>
+      <ul>
+        <li>An office in Kuwait City to receive and counsel referred students.</li>
+        <li>An experienced team of academic counsellors, an applications team in contact with universities, and a visa officer.</li>
+        <li>Prompt submission of applications and follow-up with universities to obtain offers as quickly as possible.</li>
+        <li>Updates to the Sub-Agent on the status of each referred student.</li>
+      </ul>
+    </div>
+    <div class="ar">
+      <h2>1. تقدّم يوليرن</h2>
+      <ul>
+        <li>مكتبًا في مدينة الكويت لاستقبال الطلبة المُحالين وتقديم الإرشاد لهم.</li>
+        <li>فريقًا ذا خبرة من المستشارين الأكاديميين، وفريقًا لتقديم الطلبات والتواصل مع الجامعات، ومسؤولاً عن التأشيرات.</li>
+        <li>تقديم طلبات الالتحاق بسرعة ومتابعتها مع الجامعات للحصول على القبول في أسرع وقت ممكن.</li>
+        <li>إطلاع الوكيل الفرعي على حالة كل طالب مُحال.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. SUB-AGENT -->
+  <section class="row">
+    <div class="en">
+      <h2>2. The Sub-Agent agrees to</h2>
+      <ul>
+        <li>Refer, as far as possible, students who are qualified for the programmes they seek. Ulearn may decline to apply for a student it considers not sufficiently qualified.</li>
+        <li>Provide accurate student information and documents.</li>
+        <li>Not promise students admission, scholarships or visas.</li>
+        <li>Not act in Ulearn’s name or use its logo without written approval.</li>
+      </ul>
+    </div>
+    <div class="ar">
+      <h2>2. يلتزم الوكيل الفرعي بـ</h2>
+      <ul>
+        <li>إحالة طلبة مؤهلين للبرامج التي يرغبون فيها قدر الإمكان، ويحق ليوليرن عدم التقديم لأي طالب ترى أنه غير مؤهل بما يكفي.</li>
+        <li>تقديم معلومات ومستندات صحيحة عن الطالب.</li>
+        <li>عدم الوعد للطلبة بالقبول أو المنح الدراسية أو التأشيرات.</li>
+        <li>عدم التصرف باسم يوليرن أو استخدام شعارها دون موافقة كتابية.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3. COMMISSION -->
+  <section class="row">
+    <div class="en">
+      <h2>3. Commission</h2>
+      <div class="deal">For each referred student who enrols in a Foundation, Bachelor’s, Master’s or PhD programme, Ulearn pays the Sub-Agent a commission of <b>{{commission_en}}</b>.</div>
+      <ul>
+        <li>A student who had already contacted Ulearn before being referred by the Sub-Agent is not eligible for commission.</li>
+        <li>If the commission is a percentage, it is calculated on the first-year tuition fee paid by the student.</li>
+        <li>The commission is paid within thirty (30) days after the university confirms the student’s enrolment and pays Ulearn its commission.</li>
+        <li>If the student withdraws or the university reclaims the commission, the Sub-Agent refunds the corresponding commission to Ulearn within thirty (30) days.</li>
+      </ul>
+    </div>
+    <div class="ar">
+      <h2>3. العمولة</h2>
+      <div class="deal">عن كل طالب مُحال يلتحق ببرنامج السنة التحضيرية أو البكالوريوس أو الماجستير أو الدكتوراه، تدفع يوليرن للوكيل الفرعي عمولة قدرها <b>{{commission_ar}}</b>.</div>
+      <ul>
+        <li>الطالب الذي سبق له التواصل مع يوليرن قبل إحالته من الوكيل الفرعي لا يستحق عمولة.</li>
+        <li>إذا كانت العمولة نسبة مئوية، فتُحتسب على الرسوم الدراسية للسنة الأولى التي يسددها الطالب.</li>
+        <li>تُدفع العمولة خلال ثلاثين (30) يومًا بعد تأكيد الجامعة التحاق الطالب وسدادها عمولة يوليرن.</li>
+        <li>إذا انسحب الطالب أو استرجعت الجامعة العمولة، يردّ الوكيل الفرعي العمولة المقابلة إلى يوليرن خلال ثلاثين (30) يومًا.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 4. TERM -->
+  <section class="row">
+    <div class="en">
+      <h2>4. Term</h2>
+      <p>This Agreement starts on {{agreement_date}} for one (1) year and renews automatically unless either party gives thirty (30) days’ written notice. Commission for students referred before termination remains payable.</p>
+    </div>
+    <div class="ar">
+      <h2>4. المدة</h2>
+      <p>تبدأ هذه الاتفاقية بتاريخ {{agreement_date}} لمدة سنة (1) واحدة وتتجدد تلقائيًا ما لم يُخطر أحد الطرفين الآخر كتابيًا قبل ثلاثين (30) يومًا. وتظل عمولة الطلبة المُحالين قبل الإنهاء مستحقة.</p>
+    </div>
+  </section>
+
+  <!-- 5. GENERAL -->
+  <section class="row">
+    <div class="en">
+      <h2>5. General</h2>
+      <p>Both parties keep students’ information and the terms of this Agreement confidential. This Agreement is governed by the laws of the State of Kuwait. It is signed electronically, and each party’s electronic signature is binding as a handwritten signature. The English and Arabic texts are equally valid; in case of difference, the Arabic text prevails.</p>
+    </div>
+    <div class="ar">
+      <h2>5. أحكام عامة</h2>
+      <p>يحافظ الطرفان على سرية بيانات الطلبة وشروط هذه الاتفاقية. وتخضع هذه الاتفاقية لقوانين دولة الكويت. وتُوقَّع إلكترونيًا، ويُعدّ التوقيع الإلكتروني لكل طرف ملزمًا كالتوقيع الخطي. وللنصين الإنجليزي والعربي ذات الحجية، وفي حال الاختلاف يُعتد بالنص العربي.</p>
+    </div>
+  </section>
+
+  {{#if extra_terms.length}}
+  <!-- 6. ADDITIONAL TERMS (per agreement) -->
+  <section class="row">
+    <div class="en">
+      <h2>6. Additional terms</h2>
+      <ul>
+        {{#each extra_terms}}<li>{{this.en}}</li>{{/each}}
+      </ul>
+    </div>
+    <div class="ar">
+      <h2>6. أحكام إضافية</h2>
+      <ul>
+        {{#each extra_terms}}<li>{{#if this.ar}}{{this.ar}}{{else}}{{this.en}}{{/if}}</li>{{/each}}
+      </ul>
+    </div>
+  </section>
+  {{/if}}
+
+  <!-- SIGNATURES -->
+  <section class="sigs">
+    <div class="sig">
+      <div class="who"><b>First Party</b><span class="ar"><b>الطرف الأول</b></span></div>
+      <div class="org"><span>{{company_name_en}}</span><span class="ar">{{company_name_ar}}</span></div>
+      <div class="pad {{company_signed_class}}">
+        {{#if company_signature_src}}<img src="{{{company_signature_src}}}" alt="">{{/if}}
+        <span class="hint">Signature · التوقيع</span>
+      </div>
+      <table>
+        <tr><td class="k">Name</td><td class="v">{{signatory_name_en}}<br><span class="ar-inline">{{signatory_name_ar}}</span></td><td class="ka">الاسم</td></tr>
+        <tr><td class="k">Civil ID</td><td class="v">{{signatory_civil_id}}</td><td class="ka">البطاقة المدنية</td></tr>
+        <tr><td class="k">Signed at</td><td class="v">{{company_signed_at}}</td><td class="ka">وقت التوقيع</td></tr>
+        <tr><td class="k">IP address</td><td class="v">{{company_ip}}</td><td class="ka">عنوان IP</td></tr>
+      </table>
+    </div>
+    <div class="sig">
+      <div class="who"><b>Second Party</b><span class="ar"><b>الطرف الثاني</b></span></div>
+      <div class="org"><span>{{#if agent_org_en}}{{agent_org_en}}{{else}}Sub-Agent{{/if}}</span><span class="ar">{{#if agent_org_ar}}{{agent_org_ar}}{{else}}الوكيل الفرعي{{/if}}</span></div>
+      <div class="pad {{agent_signed_class}}">
+        {{#if agent_signature_src}}<img src="{{{agent_signature_src}}}" alt="">{{/if}}
+        <span class="hint">Signature · التوقيع</span>
+      </div>
+      <table>
+        <tr><td class="k">Name</td><td class="v">{{agent_name_en}}<br><span class="ar-inline">{{agent_name_ar}}</span></td><td class="ka">الاسم</td></tr>
+        <tr><td class="k">Civil ID</td><td class="v">{{agent_civil_id}}</td><td class="ka">البطاقة المدنية</td></tr>
+        <tr><td class="k">Signed at</td><td class="v">{{agent_signed_at}}</td><td class="ka">وقت التوقيع</td></tr>
+        <tr><td class="k">IP address</td><td class="v">{{agent_ip}}</td><td class="ka">عنوان IP</td></tr>
+      </table>
+    </div>
+  </section>
+
+  {{#if certificate}}
+  <!-- CERTIFICATE OF COMPLETION — the audit trail, appended once both parties have signed -->
+  <section class="cert">
+    <h2>Certificate of completion · <span class="ar-inline">شهادة إتمام التوقيع</span></h2>
+    <div class="lead">Agreement {{agreement_no}} · generated {{certificate.generated_at}} · This page records how the agreement above was signed electronically.</div>
+
+    <div class="two">
+      <div>
+        <table class="kv">
+          <tr><td class="k">Agreement No.</td><td class="mono">{{agreement_no}}</td></tr>
+          <tr><td class="k">Template version</td><td>{{template_version}}</td></tr>
+          <tr><td class="k">Unsigned document (SHA-256)</td><td class="mono">{{certificate.document_hash}}</td></tr>
+          <tr><td class="k">Status</td><td>Completed — signed by both parties</td></tr>
+        </table>
+      </div>
+      <div>
+        <table class="kv">
+          <tr><td class="k">Second Party (signer)</td><td>{{agent_name_en}} &lt;{{certificate.agent_email}}&gt;</td></tr>
+          <tr><td class="k">Identified by</td><td>{{certificate.agent_auth}}</td></tr>
+          <tr><td class="k">Signature method</td><td>{{certificate.agent_method}}</td></tr>
+          <tr><td class="k">First Party (countersigner)</td><td>{{signatory_name_en}}{{#if certificate.company_by}} · applied by {{certificate.company_by}}{{/if}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th style="width:21%">Time (Kuwait)</th><th style="width:22%">Event</th><th style="width:22%">By</th><th style="width:14%">IP address</th><th>Device</th></tr></thead>
+      <tbody>
+        {{#each certificate.events}}
+        <tr><td>{{this.at}}</td><td>{{this.label}}</td><td>{{this.by}}</td><td class="mono">{{this.ip}}</td><td class="mono">{{this.ua}}</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <p class="note"><b>Consent recorded:</b> {{certificate.consent_text}}</p>
+    <p class="note">The signer was identified by the unique, single-use link emailed to the address above. The hash is of the agreement exactly as presented for signature; it can be recomputed from the unsigned PDF kept with this record to show nothing changed after signing. Ulearn Abroad keeps this certificate with the agreement.</p>
+  </section>
+  {{/if}}
+
+</div>
+</body>
+</html>

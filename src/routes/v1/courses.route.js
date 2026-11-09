@@ -10,6 +10,8 @@ router.post('/', coursesController.createCourse);
 router.route('/').get(coursesController.getCourses);
 // router.route(auth('/getBookingByEmail/:email')).get(coursesController.getBookingByEmail);
 
+router.route('/facets').get(coursesController.getCourseFacets);
+
 router.route('/search/:text').get(coursesController.searchCourses);
 
 router.route('/:courseId').patch(coursesController.updateCourse).delete(coursesController.deleteCourse);

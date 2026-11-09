@@ -18,6 +18,19 @@ const createBooking = {
     civilId: Joi.string().required(),
     signature: Joi.string().required(),
     formOfPayment: Joi.string().required(),
+    actualAmount: Joi.number().min(0).allow(null),
+    amountNote: Joi.string().allow(''),
+  }),
+};
+
+const updateDeposit = {
+  params: Joi.object().keys({
+    bookingId: Joi.required().custom(objectId),
+  }),
+  body: Joi.object().keys({
+    status: Joi.string().valid('collected', 'returned', 'waived').required(),
+    amount: Joi.number().min(0).allow(null),
+    note: Joi.string().allow('', null),
   }),
 };
 
@@ -49,6 +62,7 @@ const deleteBooking = {
 
 module.exports = {
   createBooking,
+  updateDeposit,
   getBookings,
   getBooking,
   updateBooking,

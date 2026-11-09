@@ -3,6 +3,7 @@ const { pick } = require('lodash');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const ulearnStudentService = require('../services/ulearnStudent.service');
+const otpFallbackService = require('../services/otpFallback.service');
 const config = require('../config/config');
 
 /**
@@ -66,9 +67,7 @@ const phoneAuth = catchAsync(async (req, res) => {
     }
   };
 
-  const payload = await stage('verify firebase token', () =>
-    ulearnStudentService.verifyFirebaseIdToken(idToken)
-  );
+  const payload = await stage('verify firebase token', () => ulearnStudentService.verifyFirebaseIdToken(idToken));
   const student = await stage('upsert student on the verified phone', () =>
     ulearnStudentService.upsertFromPhonePayload(payload)
   );
@@ -89,10 +88,33 @@ const phoneAuth = catchAsync(async (req, res) => {
     });
   }
 
-  const token = await stage('sign the ulearn JWT', () =>
-    ulearnStudentService.signStudentJwt(student)
-  );
+  const token = await stage('sign the ulearn JWT', () => ulearnStudentService.signStudentJwt(student));
   res.status(httpStatus.OK).send({ token, student, claimed });
+});
+
+/**
+ * POST /v1/ulearn-students/auth/phone/otp/start
+ * Body: { phone } — E.164. Sends a code through Twilio Verify. Used by the
+ * frontend only after Firebase refused to send its own SMS (STC Kuwait), so a
+ * student never receives two texts for one attempt.
+ */
+const otpFallbackStart = catchAsync(async (req, res) => {
+  const { phone } = req.body;
+  const result = await otpFallbackService.startVerification(phone);
+  res.status(httpStatus.OK).send({ phone: result.phone, status: result.status, channel: 'twilio' });
+});
+
+/**
+ * POST /v1/ulearn-students/auth/phone/otp/check
+ * Body: { phone, code }. On an approved code returns a Firebase CUSTOM TOKEN
+ * for the user owning that phone. The frontend signs into Firebase with it and
+ * then calls POST /auth/phone exactly as after a native SMS sign-in — so the
+ * student record, claiming and JWT all come from one code path.
+ */
+const otpFallbackCheck = catchAsync(async (req, res) => {
+  const { phone, code } = req.body;
+  const result = await otpFallbackService.checkVerification(phone, code);
+  res.status(httpStatus.OK).send({ customToken: result.customToken, phone: result.phone });
 });
 
 /**
@@ -209,6 +231,8 @@ module.exports = {
   updateStudentFromBackOffice,
   getStudentTestsForBackOffice,
   phoneAuth,
+  otpFallbackStart,
+  otpFallbackCheck,
   googleAuth,
   getMe,
   updateMe,

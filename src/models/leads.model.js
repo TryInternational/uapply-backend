@@ -55,6 +55,20 @@ const leadsSchema = mongoose.Schema(
     convertedAt: {
       type: Date,
     },
+    // The counselor working this lead (row menu "Reassign counselor"). Optional
+    // so every lead captured before this field existed still reads correctly.
+    assignedTo: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+    },
+    assignedAt: {
+      type: Date,
+    },
+    // Next follow-up date (row menu "Set follow-up"). The matching task lives in
+    // the Reminder collection, linked back through Reminder.lead.
+    nextFollowUp: {
+      type: Date,
+    },
     sponsored: {
       type: String,
     },
@@ -133,6 +147,9 @@ leadsSchema.plugin(paginate);
 leadsSchema.index({ email: 1 });
 leadsSchema.index({ qualified: 1, createdAt: -1 });
 leadsSchema.index({ createdAt: -1 });
+leadsSchema.index({ assignedTo: 1 });
+// the Leads status tabs (and their counts) filter on status, newest first
+leadsSchema.index({ status: 1, createdAt: -1 });
 
 // /**
 //  * Check if email is taken

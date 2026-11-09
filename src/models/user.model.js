@@ -45,6 +45,62 @@ const userSchema = mongoose.Schema(
       type: String,
       trim: true,
     },
+    // The access request this partner account was provisioned from. Reviewers
+    // and the partner directory read the organisation paperwork (and the Civil
+    // ID scan) from there rather than copying every field onto the account.
+    accessRequest: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'AccessRequest',
+    },
+    // The completed sub-agent agreement this partner works under.
+    agreement: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Agreement',
+    },
+    // A read-mostly copy of what the partner told us about their organisation
+    // when they asked for access, so the portal's "My account" and the partner
+    // directory can show it without a second lookup. Only on partner accounts.
+    partnerProfile: {
+      nameAr: { type: String, trim: true },
+      organisationAr: { type: String, trim: true },
+      title: { type: String, trim: true },
+      legalName: { type: String, trim: true },
+      yearEstablished: { type: Number },
+      address: { type: String, trim: true },
+      noOffice: { type: Boolean },
+      country: { type: String, trim: true },
+      city: { type: String, trim: true },
+      website: { type: String, trim: true },
+      staffCount: { type: String, trim: true },
+      studentsPerYear: { type: String, trim: true },
+      destinations: { type: [String], default: undefined },
+      services: { type: String, trim: true },
+      socialMedia: { type: String, trim: true },
+      personInCharge: {
+        name: { type: String, trim: true },
+        nameAr: { type: String, trim: true },
+        title: { type: String, trim: true },
+        email: { type: String, trim: true },
+        phoneCode: { type: String, trim: true },
+        phone: { type: String, trim: true },
+      },
+    },
+    // A partner's rating of the Ulearn portal ("My account › Rate your
+    // experience"): 1–5, 0 = not rated. `feedback` is what they would fix,
+    // asked for when the rating is low. Optional, so existing users read fine.
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+    },
+    feedback: {
+      type: String,
+      trim: true,
+      maxlength: 2000,
+    },
+    ratedAt: {
+      type: Date,
+    },
     password: {
       type: String,
       required: true,

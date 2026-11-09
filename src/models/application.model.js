@@ -69,14 +69,7 @@ const applicationSchema = new Schema(
       // the notification wording need to say WHICH partner sent it, and a single
       // shared value would make sub-agent and school-counsellor volume
       // indistinguishable in reporting.
-      enum: [
-        'DRAFT',
-        'SUBMITTED_BY_SUBAGENT',
-        'SUBMITTED_BY_COUNSELOR',
-        'APPROVED',
-        'REJECTED',
-        'RETURNED_FOR_EDIT',
-      ],
+      enum: ['DRAFT', 'SUBMITTED_BY_SUBAGENT', 'SUBMITTED_BY_COUNSELOR', 'APPROVED', 'REJECTED', 'RETURNED_FOR_EDIT'],
       default: 'APPROVED',
     },
     // Append-only decision log: every approve / reject / return, with actor,
@@ -98,6 +91,21 @@ const applicationSchema = new Schema(
       enum: ['Offer on KCO', 'KCO Approved', 'Status 3'],
       default: 'Status 3',
     },
+    // What was captured when the application was moved onto a stage from the
+    // back office board / profile (the design's StageMoveModal): the stage's
+    // extra fields (reference numbers, deadlines, CAS number…), which required
+    // documents were ticked, and a note for the file. Append-only.
+    stageRecords: [
+      {
+        stage: String,
+        fields: Object,
+        docs: [String],
+        note: String,
+        by: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
+        byName: String,
+        at: { type: Date, default: Date.now },
+      },
+    ],
   },
   {
     timestamps: true,

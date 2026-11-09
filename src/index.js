@@ -6,6 +6,8 @@ const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 const roleAccessService = require('./services/roleAccess.service');
+const agreementService = require('./services/agreement.service');
+const agreementRenderService = require('./services/agreementRender.service');
 const ensureUlearnStudentIndexes = require('./utils/ensureUlearnStudentIndexes');
 
 let server;
@@ -68,18 +70,62 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(async () => 
   // as the same null). Idempotent, and never blocks startup.
   await ensureUlearnStudentIndexes();
 
+  // Resume WhatsApp broadcasts a previous instance left half-sent.
+  require('./services/whatsappBroadcast.services') // eslint-disable-line global-require
+    .resumeStalled(io)
+    .then((n) => n && logger.info(`[whatsapp] resumed ${n} stalled broadcast(s)`))
+    .catch((e) => logger.warn(`[whatsapp] resumeStalled: ${e.message}`));
+
   // Load the roles collection before accepting traffic, so the very first
   // request is answered from real rights rather than from an empty cache.
   // Never throws: on failure the gates fall back to LEGACY_*_ROLE_IDS, which
   // is exactly the behaviour that shipped before roleAccess existed.
   await roleAccessService.warm();
 
+  /**
+   * Emailed links point somewhere real — or say so, loudly.
+   *
+   * Every invite, password reset and approval email builds its link from
+   * config.appUrls. Those come from BACKOFFICE_URL / SUBAGENT_PORTAL_URL, and
+   * .env.staging shipped with both set to http://localhost:3002 — so a real
+   * school counsellor was emailed a "Set your password" button pointing at a
+   * machine that is not theirs. Nothing failed; the mail sent perfectly and the
+   * link was simply dead for the recipient.
+   *
+   * The tell is the combination: a LOCAL link while the database is REMOTE.
+   * That pairing only happens by mistake — a developer running against a local
+   * Mongo is fine, and a deployed host never has a localhost link.
+   */
+  const isLocalUrl = (u) => /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(u || '');
+  const localLinks = Object.entries(config.appUrls).filter(([, url]) => isLocalUrl(url));
+  const dbIsLocal = isLocalUrl(String(config.mongoose.url || '').replace(/^mongodb(\+srv)?:/, 'http:'));
+  if (localLinks.length && !dbIsLocal) {
+    logger.error(
+      `EMAILED LINKS POINT AT LOCALHOST while the database is remote: ` +
+        `${localLinks.map(([k, v]) => `${k}=${v}`).join(', ')}. ` +
+        `Anyone invited from this instance receives a dead link. ` +
+        `Set BACKOFFICE_URL and SUBAGENT_PORTAL_URL in .env.${process.env.APP_ENV || '<env>'}.`
+    );
+  } else {
+    logger.info(`emailed links: backoffice=${config.appUrls.backoffice} subagent=${config.appUrls.subAgentPortal}`);
+  }
+
   httpServer.listen(config.port, () => {
     logger.info(`Listening to port ${config.port}`);
+    // Sub-agent agreements: hourly reminders to unsigned partners + expiry. Idempotent.
+    setTimeout(
+      () => agreementService.sendReminders().catch((e) => logger.error(`agreement reminders: ${e.message}`)),
+      60 * 1000
+    );
+    setInterval(
+      () => agreementService.sendReminders().catch((e) => logger.error(`agreement reminders: ${e.message}`)),
+      60 * 60 * 1000
+    );
   });
 });
 
 const exitHandler = () => {
+  agreementRenderService.closeBrowser().catch(() => {});
   if (httpServer) {
     httpServer.close(() => {
       logger.info('Server closed');

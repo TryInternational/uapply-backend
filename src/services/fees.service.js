@@ -39,35 +39,45 @@ const getFeesById = async (id) => {
   return Fees.findById(id);
 };
 
+/* Fee amounts are numbers, but older records hold strings ("150", "37.5"):
+   $toInt threw on a decimal string (one bad record failed the whole card) and
+   dropped the fils; a raw $sum skipped strings. */
+const AMOUNT = { $convert: { input: '$tag.amount', to: 'double', onError: 0, onNull: 0 } };
+const asDate = (field) => ({ $convert: { input: field, to: 'date', onError: null, onNull: null } });
+const KUWAIT_TZ = 'Asia/Kuwait';
+/** The Kuwait calendar day of an instant, as the "YYYY-MM-DD" the fee forms store. */
+const kuwaitDay = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: KUWAIT_TZ });
+/** [start of the Kuwait day of `s`, start of the day after the Kuwait day of `e`) for date-only fields. */
+const dayBounds = (s, e) => {
+  const from = new Date(kuwaitDay(s));
+  const to = new Date(kuwaitDay(e));
+  to.setUTCDate(to.getUTCDate() + 1);
+  return [from, to];
+};
+
 const getAmounts = async () => {
+  // Months are Kuwait months: an office fee entered at 00:30 on the 1st (21:30 UTC
+  // the day before) belongs to the new month, not the previous one.
+  const dated = {
+    $cond: {
+      if: { $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']] },
+      then: asDate('$tag.dateSubmitted'),
+      else: '$createdDate',
+    },
+  };
   const monthlySums = await Fees.aggregate([
+    { $addFields: { _d: dated } },
+    { $match: { _d: { $ne: null } } },
     {
       $addFields: {
-        // Convert tag.dateSubmitted to a Date object for specific feeTypes
-        month: {
-          $cond: {
-            if: {
-              $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']],
-            },
-            then: { $month: { $toDate: '$tag.dateSubmitted' } }, // Convert tag.dateSubmitted to Date and extract month
-            else: { $month: '$createdDate' }, // Use createdDate for others
-          },
-        },
-        year: {
-          $cond: {
-            if: {
-              $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']],
-            },
-            then: { $year: { $toDate: '$tag.dateSubmitted' } }, // Convert tag.dateSubmitted to Date and extract year
-            else: { $year: '$createdDate' }, // Use createdDate for others
-          },
-        },
+        month: { $month: { date: '$_d', timezone: KUWAIT_TZ } },
+        year: { $year: { date: '$_d', timezone: KUWAIT_TZ } },
       },
     },
     {
       $group: {
         _id: { feeType: '$feeType', month: '$month', year: '$year' },
-        totalAmount: { $sum: { $toInt: '$tag.amount' } }, // Convert amount to integer and sum
+        totalAmount: { $sum: AMOUNT },
         bookingCount: { $sum: 1 }, // Count the number of documents (bookings)
       },
     },
@@ -128,9 +138,11 @@ const updateFeesById = async (id, updateBody) => {
   await fees.save();
   return fees;
 };
+// typed text is matched literally — "+965…" or "(" used to throw and fail the search
+const literal = (v) => String(v).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const searchFees = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
-  const regex = new RegExp(text, 'i');
+  const regex = new RegExp(literal(text), 'i');
 
   const searchConditions = [
     { 'tag.fullName': regex },
@@ -173,34 +185,24 @@ const deleteFeesById = async (id) => {
 };
 
 const getSales = async (feeType, groupByFields, startDate, endDate) => {
-  const date = new Date(startDate);
-  const eDate = new Date(endDate);
-
-  const formatted = date.toISOString().split('T')[0];
-  const formattedEnd = eDate.toISOString().split('T')[0];
-
+  // Visa / English (dateSubmitted) and IELTS (dateOfTest) are date-only fields
+  // ("YYYY-MM-DD"), so they are matched by Kuwait calendar day: every day the
+  // range touches, whole. Comparing them with the range's instants dropped the
+  // first day of the default range (30 days ago at the current time), and the
+  // IELTS window, cut to UTC dates, began a day early.
+  const [fromDay, toDay] = dayBounds(startDate, endDate);
+  const dayMatch = (field) => ({
+    $expr: { $and: [{ $gte: [asDate(field), fromDay] }, { $lt: [asDate(field), toDay] }] },
+  });
   const matchStage = {
     $match: {
       feeType,
-      ...(feeType === 'office-fees' && { 'tag.salesPerson': { $ne: null, $ne: '' } }),
+      // (was `{ $ne: null, $ne: '' }` — a duplicate key keeps only the second)
+      ...(feeType === 'office-fees' && { 'tag.salesPerson': { $nin: [null, ''] } }),
       ...(feeType === 'english-self-funded' || feeType === 'student-visa'
-        ? {
-            $expr: {
-              $and: [
-                { $gte: [{ $toDate: '$tag.dateSubmitted' }, new Date(startDate)] },
-                { $lte: [{ $toDate: '$tag.dateSubmitted' }, new Date(endDate)] },
-              ],
-            },
-          }
+        ? dayMatch('$tag.dateSubmitted')
         : feeType === 'ielts-booking'
-        ? {
-            $expr: {
-              $and: [
-                { $gte: [{ $toDate: '$tag.dateOfTest' }, new Date(formatted)] },
-                { $lte: [{ $toDate: '$tag.dateOfTest' }, new Date(formattedEnd)] },
-              ],
-            },
-          }
+        ? dayMatch('$tag.dateOfTest')
         : {
             createdDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
           }),
@@ -208,12 +210,15 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
   };
 
   const sortStage = { $sort: { totalAmount: -1 } };
-  const limitStage = { $limit: 10 };
+  // Every person, not the top 10: the cards show the top rows but total them
+  // all, and the English card merges (AM, ops, sales) triples by salesperson
+  // AFTER this — cutting first lost a person's other triples.
+  const limitStage = { $limit: 500 };
 
   const buildGroupStage = (groupByField) => ({
     $group: {
       _id: `$${groupByField}`,
-      totalAmount: { $sum: '$tag.amount' },
+      totalAmount: { $sum: AMOUNT },
       bookings: { $sum: 1 },
       ...(feeType === 'english-self-funded' && { totalNoOfWeeks: { $sum: '$tag.noOfWeeks' } }),
     },
@@ -238,7 +243,7 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
       {
         $group: {
           _id: '$tag.incharge',
-          totalAmount: { $sum: '$tag.amount' },
+          totalAmount: { $sum: AMOUNT },
           bookings: { $sum: 1 },
         },
       },
@@ -260,7 +265,7 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
       {
         $group: {
           _id: '$tag.checkedBy',
-          totalAmount: { $sum: '$tag.amount' },
+          totalAmount: { $sum: AMOUNT },
           bookings: { $sum: 1 },
         },
       },
@@ -285,7 +290,7 @@ const getSales = async (feeType, groupByFields, startDate, endDate) => {
           operation: '$tag.operation',
           salesPerson: '$tag.salesPerson',
         },
-        totalAmount: { $sum: '$tag.amount' },
+        totalAmount: { $sum: AMOUNT },
         bookings: { $sum: 1 },
         totalNoOfWeeks: { $sum: '$tag.noOfWeeks' },
       },
@@ -353,7 +358,7 @@ const getTopSchools = async ({ startDate, endDate }) => {
     {
       $group: {
         _id: '$tag.school.name',
-        totalAmount: { $sum: '$tag.amount' },
+        totalAmount: { $sum: AMOUNT },
         totalWeeks: { $sum: '$tag.noOfWeeks' },
         totalStudents: { $sum: 1 },
         logo_url: { $first: '$tag.school.logo_url' },
@@ -535,13 +540,16 @@ const getEnglishSelfFundedData = async ({ startDate, endDate }) => {
 };
 
 const getDashboardData = async (data) => {
-  const amounts = await getAmounts();
-
-  const topSchools = await getTopSchools({ startDate: data.startDate, endDate: data.endDate });
-  const topTypes = await getTopTypes({ startDate: data.startDate, endDate: data.endDate });
-  const selfFunded = await getEnglishSelfFundedData({ startDate: data.startDate, endDate: data.endDate });
-  const topTests = await getTopTests({ startDate: data.startDate, endDate: data.endDate });
-  const topCities = await getTopCities({ startDate: data.startDate, endDate: data.endDate });
+  const range = { startDate: data.startDate, endDate: data.endDate };
+  // independent aggregates — run together instead of one after another
+  const [amounts, topSchools, topTypes, selfFunded, topTests, topCities] = await Promise.all([
+    getAmounts(),
+    getTopSchools(range),
+    getTopTypes(range),
+    getEnglishSelfFundedData(range),
+    getTopTests(range),
+    getTopCities(range),
+  ]);
 
   return {
     amounts,

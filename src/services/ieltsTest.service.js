@@ -32,7 +32,7 @@ const createIELTSTest = async (ieltsTestBody) => {
   const nextAttempt = await IeltsTest.getNextAttemptNumber(phone);
   ieltsTestBody.attemptNumber = nextAttempt;
   ieltsTestBody.isFirstAttempt = nextAttempt === 1;
-  ieltsTestBody.isLastAttempt = nextAttempt === 5;
+  ieltsTestBody.isLastAttempt = false; // no attempt limit
 
   // Calculate overall score if not provided
   if (ieltsTestBody.scores && !ieltsTestBody.scores.overall) {
@@ -198,7 +198,7 @@ const getUserTestStats = async (phone) => {
   if (tests.length === 0) {
     return {
       totalTests: 0,
-      attemptsLeft: 5,
+      attemptsLeft: null,
       attemptsUsed: 0,
       averageScore: 0,
       bestScore: 0,
@@ -207,7 +207,7 @@ const getUserTestStats = async (phone) => {
   }
 
   const totalTests = tests.length;
-  const attemptsLeft = Math.max(0, 5 - totalTests);
+  const attemptsLeft = null; // unlimited
   const scores = tests.map((test) => test.scores.overall.bandScore);
   const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length;
   const bestScore = Math.max(...scores);
@@ -253,7 +253,7 @@ const getUserTestStats = async (phone) => {
     progress,
     lastTestDate: lastTest.createdAt,
     lastTestScore: lastTest.scores.overall.bandScore,
-    isMaxAttemptsReached: totalTests >= 5,
+    isMaxAttemptsReached: false,
   };
 };
 
@@ -272,7 +272,7 @@ const sendWhatsAppResults = async (testId) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Cannot send results for incomplete test');
   }
 
-  const message = `Your IELTS Test Results (Attempt ${ieltsTest.attemptNumber}/5):
+  const message = `Your IELTS Test Results (Attempt ${ieltsTest.attemptNumber}):
 
 Overall Band Score: ${ieltsTest.scores.overall.bandScore}
 Level: ${ieltsTest.scores.overall.level}
@@ -284,8 +284,6 @@ Section Scores:
 
 Time Taken: ${ieltsTest.timeTaken && ieltsTest.timeTaken.formatted ? ieltsTest.timeTaken.formatted : 'N/A'}
 
-Attempts Used: ${ieltsTest.attemptsUsed}/5
-Attempts Left: ${ieltsTest.attemptsLeft}
 
 ${
   ieltsTest.meetsTarget

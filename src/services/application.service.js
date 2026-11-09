@@ -1,6 +1,6 @@
 /* eslint-disable object-shorthand */
 /* eslint-disable no-plusplus */
-const { Application } = require('../models');
+const { Application, Students } = require('../models');
 const logger = require('../config/logger');
 
 /**
@@ -16,6 +16,22 @@ const logger = require('../config/logger');
  * application created before this feature shipped. Existing data is therefore
  * unaffected: nothing disappears from a dashboard on deploy.
  */
+/**
+ * The student (looked up as `_stu`) applied or enrolled — now, or in an earlier
+ * journey. A Foundation student who has moved on to a Bachelor's journey is at
+ * "NotApplied" again, and their Foundation applications must not drop out of
+ * the stats when that happens.
+ */
+// Lost counts too: these matches sit AFTER a LIVE application row has been
+// found for the student, and a student who applied and was later lost still
+// applied — the counsellors always logged them (decided 9 Nov 2026).
+const STUDENT_APPLIED_OR_ENROLLED = {
+  $or: [
+    { '_stu.stage': { $in: ['Applied', 'Enrolled', 'Lost'] } },
+    { '_stu.journeys.outcome': { $in: ['Applied', 'Enrolled', 'Lost'] } },
+  ],
+};
+
 const LIVE_ONLY = {
   reviewStatus: {
     $nin: ['DRAFT', 'SUBMITTED_BY_SUBAGENT', 'SUBMITTED_BY_COUNSELOR', 'REJECTED', 'RETURNED_FOR_EDIT'],
@@ -73,6 +89,17 @@ async function getApplications(data) {
     // Add course level filter if courseLevel is provided
     if (data.courseLevel) {
       query.courseLevel = data.courseLevel;
+    }
+
+    // Only these students' applications (comma list) — the Students list asks for
+    // the page it shows instead of every application in the database.
+    if (data.studentIds) {
+      const ids = String(data.studentIds)
+        .split(',')
+        .map((x) => x.trim())
+        .filter((x) => /^[0-9a-f]{24}$/i.test(x))
+        .slice(0, 500);
+      query.studentId = { $in: ids };
     }
 
     // Find applications based on the dynamically constructed query
@@ -363,7 +390,9 @@ const getOverdueCandidateApplications = async () => {
   let statuses = ['Initiated', 'Submitted'];
   try {
     const settings = await slaSettingService.getSettings();
-    const configured = (settings.phases || []).filter((p) => p.value > 0).map((p) => p.status);
+    // a stage counts when it has an allowance, or one for any degree level
+    const hasSla = (p) => p.value > 0 || Object.values(p.levels || {}).some((v) => typeof v === 'number' && v > 0);
+    const configured = (settings.phases || []).filter(hasSla).map((p) => p.status);
     if (configured.length) statuses = configured;
   } catch (err) {
     // Fall back to the shipped pair rather than counting nothing.
@@ -390,6 +419,9 @@ const getOverdueCandidateApplications = async () => {
     ...currentPhaseStages(),
     { $lookup: { from: 'students', localField: 'studentId', foreignField: '_id', as: '_stu' } },
     { $unwind: { path: '$_stu', preserveNullAndEmptyArrays: true } },
+    // Nobody is working a rejected application, or one whose student is Lost /
+    // Denied (or deleted): those have no clock, so they are not "overdue".
+    { $match: { rejected: { $ne: true }, '_stu._id': { $exists: true }, '_stu.stage': { $nin: ['Lost', 'Denied'] } } },
     { $lookup: { from: 'users', localField: '_stu.assignedTo.user', foreignField: '_id', as: '_team' } },
     { $lookup: { from: 'users', localField: '_stu.createdBy', foreignField: '_id', as: '_owner' } },
     { $unwind: { path: '$_owner', preserveNullAndEmptyArrays: true } },
@@ -444,7 +476,7 @@ const getTopUniversitiesByApplications = async (startDate, endDate, limit = 10) 
       { $match: matchStage },
       // Only applications belonging to Applied/Enrolled students.
       { $lookup: { from: 'students', localField: 'studentId', foreignField: '_id', as: '_stu' } },
-      { $match: { '_stu.stage': { $in: ['Applied', 'Enrolled'] } } },
+      { $match: STUDENT_APPLIED_OR_ENROLLED },
       { $group: { _id: '$institute', count: { $sum: 1 } } },
       { $sort: { count: -1 } },
       { $limit: limit },
@@ -471,7 +503,7 @@ const getApplicationsByIntake = async () => {
     {
       $match: {
         ...LIVE_ONLY,
-        '_stu.stage': { $in: ['Applied', 'Enrolled'] },
+        ...STUDENT_APPLIED_OR_ENROLLED,
         intakeMonth: { $nin: [null, ''] },
       },
     },
@@ -608,9 +640,10 @@ const getApplicationsCountByMonth = async (intakeMonth, intakeYear) => {
   const matchStage = {
     $match: {
       ...LIVE_ONLY,
+      // up to (not including) 1 Jan next year — `$lte: 31 Dec 00:00` left 31 Dec out
       createdAt: {
         $gte: new Date(currentYear, 0, 1),
-        $lte: new Date(currentYear, 11, 31),
+        $lt: new Date(currentYear + 1, 0, 1),
       },
     },
   };
@@ -664,6 +697,115 @@ const getApplicationsCountByMonth = async (intakeMonth, intakeYear) => {
   });
 
   return result;
+};
+
+/**
+ * "Students who applied" per month, this year and last year: every student
+ * counts ONCE PER INTAKE they applied for, in the month (Kuwait time) of their
+ * first LIVE application for that intake — a student who applied for
+ * September, did not go, and applied again for January counts twice, the way
+ * a counsellor logs it. Replaces the old pairing of applications-this-year
+ * with the manual "+ Log" tally for last year, which compared two different
+ * things. Checked against the counsellors' log for 2025–2026: same shape month
+ * by month, the log ~8% higher (entries with no matching card).
+ */
+const KUWAIT_TZ = 'Asia/Kuwait';
+const kuwaitYearOf = (d) => Number(new Date(d).toLocaleString('en-US', { timeZone: KUWAIT_TZ, year: 'numeric' }));
+
+/**
+ * Each student's first LIVE application per intake (`first` = its createdAt);
+ * applications without an intake fall into one bucket per student; students
+ * since deleted are left out.
+ */
+const firstLiveApplications = () => [
+  { $match: { ...LIVE_ONLY, studentId: { $ne: null } } },
+  {
+    $group: {
+      _id: {
+        student: '$studentId',
+        intakeYear: { $ifNull: ['$intakeYear', null] },
+        intakeMonth: { $ifNull: ['$intakeMonth', null] },
+      },
+      first: { $min: '$createdAt' },
+    },
+  },
+  { $lookup: { from: 'students', localField: '_id.student', foreignField: '_id', as: '_s' } },
+  { $match: { '_s.0': { $exists: true } } },
+  // an application prepared while the student is still a lead (NotApplied, never
+  // moved) is not an application yet — on Trello, a checklist on a 🔥 Hot card
+  {
+    $match: {
+      $or: [{ '_s.0.stage': { $ne: 'NotApplied' } }, { '_s.0.appliedAt': { $ne: null } }],
+    },
+  },
+  { $project: { _s: 0 } },
+];
+
+/**
+ * Every "applied" event, the way a counsellor would log it:
+ *   · each student once per intake they applied for, dated by the first live
+ *     application for that intake;
+ *   · a student (or an earlier journey) marked applied with no university
+ *     application at all counts once, at the stage move (`appliedAt`) — on
+ *     Trello that was a card moved out of 🔥 Hot without a checklist.
+ */
+const appliedEvents = async () => {
+  const perIntake = await Application.aggregate([
+    ...firstLiveApplications(),
+    { $project: { student: '$_id.student', at: '$first' } },
+  ]);
+  const withApps = new Set(perIntake.map((r) => String(r.student)));
+  const events = perIntake.map((r) => ({ student: r.student, at: new Date(r.at) }));
+  const marked = await Students.find(
+    { $or: [{ appliedAt: { $ne: null } }, { 'journeys.appliedAt': { $ne: null } }] },
+    { appliedAt: 1, applications: 1, journeys: 1 },
+    { autopopulate: false }
+  ).lean();
+  marked.forEach((st) => {
+    const currentApps = Array.isArray(st.applications) ? st.applications.length : 0;
+    if (st.appliedAt && !currentApps && !withApps.has(String(st._id)))
+      events.push({ student: st._id, at: new Date(st.appliedAt) });
+    (st.journeys || []).forEach((j) => {
+      if (j && j.appliedAt && !(Array.isArray(j.applications) && j.applications.length))
+        events.push({ student: st._id, at: new Date(j.appliedAt) });
+    });
+  });
+  return events;
+};
+
+/**
+ * Students who applied between two instants (the pulse on the counselor desk):
+ * the applied events above, inside the range.
+ */
+const countAppliedStudents = async (startDate, endDate) => {
+  const s = new Date(startDate);
+  const e = new Date(endDate);
+  if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return 0;
+  const events = await appliedEvents();
+  return events.filter((ev) => ev.at >= s && ev.at <= e).length;
+};
+
+const kuwaitYM = (d) => {
+  const [m, y] = new Date(d).toLocaleString('en-US', { timeZone: KUWAIT_TZ, month: 'numeric', year: 'numeric' }).split('/');
+  return { y: Number(y), m: Number(m) };
+};
+
+/**
+ * @param {number} [year] the year shown (Kuwait); defaults to the current one, so
+ *   a range in an earlier year ("Last year") gets that year and the one before it
+ */
+const getAppliedStudentsByMonth = async (year) => {
+  const thisYear = Number(year) || kuwaitYearOf(new Date());
+  const events = await appliedEvents();
+  const series = (y) => {
+    const out = Array.from({ length: 12 }, () => 0);
+    events.forEach((ev) => {
+      const { y: ey, m } = kuwaitYM(ev.at);
+      if (ey === y) out[m - 1] += 1;
+    });
+    return out;
+  };
+  return { year: thisYear, thisYear: series(thisYear), lastYear: series(thisYear - 1) };
 };
 
 // Buckets an application's course level (either a courselevels ObjectId string
@@ -739,7 +881,7 @@ const getFoundationPlacements = async (startDate, endDate) => {
   const rows = await Application.aggregate([
     { $match: matchStage },
     { $lookup: { from: 'students', localField: 'studentId', foreignField: '_id', as: '_stu' } },
-    { $match: { '_stu.stage': { $in: ['Applied', 'Enrolled'] } } },
+    { $match: STUDENT_APPLIED_OR_ENROLLED },
     {
       $addFields: {
         _lvlOid: {
@@ -788,28 +930,41 @@ const getFoundationPlacements = async (startDate, endDate) => {
 
 async function getDashboardData({ startDate, endDate, intakeMonth, intakeYear }) {
   try {
-    // Fetch the data from individual functions
-    const topEnrolledUniversities = await getTopEnrolledUniversities(startDate, endDate);
-    const applicationsCountByMonth = await getApplicationsCountByMonth(intakeMonth, intakeYear);
-    const enrolledApplicationsCountByMonth = await getEnrolledApplicationsCountByMonth(intakeMonth, intakeYear);
-    const topUniversitiesByApplications = await getTopUniversitiesByApplications(startDate, endDate);
-    // Applications-by-stage (drives "Offers received" KPI + "Applications by
-    // stage" graph) and the overdue-candidate feed for the "Overdue" KPI.
-    // One aggregate feeds the KPIs AND the by-stage chart; see getPipelineTotals
-    // for why the old isPrevious-based count was a phase behind.
-    const pipelineTotals = await getPipelineTotals(startDate, endDate);
+    // Eleven independent aggregates: run them side by side. They used to be
+    // awaited one after another, so the card waited for the SUM of them.
+    const [
+      topEnrolledUniversities,
+      applicationsCountByMonth,
+      appliedStudentsByMonth,
+      enrolledApplicationsCountByMonth,
+      topUniversitiesByApplications,
+      // one aggregate feeds the KPIs AND the by-stage chart; see getPipelineTotals
+      // for why the old isPrevious-based count was a phase behind
+      pipelineTotals,
+      overdueCandidates,
+      applicationsByIntake,
+      // degree-level breakdown for "Top 5 universities"; provider -> university pairs
+      topUniversitiesByLevel,
+      foundationPlacements,
+    ] = await Promise.all([
+      getTopEnrolledUniversities(startDate, endDate),
+      getApplicationsCountByMonth(intakeMonth, intakeYear),
+      getAppliedStudentsByMonth(endDate ? kuwaitYearOf(endDate) : undefined),
+      getEnrolledApplicationsCountByMonth(intakeMonth, intakeYear),
+      getTopUniversitiesByApplications(startDate, endDate),
+      getPipelineTotals(startDate, endDate),
+      getOverdueCandidateApplications(),
+      getApplicationsByIntake(),
+      getTopUniversitiesByLevel(startDate, endDate),
+      getFoundationPlacements(startDate, endDate),
+    ]);
     const applicationsCountByPhase = pipelineTotals.byStage;
-    const overdueCandidates = await getOverdueCandidateApplications();
-    const applicationsByIntake = await getApplicationsByIntake();
-    // Degree-level breakdown for the "Top 5 universities" filter, and the
-    // provider -> university pairs for the "Foundation placements" card.
-    const topUniversitiesByLevel = await getTopUniversitiesByLevel(startDate, endDate);
-    const foundationPlacements = await getFoundationPlacements(startDate, endDate);
 
     // Combine the results into a single object
     return {
       topEnrolledUniversities,
       applicationsCountByMonth,
+      appliedStudentsByMonth,
       enrolledApplicationsCountByMonth,
       topUniversitiesByApplications,
       applicationsCountByPhase,
@@ -940,6 +1095,9 @@ const applyReviewDecision = async (applicationId, { from, to, action, by, byName
 
 // Export the functions for use in other files
 module.exports = {
+  LIVE_ONLY,
+  PIPELINE_PHASES,
+  currentPhaseStages,
   findApplicationById,
   createApplication,
   updateApplicationById,
@@ -961,5 +1119,8 @@ module.exports = {
   getTopEnrolledUniversities,
   getApplicationsCountByMonth,
   getEnrolledApplicationsCountByMonth,
+  getAppliedStudentsByMonth,
+  countAppliedStudents,
+  firstLiveApplications,
   getDashboardData,
 };

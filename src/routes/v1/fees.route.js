@@ -1,4 +1,5 @@
 const express = require('express');
+const responseCache = require('../../middlewares/responseCache');
 
 const feesController = require('../../controllers/fees.controller');
 
@@ -6,7 +7,7 @@ const router = express.Router();
 
 router.route('/').post(feesController.createFees);
 
-router.route('/sales').get(feesController.getSalesData);
+router.route('/sales').get(responseCache(), feesController.getSalesData);
 
 router.route('/').get(feesController.getFees);
 
@@ -16,7 +17,7 @@ router.route('/top-schools').get(feesController.topSchools);
 
 router.route('/top-tests').get(feesController.topTests);
 
-router.route('/fees-dashboard-data').get(feesController.getDashboardData);
+router.route('/fees-dashboard-data').get(responseCache(), feesController.getDashboardData);
 
 router.route('/top-types').get(feesController.topTypes);
 

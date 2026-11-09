@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const pick = require('../utils/pick');
 const catchAsync = require('../utils/catchAsync');
 const { remindersService, activitiesService } = require('../services');
+const { isAdmin } = require('../services/roleAccess.service');
 
 const createReminder = catchAsync(async (req, res) => {
   const reminder = await remindersService.createReminder(req.body);
@@ -34,6 +35,13 @@ const getDesk = catchAsync(async (req, res) => {
   res.send(desk);
 });
 
+// The nav calendar for the signed-in user (admins see every student's intakes).
+const getCalendar = catchAsync(async (req, res) => {
+  const me = req.user;
+  const calendar = await remindersService.getCalendar(me.id || me._id, { admin: isAdmin(me) });
+  res.send(calendar);
+});
+
 const updateReminder = catchAsync(async (req, res) => {
   const reminder = await remindersService.updateReminderById(req.params.reminderId, req.body);
   res.send(reminder);
@@ -48,6 +56,7 @@ module.exports = {
   createReminder,
   getReminders,
   getDesk,
+  getCalendar,
   updateReminder,
   deleteReminder,
 };

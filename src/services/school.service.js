@@ -37,9 +37,14 @@ const deleteSchoolById = async (studentId) => {
   return school;
 };
 
+// The search text is matched literally: names like "American International
+// School Kuwait (AIS)" carry regex metacharacters, so an unescaped pattern never
+// matched the school itself (and let any typed pattern run as a regex).
+const escapeRegex = (s) => String(s || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const searchSchool = async (text, options) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
-  const regex = new RegExp(text, 'i');
+  const regex = new RegExp(escapeRegex(String(text || '').trim()), 'i');
   const subject = await School.paginate({ english_name: regex }, options);
   return subject;
 };

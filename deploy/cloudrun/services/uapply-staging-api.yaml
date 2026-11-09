@@ -1,0 +1,78 @@
+# Cloud Run service: uapply-staging-api  (rendered and applied by deploy/cloudrun/deploy.sh)
+# ${IMAGE}, ${SERVICE_ACCOUNT}, ${REGION} and ${INGRESS} are filled in by the script.
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: uapply-staging-api
+  labels:
+    cloud.googleapis.com/location: ${REGION}
+  annotations:
+    # "all" while you test on the *.run.app URL; "internal-and-cloud-load-balancing"
+    # once the load balancer serves the domain (deploy.sh lock uapply-staging-api).
+    run.googleapis.com/ingress: ${INGRESS}
+spec:
+  template:
+    metadata:
+      annotations:
+        # Always one warm instance (no cold starts) and — for now — never more
+        # than one: Socket.IO keeps its rooms in memory, so a second instance
+        # would miss notifications sent from the first. See README › Scaling.
+        autoscaling.knative.dev/minScale: '1'
+        autoscaling.knative.dev/maxScale: '1'
+        # CPU stays on between requests: the API finishes some work (Slack,
+        # notifications) after it has answered, and holds WebSockets open.
+        run.googleapis.com/cpu-throttling: 'false'
+        run.googleapis.com/startup-cpu-boost: 'true'
+        # keep a browser on the same instance (WebSockets, best effort)
+        run.googleapis.com/sessionAffinity: 'true'
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      serviceAccountName: ${SERVICE_ACCOUNT}
+      # requests one instance handles at once (App Engine had no explicit limit)
+      containerConcurrency: 250
+      # the longest a request — and so a WebSocket — may stay open (Cloud Run max)
+      timeoutSeconds: 3600
+      containers:
+        - image: ${IMAGE}
+          ports:
+            - name: http1
+              containerPort: 8080
+          env:
+            - name: APP_ENV
+              value: staging
+            - name: NODE_ENV
+              value: production
+            # the settings file mounted from Secret Manager (see volumes)
+            - name: ENV_FILE
+              value: /etc/uapply/env/dotenv
+            # Behind the load balancer the request passes two Google proxies
+            # (load balancer, then Cloud Run's front end). Verify once with
+            # DEBUG_IP_ECHO — README step 6. Variables set here win over the file.
+            - name: TRUST_PROXY_HOPS
+              value: '2'
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+          # the API only listens once MongoDB is connected and the roles are loaded
+          startupProbe:
+            tcpSocket:
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 24
+          volumeMounts:
+            - name: dotenv
+              mountPath: /etc/uapply/env
+              readOnly: true
+      volumes:
+        - name: dotenv
+          secret:
+            # a copy of .env.staging, uploaded with: deploy.sh secret uapply-staging-api .env.staging
+            secretName: uapply-staging-api-env
+            items:
+              - key: latest
+                path: dotenv
+  traffic:
+    - percent: 100
+      latestRevision: true

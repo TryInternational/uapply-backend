@@ -4,6 +4,8 @@
 /* eslint-disable array-callback-return */
 const httpStatus = require('http-status');
 const axios = require('axios');
+const mongoose = require('mongoose');
+const { dmEnabled: slackDmEnabled } = require('../thirdparty/slack');
 
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -13,7 +15,6 @@ const { Application } = require('../models');
 const { isSubAgent, isSchoolCounselor, isExternalPartner, roleIdOf } = require('../middlewares/subAgentScope');
 const { actorOf } = require('../utils/actor');
 const roleAccess = require('../services/roleAccess.service');
-const mongoose = require('mongoose');
 
 // The pipeline stores raw enum strings; the UI relabels "Done" as "Enrolled".
 const phaseLabel = (status) => (status === 'Done' ? 'Enrolled' : status);
@@ -55,7 +56,8 @@ const CONFIRMATION_INDEX = PHASE_ORDER.indexOf('Confirmation');
 
 /** How far an application has actually got: the marker, else the last completed phase. */
 const reachedPhaseIndex = (application) => {
-  const phases = (application && application.portalApplicationStatus && application.portalApplicationStatus.applicationPhases) || [];
+  const phases =
+    (application && application.portalApplicationStatus && application.portalApplicationStatus.applicationPhases) || [];
   if (!phases.length) return -1;
   const marked = phases.findIndex((p) => p && p.phaseState === 'AwaitingResponseStudent');
   if (marked !== -1) return PHASE_ORDER.indexOf(phases[marked].status);
@@ -77,7 +79,9 @@ const reachedPhaseIndex = (application) => {
  * free would quietly disable it for older records.
  */
 const cycleKeyOf = (application) => {
-  const month = String((application && application.intakeMonth) || '').trim().toLowerCase();
+  const month = String((application && application.intakeMonth) || '')
+    .trim()
+    .toLowerCase();
   const year = String((application && application.intakeYear) || '').trim();
   if (!month && !year) return 'intake:unknown';
   return `intake:${year}:${month}`;
@@ -107,7 +111,6 @@ const findCycleHolder = async (application, student) => {
   );
 };
 
-
 // const { fatoorah } = require('../thirdparty');
 // const { DateToString } = require('../utils/Common');
 // const { PubSub } = require('@google-cloud/pubsub');
@@ -117,6 +120,8 @@ const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
 const SLACK_TOKEN = process.env.SLACK_NOTIFICATION;
 
 const sendSlackNotification = async (memberId, slackBody) => {
+  // Production only — see thirdparty/slack.js.
+  if (!slackDmEnabled) return;
   try {
     const response = await axios.post(
       SLACK_API_URL,
@@ -369,34 +374,33 @@ const createApplication = catchAsync(async (req, res) => {
 
   const application = await applicationService.createApplication({
     ...req.body,
-    // A partner submission has not been worked yet: it starts at Initiated,
-    // the stage the requirement names for a newly approved application. The
-    // default `stages` above are the STAFF shape (Initiated done, Submitted
-    // current) and stay untouched for staff so their pipeline is unchanged.
+    // Every new application opens at Initiated — staff ones included. It is
+    // only Submitted once someone moves it there (the stage modal asks who
+    // filled it in and for the confirmation). Staff applications used to be
+    // created with Initiated already done and Submitted current, so a course
+    // the counsellor had merely picked showed up as submitted. `stages` above
+    // is kept as the full phase list; only the opening state is rewritten.
     portalApplicationStatus: {
-      applicationPhases: (actorIsPartner
-        ? stages.map((p, idx) => ({
-            ...p,
-            isCurrent: idx === 0,
-            isPrevious: false,
-            // 'AwaitingResponseStudent' / 'Upcoming', NOT 'InProgress' / ''.
-            // Those two were invented here and nothing else understands them:
-            // with no AwaitingResponseStudent phase on the record, the
-            // phase-change handler below falls through its scan to the
-            // `|| status === 'Done'` fallback and treats a staff member's very
-            // first advance on a partner-referred application as "moved to
-            // Enrolled" — notifying everyone and (now) enrolling the student.
-            // The back office's stage modal reads the same marker and throws
-            // on undefined without it.
-            phaseState: idx === 0 ? 'AwaitingResponseStudent' : 'Upcoming',
-          }))
-        : stages
-      // The phase the application opens on starts its SLA clock now. Left as
-      // the literal '' it was declared with, the clock had no start to measure
-      // from on the very first stage — the one with the tightest allowance.
-      ).map((p) =>
-        p.phaseState === 'AwaitingResponseStudent' ? { ...p, createdDate: startDate } : p
-      ),
+      applicationPhases: stages
+        .map((p, idx) => ({
+          ...p,
+          isCurrent: idx === 0,
+          isPrevious: false,
+          // 'AwaitingResponseStudent' / 'Upcoming', NOT 'InProgress' / ''.
+          // Those two were invented here and nothing else understands them:
+          // with no AwaitingResponseStudent phase on the record, the
+          // phase-change handler below falls through its scan to the
+          // `|| status === 'Done'` fallback and treats a staff member's very
+          // first advance on a partner-referred application as "moved to
+          // Enrolled" — notifying everyone and (now) enrolling the student.
+          // The back office's stage modal reads the same marker and throws
+          // on undefined without it.
+          phaseState: idx === 0 ? 'AwaitingResponseStudent' : 'Upcoming',
+        }))
+        // The phase the application opens on starts its SLA clock now. Left as
+        // the literal '' it was declared with, the clock had no start to measure
+        // from on the very first stage — the one with the tightest allowance.
+        .map((p) => (p.phaseState === 'AwaitingResponseStudent' ? { ...p, createdDate: startDate } : p)),
     },
     startDate,
     // Server-side attribution. With the legacy gate off and no token presented,
@@ -588,7 +592,7 @@ const getApplication = catchAsync(async (req, res) => {
 const getMySchoolApplications = catchAsync(async (req, res) => {
   const own = await studentsService.queryStudents(
     { $or: [{ createdBy: req.user.id }, { 'assignedTo.user': req.user.id }] },
-    { limit: 500, page: 1 },
+    { limit: 500, page: 1 }
   );
   const studentIds = (own.results || []).map((st) => st.id || st._id);
   const applications = await applicationService.getApplicationsForStudents(studentIds);
@@ -609,9 +613,7 @@ const getApplicationByStudentId = catchAsync(async (req, res) => {
     if (!owns) {
       throw new ApiError(httpStatus.NOT_FOUND, 'Application not found');
     }
-    return res.send(
-      forPartner(req, await applicationService.getApplicationByStudentId(req.params.studentId)),
-    );
+    return res.send(forPartner(req, await applicationService.getApplicationByStudentId(req.params.studentId)));
   }
 
   const application = isSubAgent(req.user)
@@ -955,9 +957,24 @@ const updateApplication = catchAsync(async (req, res) => {
         if (leftIndex >= 0 && stages[leftIndex]) stages[leftIndex].updatedDate = stampedAt;
       }
 
-      const app = await applicationService.updateApplicationById(req.params.applicationId, {
-        portalApplicationStatus: { applicationPhases: stages },
-      });
+      const update = { portalApplicationStatus: { applicationPhases: stages } };
+      // Optional per-stage capture (fields / ticked documents / note) from the
+      // stage modal — appended, never rewritten.
+      if (req.body.stageRecord && typeof req.body.stageRecord === 'object') {
+        const rec = req.body.stageRecord;
+        update.$push = {
+          stageRecords: {
+            stage: movedToStatus,
+            fields: rec.fields && typeof rec.fields === 'object' ? rec.fields : {},
+            docs: Array.isArray(rec.docs) ? rec.docs.map(String) : [],
+            note: typeof rec.note === 'string' ? rec.note : '',
+            by: req.user && req.user.id ? req.user.id : undefined,
+            byName: (req.body.editor && req.body.editor.name) || (req.user && req.user.name) || undefined,
+            at: new Date(),
+          },
+        };
+      }
+      const app = await applicationService.updateApplicationById(req.params.applicationId, update);
 
       // Stepping back below Confirmation releases the place, so the student's
       // other applications for that intake can move again. Without this the
@@ -1066,6 +1083,20 @@ const getApplicationsCountByMonth = catchAsync(async (req, res) => {
   res.status(200).json(data);
 });
 
+/**
+ * "Students who applied" for the counselor desk: `byMonth` (this year and last,
+ * each student in the Kuwait month of their first LIVE application) and, with a
+ * range, `count` = students whose first LIVE application falls in it.
+ */
+const getAppliedStudents = catchAsync(async (req, res) => {
+  const { startDate, endDate, year } = req.query;
+  const [byMonth, count] = await Promise.all([
+    applicationService.getAppliedStudentsByMonth(year),
+    startDate && endDate ? applicationService.countAppliedStudents(startDate, endDate) : Promise.resolve(null),
+  ]);
+  res.status(200).json({ byMonth, count });
+});
+
 const getEnrolledApplicationsCountByMonth = catchAsync(async (req, res) => {
   const data = await applicationService.getEnrolledApplicationsCountByMonth(req.query.intakeMonth, req.query.intakeYear);
   res.status(200).json(data);
@@ -1100,11 +1131,7 @@ const getDashboardData = catchAsync(async (req, res) => {
  * totals, so the card and the list it opens can never disagree.
  */
 const getDashboardDrilldown = catchAsync(async (req, res) => {
-  const rows = await applicationService.getPipelineDrilldown(
-    req.query.metric,
-    req.query.startDate,
-    req.query.endDate
-  );
+  const rows = await applicationService.getPipelineDrilldown(req.query.metric, req.query.startDate, req.query.endDate);
   res.send(rows);
 });
 
@@ -1295,6 +1322,7 @@ module.exports = {
   getEnrolledUniversities,
   getApplicationsCountByMonth,
   getEnrolledApplicationsCountByMonth,
+  getAppliedStudents,
   getDashboardData,
   getDashboardDrilldown,
   //   searchApplications,

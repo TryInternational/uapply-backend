@@ -29,7 +29,44 @@ const uploadBuffer = async (buffer, destination, contentType) => {
   return `https://storage.googleapis.com/${bucket.name}/${destination}`;
 };
 
+/**
+ * Store a buffer WITHOUT making it public. For identity documents: the object
+ * is reachable only through signedReadUrl below (or the console). Same bucket
+ * as uploadBuffer; the path decides the folder.
+ */
+const uploadPrivateBuffer = async (buffer, destination, contentType) => {
+  const bucket = admin.storage().bucket(config.whatsapp.mediaBucket);
+  const file = bucket.file(destination);
+  await file.save(buffer, { contentType, resumable: false, public: false });
+  return destination;
+};
+
+/**
+ * A V4 signed URL that reads one private object for `minutes`. Signed with the
+ * service account's own key (admin.credential.cert above), so no IAM
+ * signBlob permission is needed.
+ */
+const signedReadUrl = async (destination, minutes = 10) => {
+  const bucket = admin.storage().bucket(config.whatsapp.mediaBucket);
+  const [url] = await bucket.file(destination).getSignedUrl({
+    version: 'v4',
+    action: 'read',
+    expires: Date.now() + minutes * 60 * 1000,
+  });
+  return url;
+};
+
+/** Read a private object back (signature PNGs are composited into PDFs server-side). */
+const downloadBuffer = async (destination) => {
+  const bucket = admin.storage().bucket(config.whatsapp.mediaBucket);
+  const [buf] = await bucket.file(destination).download();
+  return buf;
+};
+
 module.exports = {
   firestore,
   uploadBuffer,
+  uploadPrivateBuffer,
+  signedReadUrl,
+  downloadBuffer,
 };

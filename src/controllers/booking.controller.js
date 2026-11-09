@@ -255,6 +255,20 @@ const searchBookings = catchAsync(async (req, res) => {
 
   res.status(200).send(results);
 });
+const updateDeposit = catchAsync(async (req, res) => {
+  const booking = await bookingService.updateDepositById(req.params.bookingId, {
+    status: req.body.status,
+    amount: req.body.amount,
+    note: req.body.note,
+  });
+  res.send(booking);
+});
+
+const getStayGroups = catchAsync(async (req, res) => {
+  const groups = await bookingService.getStayGroups();
+  res.send(groups);
+});
+
 const getTotalAmounts = catchAsync(async (req, res) => {
   try {
     const totalAmounts = await bookingService.getTotalAmounts();
@@ -276,4 +290,6 @@ module.exports = {
   getBookingByMonths,
   getBookedDates,
   getTotalAmounts,
+  updateDeposit,
+  getStayGroups,
 };

@@ -13,6 +13,13 @@ const feesSchema = mongoose.Schema(
     createdDate: {
       type: Date,
     },
+    // The student this payment belongs to. Optional: fees recorded before the
+    // profile's "Payments & services" card existed carry only tag.studentName,
+    // and GET /fees?student= falls back to that name.
+    student: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'Students',
+    },
   },
   {
     timestamps: true,
@@ -25,6 +32,11 @@ feesSchema.plugin(paginate);
 
 // Performance index — fees stats aggregations match/sort on creation date.
 feesSchema.index({ createdAt: -1 });
+feesSchema.index({ student: 1 });
+// Every fee list, count and dashboard card filters on the fee type first
+// (office-fees / student-visa / …), then by date.
+feesSchema.index({ feeType: 1, createdAt: -1 });
+feesSchema.index({ feeType: 1, createdDate: -1 });
 
 /**
  * Check if password matches the user's password

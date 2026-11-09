@@ -201,7 +201,14 @@ const verifyFirebaseIdToken = async (idToken) => {
   }
 
   const provider = decoded.firebase && decoded.firebase.sign_in_provider;
-  if (provider !== 'phone') {
+  // 'phone'  — native Firebase SMS sign-in.
+  // 'custom' — the Twilio fallback (otpFallback.service): the backend minted a
+  //            custom token for a Firebase user whose phoneNumber it had just
+  //            verified through Twilio. The phone identity is exactly as strong
+  //            — the `phone_number` claim below is copied by Firebase from the
+  //            user record, which only this backend writes — so it is accepted
+  //            on the same terms. Any other provider is refused.
+  if (provider !== 'phone' && provider !== 'custom') {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'This sign-in method is not accepted');
   }
   if (!decoded.phone_number || !decoded.uid) {
@@ -219,6 +226,8 @@ const verifyFirebaseIdToken = async (idToken) => {
 module.exports = {
   isConfigured,
   verifyFirebaseIdToken,
+  // the named admin app, for the OTP fallback to mint custom tokens with
+  getApp,
   // exported for tests/diagnostics
   _appName: APP_NAME,
 };

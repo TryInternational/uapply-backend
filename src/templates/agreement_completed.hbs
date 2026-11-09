@@ -1,0 +1,60 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agreement {{agreementNo}} is complete</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f2fa;font-family:Helvetica,Arial,sans-serif;color:#1a1628;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2fa;padding:32px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e6e2f0;">
+            <tr>
+              <td style="background:#6b4ee6;padding:22px 28px;">
+                <span style="color:#ffffff;font-size:17px;font-weight:bold;letter-spacing:-0.2px;">Ulearn</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:30px 28px 8px;">
+                <h1 style="margin:0 0 12px;font-size:21px;line-height:1.3;color:#1a1628;">{{#if internal}}Agreement {{agreementNo}} signed by both parties{{else}}Welcome aboard &mdash; your agreement is complete{{/if}}</h1>
+                <p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#3f3a52;">
+                  {{#if internal}}
+                    {{agentName}} ({{organisation}}) signed on {{agentSignedAt}} and Ulearn countersigned on {{companySignedAt}}. The signed PDF with its certificate of completion is attached and filed under the agreement in the back office.
+                  {{else}}
+                    Hello {{name}} &mdash; Sub-Agent Agreement <strong>{{agreementNo}}</strong> between {{organisation}} and Ulearn has been signed by both parties. The signed PDF is attached; its last page is the certificate of completion recording when and how each party signed.
+                  {{/if}}
+                </p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0 6px;background:#f6f3ff;border:1px solid #e6e2f0;border-radius:10px;">
+                  <tr>
+                    <td style="padding:14px 16px;font-size:14px;line-height:1.6;color:#3f3a52;">
+                      <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8e88a3;margin-bottom:4px;">Commission</div>
+                      <strong style="color:#1a1628;">{{commissionEn}}</strong><br />
+                      <span dir="rtl" style="display:block;text-align:right;font-size:15px;">{{commissionAr}}</span>
+                      <div style="font-size:12.5px;color:#8e88a3;margin-top:6px;">Start date {{agreementDate}} &middot; one year, renews automatically</div>
+                    </td>
+                  </tr>
+                </table>
+                {{#unless internal}}
+                <p style="margin:14px 0;font-size:15px;line-height:1.6;color:#3f3a52;">
+                  {{#if inviteSent}}
+                    <strong>What happens next:</strong> a separate email with your portal invitation is on its way to {{accountEmail}}. Set your password there and you can start adding students straight away.
+                  {{else}}
+                    <strong>What happens next:</strong> sign in to the sub-agent portal with your existing account to start adding students.
+                  {{/if}}
+                </p>
+                {{/unless}}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 28px 28px;">
+                <div style="border-top:1px solid #ece9f4;padding-top:16px;font-size:12.5px;color:#8e88a3;">
+                  Ulearn Abroad &middot; Kuwait City &middot; This message was sent to {{email}}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

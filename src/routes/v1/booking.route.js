@@ -12,6 +12,8 @@ router.route('/unavailable-dates').get(bookingController.getBookedDates);
 router.route('/').get(validate(bookingValidation.getBookings), bookingController.getBookings);
 router.route('/months').get(validate(bookingValidation.getBookings), bookingController.getBookingByMonths);
 router.route('/total-amounts').get(bookingController.getTotalAmounts);
+router.route('/stays').get(bookingController.getStayGroups);
+router.route('/:bookingId/deposit').patch(validate(bookingValidation.updateDeposit), bookingController.updateDeposit);
 
 router.route('/:type/export').get(validate(bookingValidation.getBookings), bookingController.exportFile);
 router.route('/search/:text').get(bookingController.searchBookings);

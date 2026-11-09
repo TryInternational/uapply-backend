@@ -41,8 +41,10 @@ const getAmounts = async () => {
   const monthlySums = await AppliedStudent.aggregate([
     {
       $addFields: {
-        month: { $month: '$createdDate' }, // Extract month from createdDate
-        year: { $year: '$createdDate' }, // Extract year from createdDate
+        // Kuwait time, like the dashboard's other month buckets — an entry logged
+        // late on the last day of a month used to land in the next one (UTC)
+        month: { $month: { date: '$createdDate', timezone: 'Asia/Kuwait' } },
+        year: { $year: { date: '$createdDate', timezone: 'Asia/Kuwait' } },
       },
     },
     {
@@ -152,9 +154,8 @@ const getStudentCountByDegree = async (filters = {}) => {
     // Only include documents with valid degree field
     degree: {
       $exists: true,
-      $ne: null,
       $type: 'string', // Ensure it's a string
-      $ne: '', // Not empty string
+      $nin: [null, ''], // not empty (two `$ne` keys used to overwrite each other)
     },
   };
 

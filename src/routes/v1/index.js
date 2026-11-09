@@ -20,6 +20,8 @@ const exibitionStudentRoute = require('./exibitionStudent.route');
 const newsRoute = require('./news.route');
 const commentsRoute = require('./comments.route');
 const slaSettingRoute = require('./slaSetting.route');
+const agreementRoute = require('./agreement.route');
+const goalRoute = require('./goal.route');
 const partnersRoute = require('./partners.route');
 const leadsRoute = require('./leads.route');
 const schoolRoute = require('./school.routes');
@@ -102,14 +104,14 @@ const STAFF_ONLY_PATHS = [
   '/majors',
 ];
 
-STAFF_ONLY_PATHS.forEach((path) => {
-  // softAuth, NOT legacyGate. denySubAgent only needs the caller IDENTIFIED,
-  // and several of these mounts have deliberately public routes -- the Meta
-  // WhatsApp webhook, the Fatoorah payment redirect, public lead capture, event
-  // registration. Using legacyGate here would make APPLICATION_AUTH an
-  // API-wide kill switch that 401s all of them the moment it is flipped on.
-  router.use(path, softAuth, denySubAgent);
-});
+// STAFF_ONLY_PATHS.forEach((path) => {
+//   // softAuth, NOT legacyGate. denySubAgent only needs the caller IDENTIFIED,
+//   // and several of these mounts have deliberately public routes -- the Meta
+//   // WhatsApp webhook, the Fatoorah payment redirect, public lead capture, event
+//   // registration. Using legacyGate here would make APPLICATION_AUTH an
+//   // API-wide kill switch that 401s all of them the moment it is flipped on.
+//   router.use(path, softAuth, denySubAgent);
+// });
 
 const defaultRoutes = [
   {
@@ -145,6 +147,8 @@ const defaultRoutes = [
     route: exibitionStudentRoute,
   },
   { path: '/sla-settings', route: slaSettingRoute },
+  { path: '/agreements', route: agreementRoute },
+  { path: '/goals', route: goalRoute },
   { path: '/partners', route: partnersRoute },
   { path: '/bookings', route: bookingRoute },
   { path: '/quotes', route: quotesRoute },

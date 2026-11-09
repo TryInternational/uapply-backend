@@ -27,6 +27,9 @@ const accessRequestSchema = mongoose.Schema(
       required: true,
     },
     name: { type: String, required: true, trim: true },
+    // The same name in Arabic -- partner paperwork in Kuwait is bilingual, and
+    // the reviewer matches the request against Arabic-language documents.
+    nameAr: { type: String, trim: true },
     email: {
       type: String,
       required: true,
@@ -44,11 +47,62 @@ const accessRequestSchema = mongoose.Schema(
     phone: { type: String, required: true, trim: true },
     // Agency name for a sub-agent, school name for a school counsellor.
     organisation: { type: String, required: true, trim: true },
+    organisationAr: { type: String, trim: true },
     country: { type: String, trim: true },
     city: { type: String, trim: true },
     website: { type: String, trim: true },
     // "Tell us about your students" -- the free-text a reviewer actually reads.
     note: { type: String, trim: true },
+
+    // ---- Who is asking, in more detail -------------------------------------
+    // The applicant's own position at the organisation ("Director", "Senior
+    // counsellor"). `name`/`email`/`phone` above remain the applicant.
+    title: { type: String, trim: true },
+
+    // The organisation behind the request. `organisation` above stays the name
+    // the partner trades under (what the directory and the portal show); this
+    // is everything a reviewer needs to check that the agency is real.
+    organisationDetails: {
+      // Registered company name when it differs from the trading name.
+      legalName: { type: String, trim: true },
+      yearEstablished: { type: Number, min: 1900, max: 2100 },
+      // Street address; country and city live on the row above.
+      address: { type: String, trim: true },
+      // No office -- works online / from home.
+      noOffice: { type: Boolean },
+      // Size bands rather than exact numbers -- nobody knows the exact count.
+      staffCount: { type: String, enum: ['1-5', '6-20', '21-50', '50+'] },
+      studentsPerYear: { type: String, enum: ['<25', '25-100', '100+', '100-500', '500+'] },
+      // Countries their students usually go to.
+      destinations: { type: [String], default: undefined },
+      services: { type: String, trim: true },
+      socialMedia: { type: String, trim: true },
+    },
+
+    // The person legally responsible for the organisation -- the owner or
+    // licence holder whose Civil ID is uploaded below. Often the applicant.
+    personInCharge: {
+      name: { type: String, trim: true },
+      nameAr: { type: String, trim: true },
+      title: { type: String, trim: true },
+      email: { type: String, trim: true, lowercase: true },
+      phoneCode: { type: String, trim: true },
+      phone: { type: String, trim: true },
+      civilIdNumber: { type: String, trim: true },
+      sameAsApplicant: { type: Boolean, default: false },
+    },
+
+    // The Civil ID scan. The FILE sits in the storage bucket under an
+    // unguessable path and is never public: reviewers fetch a short-lived
+    // signed link through GET /access-requests/:id/civil-id. The path is
+    // removed from JSON below so the list endpoint never hands it out.
+    civilId: {
+      path: { type: String, trim: true },
+      fileName: { type: String, trim: true },
+      contentType: { type: String, trim: true },
+      size: { type: Number },
+      uploadedAt: { type: Date },
+    },
     // Set only on the staff-created path (Partners -> Add sub-agent / Add
     // school), where the admin uploads the organisation's logo as they type the
     // rest. Absent from PUBLIC_FIELDS in the service, so the public form cannot
@@ -69,6 +123,9 @@ const accessRequestSchema = mongoose.Schema(
     },
     // Set on approval. The link back to the account this request produced.
     user: { type: mongoose.SchemaTypes.ObjectId, ref: 'User' },
+    // Sub-agents: the agreement sent at approval. The account is only
+    // provisioned once it is signed by both parties.
+    agreement: { type: mongoose.SchemaTypes.ObjectId, ref: 'Agreement' },
 
     // Set when the submitting email already belongs to a User. The row is still
     // created (see the controller) so the request leaves a trace and a reviewer
@@ -98,6 +155,18 @@ const accessRequestSchema = mongoose.Schema(
       transform(doc, ret) {
         // eslint-disable-next-line no-param-reassign
         ret.createdAt = doc.createdAt;
+        if (ret.civilId) {
+          // The reviewer screen only needs to know a scan exists; the link to
+          // it is a separate, authenticated call that expires.
+          // eslint-disable-next-line no-param-reassign
+          ret.civilId = {
+            uploaded: Boolean(ret.civilId.path),
+            fileName: ret.civilId.fileName,
+            contentType: ret.civilId.contentType,
+            size: ret.civilId.size,
+            uploadedAt: ret.civilId.uploadedAt,
+          };
+        }
       },
     },
   }

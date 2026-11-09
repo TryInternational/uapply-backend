@@ -2,7 +2,11 @@ const dotenv = require('dotenv');
 const path = require('path');
 const Joi = require('joi');
 
-dotenv.config({ path: path.join(__dirname, `../../.env.${process.env.APP_ENV}`) });
+// ENV_FILE lets a host hand the settings over as a mounted file (Cloud Run mounts
+// the Secret Manager copy of .env.<APP_ENV> at a path of its own) instead of
+// baking the file into the image. Unset = the repo-root file, as before.
+// Variables already set in the environment always win over the file.
+dotenv.config({ path: process.env.ENV_FILE || path.join(__dirname, `../../.env.${process.env.APP_ENV}`) });
 // NOTE: this used to be `console.log('NODE_ENV:', process.env)`, which printed
 // EVERY environment variable — Mongo URL, JWT secret, API keys, the Firebase
 // private key — into the boot logs on every start. Removed; log the one thing
@@ -107,8 +111,23 @@ const envVarsSchema = Joi.object()
       .allow('')
       .description('Token echoed back on the webhook GET verification challenge'),
     WHATSAPP_APP_SECRET: Joi.string().allow('').description('Meta app secret used to verify X-Hub-Signature-256'),
-    WHATSAPP_API_VERSION: Joi.string().default('v21.0').description('Graph API version, e.g. v21.0'),
+    WHATSAPP_API_VERSION: Joi.string().default('v25.0').description('Graph API version, e.g. v21.0'),
     WHATSAPP_MEDIA_BUCKET: Joi.string().allow('').description('Firebase/GCS bucket name for storing inbound WhatsApp media'),
+    // Twilio Verify — the SMS fallback for ulearn phone sign-in. Firebase's own
+    // SMS route rejects some carriers outright (STC Kuwait, +9655…, returns
+    // "Error code: 39"); when it does, the frontend asks this backend to send
+    // the code through Twilio instead. All three are optional: unset means the
+    // fallback endpoints answer 503 and Firebase remains the only path.
+    TWILIO_ACCOUNT_SID: Joi.string().allow('').default('').description('Twilio account SID (AC…)'),
+    TWILIO_AUTH_TOKEN: Joi.string()
+      .allow('')
+      .default('')
+      .description('Twilio auth token, or an API key secret when TWILIO_API_KEY_SID is set'),
+    TWILIO_API_KEY_SID: Joi.string()
+      .allow('')
+      .default('')
+      .description('optional Twilio API key SID (SK…) to use instead of the account auth token'),
+    TWILIO_VERIFY_SERVICE_SID: Joi.string().allow('').default('').description('Twilio Verify service SID (VA…)'),
   })
   .unknown();
 
@@ -215,6 +234,12 @@ module.exports = {
       projectId: envVars.ULEARN_FIREBASE_PROJECT_ID,
       clientEmail: envVars.ULEARN_FIREBASE_CLIENT_EMAIL || '',
       privateKey: (envVars.ULEARN_FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+    },
+    twilio: {
+      accountSid: envVars.TWILIO_ACCOUNT_SID,
+      authToken: envVars.TWILIO_AUTH_TOKEN,
+      apiKeySid: envVars.TWILIO_API_KEY_SID,
+      verifyServiceSid: envVars.TWILIO_VERIFY_SERVICE_SID,
     },
   },
   applications: {

@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const crypto = require('crypto');
+const path = require('path');
 const { DateTime } = require('luxon');
 const config = require('../config/config');
 const ApiError = require('../utils/ApiError');
@@ -96,15 +97,120 @@ const roleIdForRequestedRole = async (requestedRole) => {
 const PUBLIC_FIELDS = [
   'requestedRole',
   'name',
+  'nameAr',
   'email',
   'phoneCode',
   'phone',
   'organisation',
+  'organisationAr',
   'country',
   'city',
   'website',
   'note',
+  'title',
+  'organisationDetails',
+  'personInCharge',
 ];
+
+// ---------------------------------------------------------------------------
+// Civil ID scans
+//
+// Uploaded BEFORE the request is submitted (the form sends the file as soon as
+// it is picked, so a bad file is caught at the field, not after "Send"). The
+// upload endpoint answers with a signed receipt naming the stored object; the
+// submission carries the receipt back, and only a receipt this server signed
+// is accepted -- so a caller cannot point a request at an arbitrary object in
+// the bucket, and an abandoned upload is just an orphan file, never a row.
+// ---------------------------------------------------------------------------
+
+const CIVIL_ID_TYPES = new Map([
+  ['image/jpeg', 'jpg'],
+  ['image/png', 'png'],
+  ['image/webp', 'webp'],
+  ['image/heic', 'heic'],
+  ['application/pdf', 'pdf'],
+]);
+const CIVIL_ID_MAX_BYTES = 8 * 1024 * 1024;
+const CIVIL_ID_RECEIPT_HOURS = 6;
+// Lazy: firebase-admin initialises on first require, and the unit tests of
+// this module should not need a service account.
+// eslint-disable-next-line global-require
+const storage = () => require('../thirdparty/firebase');
+
+const receiptSecret = () => `${config.jwt.secret}:access-request-civil-id`;
+const b64url = (buf) => Buffer.from(buf).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+const sign = (payload) => b64url(crypto.createHmac('sha256', receiptSecret()).update(payload).digest());
+
+/**
+ * Store a Civil ID scan privately and return the signed receipt for it.
+ * @param {{buffer: Buffer, mimetype: string, originalname: string, size: number}} file  a multer memory file
+ */
+const storeCivilIdUpload = async (file) => {
+  if (!file || !file.buffer || !file.size) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Attach the Civil ID as a JPG, PNG, WEBP, HEIC or PDF file');
+  }
+  const ext = CIVIL_ID_TYPES.get(String(file.mimetype || '').toLowerCase());
+  if (!ext) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'The Civil ID must be a JPG, PNG, WEBP, HEIC or PDF file');
+  }
+  if (file.size > CIVIL_ID_MAX_BYTES) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'The Civil ID file is larger than 8 MB');
+  }
+  // Random, so the path reveals nothing and cannot be guessed; the original
+  // file name is kept as metadata only, never as part of the object path.
+  const objectPath = `access-requests/civil-id/${crypto.randomBytes(16).toString('hex')}.${ext}`;
+  await storage().uploadPrivateBuffer(file.buffer, objectPath, file.mimetype);
+  const fileName = path.basename(String(file.originalname || `civil-id.${ext}`)).slice(0, 120);
+  const body = b64url(
+    JSON.stringify({
+      p: objectPath,
+      n: fileName,
+      t: file.mimetype,
+      s: file.size,
+      e: Date.now() + CIVIL_ID_RECEIPT_HOURS * 60 * 60 * 1000,
+    })
+  );
+  return { receipt: `${body}.${sign(body)}`, fileName, contentType: file.mimetype, size: file.size };
+};
+
+/**
+ * Turn a receipt back into the stored object's details, or throw.
+ * Returns the `civilId` sub-document to store on the request.
+ */
+const verifyCivilIdReceipt = (receipt) => {
+  const [body, sig] = String(receipt || '').split('.');
+  const bad = () =>
+    new ApiError(httpStatus.BAD_REQUEST, 'The Civil ID upload could not be verified — please attach it again');
+  if (!body || !sig) throw bad();
+  const expected = sign(body);
+  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) throw bad();
+  let data;
+  try {
+    data = JSON.parse(Buffer.from(body.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+  } catch (e) {
+    throw bad();
+  }
+  if (!data || !data.p || !data.e || Number(data.e) < Date.now()) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'The Civil ID upload has expired — please attach it again');
+  }
+  return { path: data.p, fileName: data.n, contentType: data.t, size: data.s, uploadedAt: new Date() };
+};
+
+/** A short-lived read link for the scan on a request. Reviewer-only callers. */
+const civilIdLink = async (request) => {
+  if (!request.civilId || !request.civilId.path) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No Civil ID was uploaded with this request');
+  }
+  const minutes = 10;
+  const url = await storage().signedReadUrl(request.civilId.path, minutes);
+  return {
+    url,
+    expiresAt: new Date(Date.now() + minutes * 60 * 1000),
+    fileName: request.civilId.fileName,
+    contentType: request.civilId.contentType,
+    size: request.civilId.size,
+  };
+};
 
 /**
  * @param {object} body        the request body, filtered through PUBLIC_FIELDS
@@ -150,10 +256,17 @@ const findLatestRequestByEmail = async (email) => {
 const queryAccessRequests = async ({ status, limit = 100 } = {}) => {
   const filter = {};
   if (status) filter.status = status;
-  return AccessRequest.find(filter).sort({ createdAt: -1 }).limit(limit);
+  return AccessRequest.find(filter).sort({ createdAt: -1 }).limit(limit).populate({
+    path: 'agreement',
+    select: 'agreementNo status commission sentAt viewedAt agentSignedAt completedAt expiresAt autoCountersign',
+  });
 };
 
 const getAccessRequestById = async (id) => AccessRequest.findById(id);
+
+/** Replace the paperwork on a still-pending request (a resubmission). */
+const updatePendingPaperwork = async (id, fields) =>
+  AccessRequest.findOneAndUpdate({ _id: id, status: 'Pending' }, { $set: fields }, { new: true });
 
 /**
  * Record a decision, conditional on the request still being Pending.
@@ -168,6 +281,40 @@ const recordDecision = async (id, { to, by, byName, reason }) => {
     { $set: { status: to, decision: { by, byName, at: new Date(), reason } } },
     { new: true }
   );
+};
+
+/**
+ * What the portal and the directory may show about the organisation, copied
+ * from the request at approval. The Civil ID is deliberately NOT here: it is
+ * reviewer material and stays on the request.
+ */
+const partnerProfileFrom = (request) => {
+  const d = request.organisationDetails || {};
+  const p = request.personInCharge || {};
+  const profile = {
+    nameAr: request.nameAr,
+    organisationAr: request.organisationAr,
+    title: request.title,
+    legalName: d.legalName,
+    yearEstablished: d.yearEstablished,
+    address: d.address,
+    noOffice: d.noOffice || undefined,
+    country: request.country,
+    city: request.city,
+    website: request.website,
+    staffCount: d.staffCount,
+    studentsPerYear: d.studentsPerYear,
+    destinations: Array.isArray(d.destinations) && d.destinations.length ? d.destinations : undefined,
+    services: d.services,
+    socialMedia: d.socialMedia,
+    personInCharge: p.name
+      ? { name: p.name, nameAr: p.nameAr, title: p.title, email: p.email, phoneCode: p.phoneCode, phone: p.phone }
+      : undefined,
+  };
+  Object.keys(profile).forEach((k) => {
+    if (profile[k] === undefined || profile[k] === null || profile[k] === '') delete profile[k];
+  });
+  return Object.keys(profile).length ? profile : undefined;
 };
 
 /**
@@ -191,6 +338,8 @@ const provisionUserForRequest = async (request) => {
     // Only ever set on the staff-created path; undefined for public requests,
     // where staff add the logo later from the directory.
     organisationLogo: request.organisationLogo || undefined,
+    accessRequest: request.id || request._id,
+    partnerProfile: partnerProfileFrom(request),
   });
 };
 
@@ -266,6 +415,11 @@ const sendInvite = async (request, user) => {
 module.exports = {
   portalUrlFor,
   sendInvite,
+  storeCivilIdUpload,
+  verifyCivilIdReceipt,
+  civilIdLink,
+  partnerProfileFrom,
+  CIVIL_ID_MAX_BYTES,
   PUBLIC_FIELDS,
   ROLE_NAME_FOR_REQUESTED_ROLE,
   findLatestRequestByEmail,
@@ -275,6 +429,7 @@ module.exports = {
   findLiveRequestByEmail,
   queryAccessRequests,
   getAccessRequestById,
+  updatePendingPaperwork,
   recordDecision,
   provisionUserForRequest,
 };

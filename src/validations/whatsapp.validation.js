@@ -59,6 +59,21 @@ const sendMedia = {
   }),
 };
 
+const registerPhone = {
+  body: Joi.object().keys({
+    pin: Joi.string()
+      .pattern(/^\d{6}$/)
+      .required(),
+  }),
+};
+
+const startConversation = {
+  body: Joi.object().keys({
+    phone: Joi.string().trim().min(8).max(20).required(),
+    name: Joi.string().trim().max(80).allow(''),
+  }),
+};
+
 const assign = {
   params: Joi.object().keys({ id: Joi.string().custom(objectId) }),
   body: Joi.object().keys({
@@ -78,6 +93,16 @@ const addNote = {
   body: Joi.object().keys({
     text: Joi.string().required(),
     mentions: Joi.array().items(Joi.string().custom(objectId)),
+    clientRef: Joi.string(),
+  }),
+};
+
+const saveMessageAsDocument = {
+  params: Joi.object().keys({ messageId: Joi.string().custom(objectId).required() }),
+  body: Joi.object().keys({
+    docTypeKey: Joi.string().max(40).required(),
+    label: Joi.string().max(80),
+    applicationId: Joi.string().custom(objectId),
   }),
 };
 
@@ -88,10 +113,56 @@ const updateMeta = {
     priority: Joi.string().valid('low', 'medium', 'high'),
     tags: Joi.array().items(Joi.string()),
     nextFollowUpAt: Joi.string().allow(null),
+    contactName: Joi.string().max(100).allow('', null),
+    studentId: Joi.string().custom(objectId),
   }),
 };
 
+const createBroadcast = {
+  body: Joi.object().keys({
+    templateName: Joi.string().required(),
+    language: Joi.string().required(),
+    audience: Joi.object()
+      .keys({
+        studentIds: Joi.array().items(Joi.string().custom(objectId)),
+        filter: Joi.object().keys({
+          assignedUserId: Joi.string().custom(objectId),
+          stage: Joi.string(),
+          nationality: Joi.string(),
+        }),
+      })
+      .required(),
+    defaultComponents: Joi.array().items(Joi.object()).default([]),
+    audienceLabel: Joi.string().max(80),
+  }),
+};
+
+const broadcastId = { params: Joi.object().keys({ id: Joi.string().custom(objectId).required() }) };
+
+const requestCallPermission = {
+  params: Joi.object().keys({ id: Joi.string().custom(objectId).required() }),
+  body: Joi.object().keys({ text: Joi.string().max(1024) }),
+};
+
+const startCall = {
+  params: Joi.object().keys({ id: Joi.string().custom(objectId).required() }),
+  body: Joi.object().keys({ sdpOffer: Joi.string().max(65536).required() }),
+};
+
+const acceptCall = {
+  params: Joi.object().keys({ callId: Joi.string().custom(objectId).required() }),
+  body: Joi.object().keys({ sdpAnswer: Joi.string().max(65536).required() }),
+};
+
+const callId = { params: Joi.object().keys({ callId: Joi.string().custom(objectId).required() }) };
+
 module.exports = {
+  createBroadcast,
+  broadcastId,
+  requestCallPermission,
+  startCall,
+  acceptCall,
+  callId,
   getConversations,
   conversationId,
   analytics,
@@ -99,7 +170,10 @@ module.exports = {
   sendText,
   sendTemplate,
   sendMedia,
+  registerPhone,
+  startConversation,
   assign,
   addNote,
   updateMeta,
+  saveMessageAsDocument,
 };
