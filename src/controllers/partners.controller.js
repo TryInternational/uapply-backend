@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
-const { partnersService, accessRequestService, userService } = require('../services');
+const { partnersService, accessRequestService, userService, agreementService } = require('../services');
 
 /**
  * GET /partners/directory?kind=subagent|counselor
@@ -52,6 +52,12 @@ const createPartner = catchAsync(async (req, res) => {
   const email = String(req.body.email || '')
     .trim()
     .toLowerCase();
+  // Full form (the sub-agent drawer) or short form (the school drawer).
+  const name = req.body.name || req.body.contact;
+  // Upload receipts, verified before anything is written — same as the public form.
+  const civilId = req.body.civilIdUpload ? accessRequestService.verifyCivilIdReceipt(req.body.civilIdUpload) : undefined;
+  const logo = req.body.logoUpload ? accessRequestService.verifyCivilIdReceipt(req.body.logoUpload, 'logo') : undefined;
+  const wantsAgreement = kind === 'subagent' && !req.body.skipAgreement && Boolean(req.body.agreement);
 
   // Checked before anything is written. createUser would refuse the duplicate
   // anyway, but only after the AccessRequest row existed -- leaving an Approved
@@ -68,7 +74,7 @@ const createPartner = catchAsync(async (req, res) => {
   const request = await accessRequestService.createAccessRequest(
     {
       requestedRole,
-      name: req.body.contact,
+      name,
       email,
       phoneCode: req.body.phoneCode,
       phone: req.body.phone,
@@ -80,11 +86,14 @@ const createPartner = catchAsync(async (req, res) => {
       title: req.body.title,
       nameAr: req.body.nameAr,
       organisationAr: req.body.organisationAr,
-      organisationDetails: req.body.organisationDetails,
+      organisationDetails:
+        req.body.organisationDetails || (req.body.socialMedia ? { socialMedia: req.body.socialMedia } : undefined),
       personInCharge: req.body.personInCharge,
     },
     {
       organisationLogo: req.body.organisationLogo,
+      civilId,
+      logo,
       createdByStaff: true,
       status: 'Approved',
       decision: {
@@ -95,6 +104,37 @@ const createPartner = catchAsync(async (req, res) => {
       },
     }
   );
+
+  // ---- sub-agent with a deal: the agreement goes first ----------------------
+  // Identical to approving a request: nothing is provisioned until the
+  // agreement comes back signed (agreementService.complete does that). If
+  // sending fails the row we just made goes too — it was ours, a moment ago.
+  if (wantsAgreement) {
+    let agreement;
+    try {
+      agreement = await agreementService.createDraft({
+        request,
+        commission: req.body.agreement.commission,
+        extraTerms: req.body.agreement.extraTerms,
+        autoCountersign: req.body.agreement.autoCountersign,
+        by: req.user,
+      });
+      agreement = await agreementService.send(agreement, {
+        by: req.user,
+        ip: req.ip,
+        userAgent: String(req.get('user-agent') || '').slice(0, 300),
+      });
+    } catch (err) {
+      if (agreement && agreement.status === 'Draft') {
+        await agreementService.voidAgreement(agreement, `Sending failed: ${err.message}`, { by: req.user }).catch(() => {});
+      }
+      await request.deleteOne();
+      throw err instanceof ApiError ? err : new ApiError(httpStatus.BAD_REQUEST, err.message);
+    }
+    request.agreement = agreement._id;
+    await request.save();
+    return res.status(httpStatus.CREATED).send({ requestId: request.id, agreement: agreement.toJSON() });
+  }
 
   let user;
   try {
@@ -135,4 +175,23 @@ const updateLogo = catchAsync(async (req, res) => {
   res.send(await partnersService.setPartnerLogo(req.params.partnerId, kind, req.body.organisationLogo));
 });
 
-module.exports = { getDirectory, getPartnerStudents, createPartner, updateLogo };
+/** PATCH /partners/:partnerId  (reviewers only) — the edit drawer. */
+const updatePartner = catchAsync(async (req, res) => {
+  const kind = req.body.kind === 'subagent' ? 'subagent' : 'counselor';
+  res.send(await partnersService.updatePartner(req.params.partnerId, kind, req.body));
+});
+
+/**
+ * DELETE /partners/:partnerId?kind=  (admins only)
+ *
+ * Admins rather than reviewers: approving someone is reversible by removing
+ * them, but removing them is not reversible by anything short of re-adding.
+ */
+const removePartner = catchAsync(async (req, res) => {
+  const kind = req.query.kind === 'subagent' ? 'subagent' : 'counselor';
+  const result = await partnersService.removePartner(req.params.partnerId, kind, { by: req.user });
+  logger.info(`partner ${result.email} (${result.organisation}) removed by ${req.user && req.user.email}`);
+  res.send(result);
+});
+
+module.exports = { getDirectory, getPartnerStudents, createPartner, updateLogo, updatePartner, removePartner };

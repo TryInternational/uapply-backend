@@ -16,6 +16,10 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
   }
+  // a closed account keeps its record (so names resolve) but no longer opens the door
+  if (user.former) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'This account has been closed. Ask an admin if you need it reopened.');
+  }
   return user;
 };
 
@@ -41,7 +45,7 @@ const refreshAuth = async (refreshToken) => {
   try {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
     const user = await userService.getUserById(refreshTokenDoc.user);
-    if (!user) {
+    if (!user || user.former) {
       throw new Error();
     }
     await refreshTokenDoc.remove();

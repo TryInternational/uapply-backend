@@ -15,7 +15,11 @@ const logger = require('../config/logger');
  * what lets the certificate page carry a hash that can be checked later.
  */
 
-const TEMPLATE_VERSION = '2026-11';
+// 2026-11.2: the signed-off layout — wordmark + four-line meta, the deal as a
+// sentence, Signatures as a titled section with each party stacked in both
+// columns (templates/agreements/sub-agent-agreement.hbs). Older agreements
+// keep the version they were drafted with.
+const TEMPLATE_VERSION = '2026-11.2';
 const TEMPLATE_PATH = path.join(__dirname, '..', 'templates', 'agreements', 'sub-agent-agreement.hbs');
 const TZ = 'Asia/Kuwait';
 
@@ -24,6 +28,58 @@ const template = () => {
   if (!compiled) compiled = Handlebars.compile(fs.readFileSync(TEMPLATE_PATH, 'utf8'));
   return compiled;
 };
+
+// ---------------------------------------------------------------------------
+// Fonts
+// ---------------------------------------------------------------------------
+//
+// The PDF must render with NO network: a stalled fonts.googleapis.com fetch
+// once held page.setContent for its full 45 s timeout and the approval with
+// it. So for the PDF the two families come from npm (@fontsource/*) and go
+// into the HTML as @font-face data URIs — identical bytes every render, which
+// the certificate hash also relies on. Browser views (preview, signing page)
+// keep the Google Fonts <link>: they are online by definition and a 400 KB
+// inline block would weigh on every open.
+
+const GOOGLE_FONTS_HEAD = [
+  '<link rel="preconnect" href="https://fonts.googleapis.com">',
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+  '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">',
+].join('\n');
+
+const FONT_FILES = [
+  ['Inter', 400, '@fontsource/inter/files/inter-latin-400-normal.woff2'],
+  ['Inter', 500, '@fontsource/inter/files/inter-latin-500-normal.woff2'],
+  ['Inter', 600, '@fontsource/inter/files/inter-latin-600-normal.woff2'],
+  ['Inter', 700, '@fontsource/inter/files/inter-latin-700-normal.woff2'],
+  ['Noto Naskh Arabic', 400, '@fontsource/noto-naskh-arabic/files/noto-naskh-arabic-arabic-400-normal.woff2'],
+  ['Noto Naskh Arabic', 500, '@fontsource/noto-naskh-arabic/files/noto-naskh-arabic-arabic-500-normal.woff2'],
+  ['Noto Naskh Arabic', 600, '@fontsource/noto-naskh-arabic/files/noto-naskh-arabic-arabic-600-normal.woff2'],
+  ['Noto Naskh Arabic', 700, '@fontsource/noto-naskh-arabic/files/noto-naskh-arabic-arabic-700-normal.woff2'],
+];
+
+let inlineFontHead;
+/** A <style> of @font-face rules with the font bytes inlined; built once per process. */
+const inlineFonts = () => {
+  if (inlineFontHead !== undefined) return inlineFontHead;
+  const faces = [];
+  FONT_FILES.forEach(([family, weight, spec]) => {
+    try {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- spec is a constant from FONT_FILES
+      const b64 = fs.readFileSync(require.resolve(spec)).toString('base64');
+      faces.push(
+        `@font-face{font-family:"${family}";font-style:normal;font-weight:${weight};font-display:block;src:url(data:font/woff2;base64,${b64}) format("woff2");}`
+      );
+    } catch (err) {
+      logger.warn(`agreement fonts: ${spec} unavailable (${err.message}) — ${family} ${weight} falls back to a system face`);
+    }
+  });
+  inlineFontHead = faces.length ? `<style>\n${faces.join('\n')}\n</style>` : '';
+  return inlineFontHead;
+};
+
+/** What goes in <head> for fonts: inline bytes for the PDF, the Google link for a browser. */
+const fontHead = (opts = {}) => (opts.fonts === 'inline' ? inlineFonts() : GOOGLE_FONTS_HEAD);
 
 // ---------------------------------------------------------------------------
 // Wording
@@ -162,6 +218,7 @@ const buildContext = (agreement, settings, opts = {}) => {
     commission_ar: text.ar,
     extra_terms: Array.isArray(a.extraTerms) ? a.extraTerms.filter((t) => t && t.en) : [],
 
+    font_head: fontHead(opts),
     company_signature_src: opts.companySignatureSrc || '',
     company_signed_class: opts.companySignatureSrc ? 'signed' : '',
     company_signed_at: sig.company && sig.company.signedAt ? fmtDateTime(sig.company.signedAt) : '',
@@ -189,10 +246,12 @@ const buildContext = (agreement, settings, opts = {}) => {
       document_hash: a.documentHash || '',
       agent_email: (sig.agent && sig.agent.email) || agent.email || '',
       agent_auth: 'Single-use link emailed to the signer; link opened and signed from the IP addresses below',
-      agent_method:
-        sig.agent && sig.agent.method === 'typed'
-          ? `Typed name "${sig.agent.typedName || agent.nameEn}" adopted as signature`
-          : 'Hand-drawn on screen',
+      agent_method: (() => {
+        const m = sig.agent && sig.agent.method;
+        if (m === 'typed') return `Typed name "${sig.agent.typedName || agent.nameEn}" adopted as signature`;
+        if (m === 'uploaded') return 'Signature image uploaded by the signer';
+        return 'Hand-drawn on screen';
+      })(),
       company_by: sig.company && sig.company.byName ? sig.company.byName : '',
       consent_text: (sig.agent && sig.agent.consentText) || '',
       events,
@@ -268,11 +327,18 @@ const htmlToPdf = async (html, { agreementNo } = {}) => {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setContent(html, { waitUntil: ['load', 'networkidle0'], timeout: 45000 });
-    // Web fonts (Inter, Noto Naskh Arabic) finish after `load`; without this the
-    // first render falls back to the system Arabic face.
-    // eslint-disable-next-line no-undef
-    await page.evaluate(() => (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()));
+    // `load` only — never networkidle. The HTML carries its fonts and
+    // signatures inline, so there is nothing to wait for on the network, and a
+    // stray external reference must degrade the typography, not hang the send.
+    await page.setContent(html, { waitUntil: 'load', timeout: 20000 });
+    // Inline fonts decode after `load`; give them a moment, bounded.
+    await Promise.race([
+      // eslint-disable-next-line no-undef
+      page.evaluate(() => (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())),
+      new Promise((resolve) => {
+        setTimeout(resolve, 3000);
+      }),
+    ]);
     const buf = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -284,13 +350,21 @@ const htmlToPdf = async (html, { agreementNo } = {}) => {
     });
     const buffer = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
     return { buffer, pages: countPages(buffer), sha256: crypto.createHash('sha256').update(buffer).digest('hex') };
+  } catch (err) {
+    // A timeout usually means Chromium itself is wedged; the next render must
+    // not inherit it. closeBrowser() nulls the promise so getBrowser relaunches.
+    if (err && (err.name === 'TimeoutError' || /timeout/i.test(err.message || ''))) {
+      logger.warn(`agreement pdf: render timed out (${err.message}); recycling the browser`);
+      await closeBrowser();
+    }
+    throw err;
   } finally {
     await page.close().catch((e) => logger.warn(`agreement pdf: page close failed: ${e.message}`));
   }
 };
 
 const renderPdf = async (agreement, settings, opts) => {
-  const html = renderHtml(agreement, settings, opts);
+  const html = renderHtml(agreement, settings, { ...(opts || {}), fonts: 'inline' });
   return htmlToPdf(html, { agreementNo: agreement && agreement.agreementNo });
 };
 

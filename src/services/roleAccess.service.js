@@ -116,6 +116,19 @@ const maybeRefresh = () => {
 /** The role id of a user, whether the path populated it or not. */
 const roleIdOf = (user) => String((user && user.role && user.role._id) || (user && user.role) || '');
 
+/** The role's name from the catalogue ('' when unknown). */
+const roleNameOf = (user) => {
+  maybeRefresh();
+  const entry = byId.get(roleIdOf(user));
+  return entry ? entry.name : '';
+};
+
+// Rights cannot tell counsellors and operations apart — both review and use the
+// counsellor tools — so, as in the CRM and dashboardBreakdowns' slotOf, the
+// role's NAME decides: "Operation", "Operations", "Ops".
+const OPERATIONS_ROLE_NAME = /^\s*(operations?|ops)\s*$/i;
+const isOperations = (user) => !!user && OPERATIONS_ROLE_NAME.test(roleNameOf(user));
+
 const rightsFor = (roleId) => {
   maybeRefresh();
   const entry = byId.get(String(roleId));
@@ -227,6 +240,8 @@ module.exports = {
   warm,
   refresh,
   roleIdOf,
+  roleNameOf,
+  isOperations,
   isAdmin,
   isReviewer,
   isSubAgent,

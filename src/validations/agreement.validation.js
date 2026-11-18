@@ -79,7 +79,7 @@ const signAgreement = {
   body: Joi.object().keys({
     // data:image/png;base64,… — the service re-checks it is a real PNG.
     signature: Joi.string().max(1500000).required(),
-    method: Joi.string().valid('drawn', 'typed').required(),
+    method: Joi.string().valid('drawn', 'typed', 'uploaded').required(),
     typedName: Joi.string().trim().max(120).allow('', null),
     consent: Joi.boolean().valid(true).required(),
   }),
@@ -104,6 +104,12 @@ const updateSettings = {
       title: Joi.string().trim().max(80).allow(''),
       civilId: Joi.string().trim().max(40).allow(''),
       user: Joi.string().custom(objectId).allow('', null),
+      // Read-only fields the settings GET returns; a form that sends the
+      // object back whole is tolerated — they are dropped, never written.
+      hasSignature: Joi.any().strip(),
+      signaturePath: Joi.any().strip(),
+      signatureUpdatedAt: Joi.any().strip(),
+      signatureUpdatedBy: Joi.any().strip(),
     }),
     defaults: Joi.object().keys({
       commissionType: Joi.string().valid('percentage', 'fixed'),

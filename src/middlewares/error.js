@@ -4,8 +4,47 @@ const config = require('../config/config');
 const logger = require('../config/logger');
 const ApiError = require('../utils/ApiError');
 
+/**
+ * Mongoose's two "the request was wrong" errors, as an operational ApiError.
+ *
+ * Without this they are converted below with isOperational=false, and outside
+ * development every non-operational error is replaced by a bare 500 "Internal
+ * Server Error" — so a missing required field, an invalid email or a malformed
+ * id in the URL all reached the user as a server crash. The message is built
+ * from the field messages only ("Invalid email"), never Mongoose's own prefix
+ * with the model and path names.
+ */
+const asClientError = (err) => {
+  if (err instanceof mongoose.Error.ValidationError) {
+    const parts = Object.values(err.errors || {}).map((e) => {
+      if (e && e.kind === 'required') return `${e.path} is required`;
+      if (e && e.name === 'CastError') return `${e.path} is not valid`;
+      // A validator that throws (`throw new Error('Invalid email')`) keeps its
+      // own words in `reason`; Mongoose's wrapper message quotes the path and
+      // the rejected value, which is not for the person who typed it.
+      if (e && e.reason && e.reason.message) return e.reason.message;
+      return e && e.path ? `${e.path} is not valid` : 'A value is not valid';
+    });
+    return new ApiError(
+      httpStatus.BAD_REQUEST,
+      parts.length ? parts.join(', ') : 'Some details are not valid',
+      true,
+      err.stack
+    );
+  }
+  if (err instanceof mongoose.Error.CastError) {
+    // A malformed id in the URL is "no such record", not a server fault.
+    if (err.path === '_id' || err.kind === 'ObjectId')
+      return new ApiError(httpStatus.NOT_FOUND, 'Not found', true, err.stack);
+    return new ApiError(httpStatus.BAD_REQUEST, `${err.path} is not valid`, true, err.stack);
+  }
+  return null;
+};
+
 const errorConverter = (err, req, res, next) => {
   let error = err;
+  const clientError = asClientError(err);
+  if (clientError) return next(clientError);
   if (!(error instanceof ApiError)) {
     const statusCode =
       error.statusCode || error instanceof mongoose.Error ? httpStatus.BAD_REQUEST : httpStatus.INTERNAL_SERVER_ERROR;

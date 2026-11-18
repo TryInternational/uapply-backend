@@ -103,6 +103,15 @@ const accessRequestSchema = mongoose.Schema(
       size: { type: Number },
       uploadedAt: { type: Date },
     },
+    // The organisation's logo as uploaded on the public form (private object;
+    // published onto the account at approval -> `organisationLogo`).
+    logo: {
+      path: { type: String, trim: true },
+      fileName: { type: String, trim: true },
+      contentType: { type: String, trim: true },
+      size: { type: Number },
+      uploadedAt: { type: Date },
+    },
     // Set only on the staff-created path (Partners -> Add sub-agent / Add
     // school), where the admin uploads the organisation's logo as they type the
     // rest. Absent from PUBLIC_FIELDS in the service, so the public form cannot
@@ -165,6 +174,15 @@ const accessRequestSchema = mongoose.Schema(
             contentType: ret.civilId.contentType,
             size: ret.civilId.size,
             uploadedAt: ret.civilId.uploadedAt,
+          };
+        }
+        if (ret.logo) {
+          // eslint-disable-next-line no-param-reassign
+          ret.logo = {
+            uploaded: Boolean(ret.logo.path),
+            fileName: ret.logo.fileName,
+            contentType: ret.logo.contentType,
+            size: ret.logo.size,
           };
         }
       },

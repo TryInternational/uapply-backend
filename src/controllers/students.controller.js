@@ -77,6 +77,8 @@ const SUB_AGENT_EDITABLE_STUDENT_FIELDS = [
   'sourceOfFund',
   'parentsIncome',
   'countriesTraveled',
+  // the portal's "Student photo" card
+  'photo',
 ];
 
 // Extra fields the SCHOOL COUNSELLOR intake collects. Kept separate from the
@@ -738,6 +740,9 @@ const getStudents = catchAsync(async (req, res) => {
     }
   }
 
+  // Every member of staff lists every student, as admins do. Partners
+  // (sub-agents, school counsellors) are scoped above to their own.
+
   // countsByStage=PendingReview,NotApplied,… → { counts: { <stage>: n } } for the
   // list's status tabs with every other filter applied: one round trip instead
   // of one 1-row page per tab. Counted with countDocuments (schema casting, same
@@ -1015,6 +1020,16 @@ const updateStudent = catchAsync(async (req, res) => {
     // `editor` is metadata the activity log reads, not a stored field.
     if (req.body.editor) filtered.editor = req.body.editor;
     req.body = filtered;
+
+    // Adding a student refuses an email another student already has. Editing
+    // did not, so the same address could be saved onto a second record.
+    if (typeof filtered.email === 'string' && filtered.email.trim()) {
+      const email = filtered.email.trim().toLowerCase();
+      const current = String(existingStudent.email || '').toLowerCase();
+      if (email !== current && (await Students.isEmailTaken(email, existingStudent._id))) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'A student with this email address already exists');
+      }
+    }
   }
 
   const student = await studentsService.updateStudentById(req.params.studentId, req.body);
@@ -1190,7 +1205,6 @@ const getStudentsByMonths = catchAsync(async (req, res) => {
 
 const searchStudents = catchAsync(async (req, res) => {
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate', 'stage']);
-  // counselor / operations "My students": the list's scope applies to search too
   const results = await studentsService.searchStudent(req.params.text, options, searchScopeOf(req.query));
   res.status(200).send(results);
 });

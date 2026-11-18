@@ -63,10 +63,18 @@ const downloadBuffer = async (destination) => {
   return buf;
 };
 
+/** Make a stored object world-readable and return its public URL. */
+const makePublic = async (destination) => {
+  const bucket = admin.storage().bucket(config.whatsapp.mediaBucket);
+  await bucket.file(destination).makePublic();
+  return `https://storage.googleapis.com/${bucket.name}/${destination}`;
+};
+
 module.exports = {
   firestore,
   uploadBuffer,
   uploadPrivateBuffer,
   signedReadUrl,
   downloadBuffer,
+  makePublic,
 };

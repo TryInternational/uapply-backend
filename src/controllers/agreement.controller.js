@@ -152,7 +152,7 @@ const mine = catchAsync(async (req, res) => {
     status: json.status,
     agreementDate: json.agreementDate,
     completedAt: json.completedAt,
-    commission: json.commission,
+    // The commission stays in the signed PDF; the portal never shows it.
     extraTerms: json.extraTerms,
     pdf: json.pdf,
   });

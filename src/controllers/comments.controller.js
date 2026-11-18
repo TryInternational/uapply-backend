@@ -13,7 +13,7 @@ const catchAsync = require('../utils/catchAsync');
 
 const { commentsService, userService, notificationsService } = require('../services');
 const { getStudentById } = require('../services/students.service');
-const { isExternalPartner } = require('../middlewares/subAgentScope');
+const { isExternalPartner, isSubAgent } = require('../middlewares/subAgentScope');
 
 // Helper function to strip HTML tags and decode entities
 const stripHtml = (html) => {
@@ -208,10 +208,23 @@ const getComment = catchAsync(async (req, res) => {
 
 // Get comments by student ID
 const getCommentByStudentId = catchAsync(async (req, res) => {
-  const comment = await commentsService.getCommentByStudentId(req.params.studentId);
+  let comment = await commentsService.getCommentByStudentId(req.params.studentId);
 
   if (!comment) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Comment not found');
+  }
+
+  // What a sub-agent sees of a thread: the messages they wrote, and the
+  // messages they are tagged in. Nothing else — not the team's notes to each
+  // other, not a message another partner wrote, not a message that tags
+  // someone else. To reach a sub-agent, staff tag them.
+  //
+  // This is enforced HERE. The portal used to receive the whole thread and
+  // hide the rest in the browser, so the internal notes were on the wire.
+  if (isSubAgent(req.user)) {
+    const me = String(req.user.id);
+    const idOf = (v) => String((v && (v._id || v.id)) || v || '');
+    comment = comment.filter((c) => idOf(c.userId) === me || (c.taggedUsers || []).some((t) => idOf(t) === me));
   }
   res.send(comment);
 });

@@ -24,10 +24,15 @@ const ApiError = require('../utils/ApiError');
  * @returns {Promise<Students>}
  */
 const createStudent = async (studentBody) => {
-  if (await Students.isEmailTaken(studentBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  const body = { ...studentBody };
+  // No email is not "the same email as every other student without one".
+  const email = typeof body.email === 'string' ? body.email.trim() : body.email;
+  if (!email) delete body.email;
+  else body.email = email;
+  if (email && (await Students.isEmailTaken(String(email).toLowerCase()))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'A student with this email address already exists');
   }
-  return Students.create(studentBody);
+  return Students.create(body);
 };
 
 /**
@@ -83,7 +88,11 @@ const updateStudentById = async (studentId, updateBody) => {
     return student;
   } catch (error) {
     console.error('Error saving student:', error);
-    // Handle the error appropriately
+    // Rethrow. Swallowing it here returned `undefined`, and every caller then
+    // dereferenced it — so a failed save (a missing student, a field that did
+    // not validate) surfaced as an unrelated TypeError and a 500 instead of
+    // the 404 / 400 it actually was.
+    throw error;
   }
 };
 

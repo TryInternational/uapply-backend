@@ -47,6 +47,13 @@ const updateUser = {
       // partner portal "Rate your experience"
       rating: Joi.number().integer().min(0).max(5),
       feedback: Joi.string().allow('').max(2000),
+      // Settings › Users "Close account" / "Reopen" — admins only (user.controller)
+      former: Joi.boolean(),
+      // a partner's own company logo (My account); '' removes it. Staff set it
+      // from the partner directory through /partners/:id/logo instead.
+      organisationLogo: Joi.string()
+        .uri({ scheme: ['https'] })
+        .allow(''),
     })
     .min(1),
 };

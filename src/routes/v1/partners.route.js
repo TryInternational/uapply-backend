@@ -3,7 +3,7 @@ const express = require('express');
 const validate = require('../../middlewares/validate');
 const partnersValidation = require('../../validations/partners.validation');
 const partnersController = require('../../controllers/partners.controller');
-const { softAuth, denySubAgent, requireAuth, requireReviewer } = require('../../middlewares/subAgentScope');
+const { softAuth, denySubAgent, requireAuth, requireReviewer, requireAdmin } = require('../../middlewares/subAgentScope');
 
 const router = express.Router();
 
@@ -24,5 +24,11 @@ router
 router
   .route('/:partnerId/logo')
   .patch(requireAuth, requireReviewer, validate(partnersValidation.updateLogo), partnersController.updateLogo);
+
+// Edit: the same capability as adding. Remove: admins only — see the controller.
+router
+  .route('/:partnerId')
+  .patch(requireAuth, requireReviewer, validate(partnersValidation.updatePartner), partnersController.updatePartner)
+  .delete(requireAuth, requireAdmin, validate(partnersValidation.removePartner), partnersController.removePartner);
 
 module.exports = router;

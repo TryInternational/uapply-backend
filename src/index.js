@@ -10,6 +10,15 @@ const agreementService = require('./services/agreement.service');
 const agreementRenderService = require('./services/agreementRender.service');
 const ensureUlearnStudentIndexes = require('./utils/ensureUlearnStudentIndexes');
 
+// Every host the CRM is served from. backoffice.ulearnabroad.com is a second
+// domain on the STAGING hosting site (same build as staging.backoffice.uapplyabroad.com).
+const CRM_ORIGINS = [
+  'http://localhost:3001',
+  'https://staging.backoffice.uapplyabroad.com',
+  'https://backoffice.uapplyabroad.com',
+  'https://backoffice.ulearnabroad.com',
+];
+
 let server;
 
 // Create HTTP server
@@ -17,14 +26,14 @@ const httpServer = http.createServer(app);
 
 app.use(
   cors({
-    origin: ['http://localhost:3001', 'https://staging.backoffice.uapplyabroad.com', 'https://backoffice.uapplyabroad.com'], // Replace with your Firebase Hosting URL
+    origin: CRM_ORIGINS, // Replace with your Firebase Hosting URL
     credentials: true,
   })
 );
 // Initialize Socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: ['http://localhost:3001', 'https://staging.backoffice.uapplyabroad.com', 'https://backoffice.uapplyabroad.com'], // Allow frontend origin
+    origin: CRM_ORIGINS, // Allow frontend origin
     methods: ['GET', 'POST'], // Allowed HTTP methods
     credentials: true, // Allow credentials (if needed)
   },

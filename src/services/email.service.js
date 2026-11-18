@@ -15,11 +15,45 @@ const resend = new Resend(config.email.resendApiKey || process.env.RESEND_API_KE
  * @param {string} text
  * @returns {Promise}
  */
+/**
+ * The wordmark every template shows on its purple band. Email clients need a
+ * hosted URL (data URIs are stripped by Gmail), so the PNG lives in the CRM's
+ * public folder and is served from wherever the CRM is; EMAIL_LOGO_URL
+ * overrides that for an environment whose CRM is not reachable from the
+ * internet (local dev, say).
+ */
+const LOGO_FILE = path.join(__dirname, '../assets/email/ulearn-logo-white.png');
+const LOGO_OBJECT = 'branding/ulearn-logo-white.png';
+let logoUrlPromise;
+/**
+ * Resolved once per process. EMAIL_LOGO_URL wins; otherwise the PNG shipped
+ * with the backend is published to the storage bucket (same bucket as partner
+ * logos, same public URL shape) so the address works from every environment
+ * — a local backend's CRM is on localhost, which no mail client can fetch.
+ * If storage is unreachable the CRM copy is the fallback.
+ */
+const emailLogoUrl = () => {
+  if (process.env.EMAIL_LOGO_URL) return Promise.resolve(process.env.EMAIL_LOGO_URL);
+  if (!logoUrlPromise) {
+    logoUrlPromise = (async () => {
+      try {
+        // eslint-disable-next-line global-require
+        const storage = require('../thirdparty/firebase');
+        return await storage.uploadBuffer(fs.readFileSync(LOGO_FILE), LOGO_OBJECT, 'image/png');
+      } catch (err) {
+        logger.warn(`email logo: could not publish to storage (${err.message}); using the CRM copy`);
+        return `${config.appUrls.backoffice}/email/ulearn-logo-white.png`;
+      }
+    })();
+  }
+  return logoUrlPromise;
+};
+
 const sendEmail = async (to, subject, text, context, file, htmlString, options = {}) => {
   try {
     const source = htmlString || fs.readFileSync(path.join(__dirname, `../templates/${file}.hbs`), 'utf8');
     const template = Handlebars.compile(source);
-    const html = template(context);
+    const html = template({ logoUrl: await emailLogoUrl(), ...(context || {}) });
 
     const payload = {
       from: "noreply@ulearnabroad.com",
@@ -58,18 +92,20 @@ const sendEmail = async (to, subject, text, context, file, htmlString, options =
  * @param {string} token
  * @returns {Promise}
  */
-const sendResetPasswordEmail = async (to, token, baseUrl) => {
-  const subject = 'Reset password';
+const sendResetPasswordEmail = async (to, token, baseUrl, portal) => {
+  const subject = 'Choose a new Ulearn password';
   // Was hardcoded to the back-office host, which is the wrong one for a
   // sub-agent -- and the invite email tells them to use this flow when their
-  // link expires. `baseUrl` lets the caller pass the portal they belong to.
-  const resetPasswordUrl = `${baseUrl || config.appUrls.backoffice}/reset-password?token=${token}`;
+  // link expires. `baseUrl` lets the caller pass the portal they belong to;
+  // `portal` tells the reset page which sign-in door to offer afterwards.
+  const resetPasswordUrl = `${baseUrl || config.appUrls.backoffice}/reset-password?token=${token}${portal ? `&portal=${portal}` : ''}`;
 
-  const text = `Dear user,
-To reset your password, click on this link: ${resetPasswordUrl}
-If you did not request any password resets, then ignore this email.`;
+  const expiresMinutes = config.jwt.resetPasswordExpirationMinutes;
+  const text = `Someone asked to reset the password for the Ulearn account on ${to}.
+Choose a new one here (the link works for ${expiresMinutes} minutes, once): ${resetPasswordUrl}
+If you did not ask for this, ignore this email - your password stays as it is.`;
   
-  await sendEmail(to, subject, text, { resetPasswordUrl }, 'reset_password');
+  await sendEmail(to, subject, text, { resetPasswordUrl, email: to, expiresMinutes }, 'reset_password');
 };
 
 /**
@@ -271,16 +307,15 @@ const fmtKw = (d) =>
 
 /** The signing link, with the unsigned PDF attached for the partner's records. */
 const sendAgreementSentEmail = async (agreement, { signUrl, expiresAt, pdf, resend: isResend }) => {
-  await sendEmail(
+  // Returns the provider's answer ({ id }) so the agreement can keep it.
+  return sendEmail(
     agreement.agent.email,
     `${isResend ? 'New link: ' : ''}Your Ulearn sub-agent agreement ${agreement.agreementNo} is ready to sign`,
-    `Hello ${agreement.agent.nameEn} - your sub-agent agreement ${agreement.agreementNo} (${agreement.commission.textEn}) is ready. Review and sign it here: ${signUrl} (valid until ${fmtKw(expiresAt)}).`,
+    `Hello ${agreement.agent.nameEn} - your sub-agent agreement ${agreement.agreementNo} is ready. Review and sign it here: ${signUrl} (valid until ${fmtKw(expiresAt)}).`,
     {
       name: agreement.agent.nameEn,
       email: agreement.agent.email,
       agreementNo: agreement.agreementNo,
-      commissionEn: agreement.commission.textEn,
-      commissionAr: agreement.commission.textAr,
       signUrl,
       expiresAt: fmtKw(expiresAt),
       resend: Boolean(isResend),
@@ -303,7 +338,6 @@ const sendAgreementReminderEmail = async (agreement, { signUrl, expiresAt }) => 
       name: agreement.agent.nameEn,
       email: agreement.agent.email,
       agreementNo: agreement.agreementNo,
-      commissionEn: agreement.commission.textEn,
       signUrl,
       expiresAt: fmtKw(expiresAt),
     },
@@ -321,8 +355,6 @@ const sendAgreementCompletedEmail = async (agreement, { pdf, inviteSent, setting
     agreementNo: agreement.agreementNo,
     organisation: agreement.agent.organisationEn || agreement.agent.nameEn,
     agentName: agreement.agent.nameEn,
-    commissionEn: agreement.commission.textEn,
-    commissionAr: agreement.commission.textAr,
     agreementDate: agreement.agreementDate ? new Date(agreement.agreementDate).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait' }) : '',
     agentSignedAt: fmtKw(agreement.agentSignedAt),
     companySignedAt: fmtKw(agreement.countersignedAt),
@@ -349,7 +381,8 @@ const sendAgreementCompletedEmail = async (agreement, { pdf, inviteSent, setting
         internalTo,
         `Signed by both parties: ${agreement.agreementNo} — ${agreement.agent.organisationEn || agreement.agent.nameEn}`,
         `Agreement ${agreement.agreementNo} is complete. Signed PDF attached.`,
-        { ...base, name: (sender && sender.name) || 'team', email: internalTo, internal: true },
+        // The commission is on Ulearn's own copy only — the partner reads it in the contract PDF, never in an email.
+        { ...base, commissionEn: agreement.commission.textEn, commissionAr: agreement.commission.textAr, name: (sender && sender.name) || 'team', email: internalTo, internal: true },
         'agreement_completed',
         null,
         { attachments }

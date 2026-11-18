@@ -296,6 +296,8 @@ const computeBreakdowns = ({
   levelNames = new Map(),
   courseNames = new Map(),
   courseCities = new Map(),
+  // university name (lower-cased) → its usual UK city, for applications with no course link
+  uniCities = new Map(),
   userNames = new Map(),
   last = null,
   rangeStudents = [],
@@ -323,7 +325,10 @@ const computeBreakdowns = ({
     const fromCourse = courseCities.get(idOf(a.course)) || [];
     if (fromCourse.length) return fromCourse;
     const campus = String((a.campus && a.campus.name) || '').trim();
-    return campus ? [campus] : [];
+    if (campus) return [campus];
+    // imported and hand-typed applications name the university but no course:
+    // the city is where that university's catalogue courses are taught
+    return uniCities.get(uniOf(a).toLowerCase()) || [];
   };
   const studyCities = (s) => Array.from(new Set((appsByStudent.get(idOf(s)) || []).flatMap(citiesOfApp)));
   /** the application a student enrolled with: the one that reached Done, else the one marked final choice */
@@ -842,6 +847,46 @@ const getDashboardBreakdowns = async ({ startDate, endDate, intake } = {}) => {
       )
     );
 
+  // Applications with no course link (the Trello import, hand-typed ones) still
+  // name the university: borrow the city from that university's catalogue
+  // courses, keeping its most common UK city.
+  const uniNames = Array.from(
+    new Set(
+      [...rangeApps, ...apps]
+        .filter((a) => !a.course)
+        .map(uniOf)
+        .filter(Boolean)
+    )
+  );
+  const uniCourseDocs = uniNames.length
+    ? await Courses.find(
+        // case-insensitive exact names (escaped: the names are data, not patterns)
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        { institution: { $in: uniNames.map((n) => new RegExp(`^${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) } },
+        { institution: 1, locations: 1 },
+        { autopopulate: false }
+      ).lean()
+    : [];
+  const cityTallies = new Map();
+  uniCourseDocs.forEach((c) => {
+    const key = String(c.institution || '')
+      .trim()
+      .toLowerCase();
+    if (!key) return;
+    const tallyFor = cityTallies.get(key) || new Map();
+    ukCities(c).forEach((city) => tallyFor.set(city, (tallyFor.get(city) || 0) + 1));
+    cityTallies.set(key, tallyFor);
+  });
+  const uniCities = new Map(
+    Array.from(cityTallies.entries()).map(([key, tallyFor]) => [
+      key,
+      Array.from(tallyFor.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 1)
+        .map(([city]) => city),
+    ])
+  );
+
   // the partners who referred sub-agent / school-counsellor students (the Analysis "Source")
   const referrerIds = Array.from(
     new Set(
@@ -860,6 +905,7 @@ const getDashboardBreakdowns = async ({ startDate, endDate, intake } = {}) => {
     levelNames: new Map(levels.map((l) => [idOf(l), l.en_name])),
     courseNames: new Map(courseDocs.filter((c) => c.name).map((c) => [idOf(c), c.name])),
     courseCities: new Map(courseDocs.map((c) => [idOf(c), ukCities(c)])),
+    uniCities,
     userNames: new Map(referrers.filter((u) => u.name).map((u) => [idOf(u), u.name])),
     last,
     rangeStudents: stages,

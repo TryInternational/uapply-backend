@@ -233,6 +233,37 @@ const pushEvent = (agreement, type, meta = {}) => {
   });
 };
 
+/**
+ * Email the partner and write what the provider said into the audit trail.
+ *
+ * A failure is RECORDED, not thrown. By the time this runs the agreement is
+ * already Sent and its signing link is valid, so the right recovery is
+ * "Re-send signing link", not undoing the approval — and throwing here used to
+ * leave a Sent agreement behind an access request that had bounced back to
+ * Pending, which then blocked the next approval with "already has agreement".
+ * Returns true when the provider accepted the message.
+ */
+const emailPartner = async (agreement, sendFn, { by } = {}) => {
+  const to = agreement.agent.email;
+  try {
+    const mail = await sendFn();
+    const providerId = mail && mail.id ? String(mail.id) : undefined;
+    agreement.lastEmail = { to, at: new Date(), providerId, error: undefined };
+    pushEvent(agreement, 'emailed', {
+      by: by && (by.id || by._id),
+      byName: by && by.name,
+      note: `to ${to}${providerId ? ` · Resend id ${providerId}` : ''}`,
+    });
+  } catch (err) {
+    const message = String((err && err.message) || err).slice(0, 300);
+    logger.error(`agreement ${agreement.agreementNo}: email to ${to} failed: ${message}`);
+    agreement.lastEmail = { to, at: new Date(), providerId: undefined, error: message };
+    pushEvent(agreement, 'email_failed', { note: `to ${to} · ${message}` });
+  }
+  await agreement.save();
+  return !agreement.lastEmail.error;
+};
+
 const assertStorageReady = async () => {
   try {
     await getSettings();
@@ -265,11 +296,16 @@ const send = async (agreement, { by, ip, userAgent } = {}) => {
   pushEvent(agreement, 'sent', { ip, userAgent, by: by && (by.id || by._id), byName: by && by.name });
   await agreement.save();
 
-  await emailService.sendAgreementSentEmail(agreement, {
-    signUrl: signUrlFor(token),
-    expiresAt: agreement.expiresAt,
-    pdf: buffer,
-  });
+  await emailPartner(
+    agreement,
+    () =>
+      emailService.sendAgreementSentEmail(agreement, {
+        signUrl: signUrlFor(token),
+        expiresAt: agreement.expiresAt,
+        pdf: buffer,
+      }),
+    { by }
+  );
   return agreement;
 };
 
@@ -283,12 +319,21 @@ const resend = async (agreement, { by, ip, userAgent } = {}) => {
   if (agreement.status === 'Expired') agreement.status = 'Sent';
   pushEvent(agreement, 'resent', { ip, userAgent, by: by && (by.id || by._id), byName: by && by.name });
   await agreement.save();
-  await emailService.sendAgreementSentEmail(agreement, {
-    signUrl: signUrlFor(token),
-    expiresAt: agreement.expiresAt,
-    pdf: buffer,
-    resend: true,
-  });
+  const accepted = await emailPartner(
+    agreement,
+    () =>
+      emailService.sendAgreementSentEmail(agreement, {
+        signUrl: signUrlFor(token),
+        expiresAt: agreement.expiresAt,
+        pdf: buffer,
+        resend: true,
+      }),
+    { by }
+  );
+  // A re-send is someone watching the button: tell them, with the provider's words.
+  if (!accepted) {
+    throw new ApiError(httpStatus.BAD_GATEWAY, `The email to ${agreement.agent.email} failed: ${agreement.lastEmail.error}`);
+  }
   return agreement;
 };
 
@@ -325,7 +370,7 @@ const publicView = (agreement, html) => ({
     organisationEn: agreement.agent.organisationEn,
     organisationAr: agreement.agent.organisationAr,
   },
-  commission: { type: agreement.commission.type, textEn: agreement.commission.textEn, textAr: agreement.commission.textAr },
+  // No commission here: the partner reads it in the contract itself (html), nowhere else.
   consentText: CONSENT_TEXT,
   html,
 });
@@ -360,7 +405,7 @@ const signByAgent = async (token, { signatureDataUrl, method, typedName, consent
   agreement.signatures = agreement.signatures || {};
   agreement.signatures.agent = {
     imagePath: objectPath,
-    method: method === 'typed' ? 'typed' : 'drawn',
+    method: ['typed', 'uploaded'].includes(method) ? method : 'drawn',
     typedName:
       method === 'typed'
         ? String(typedName || '')
@@ -456,7 +501,7 @@ const countersign = async (agreement, { by, auto, ip, userAgent } = {}) => {
 };
 
 /**
- * Both signed: render the final PDF (signatures + certificate page), store
+ * Both signed: render the final PDF (the contract with both signatures), store
  * it, open the partner's portal (account + set-password invite) and email
  * everyone their copy.
  */
@@ -477,7 +522,9 @@ const complete = async (agreement, settings) => {
   } = await render.renderPdf(agreement, s, {
     agentSignatureSrc: agentSig,
     companySignatureSrc: companySig,
-    withCertificate: true,
+    // The signed contract only. The certificate-of-completion page is not
+    // appended: how and when each party signed stays on the agreement's own
+    // record (events, IPs, document hash) in the back office.
   });
   const objectPath = `agreements/${agreement.agreementNo}/${agreement.agreementNo}-signed.pdf`;
   await storage().uploadPrivateBuffer(buffer, objectPath, 'application/pdf');

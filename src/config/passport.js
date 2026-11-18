@@ -14,7 +14,8 @@ const jwtVerify = async (payload, done) => {
       throw new Error('Invalid token type');
     }
     const user = await User.findById(payload.sub);
-    if (!user) {
+    // a closed (former staff) account's tokens stop working at once
+    if (!user || user.former) {
       return done(null, false);
     }
     done(null, user);

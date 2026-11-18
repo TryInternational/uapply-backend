@@ -599,6 +599,31 @@ const getMySchoolApplications = catchAsync(async (req, res) => {
   res.send({ results: forPartner(req, applications) });
 });
 
+/** One application as a sub-agent sees it: what was applied for, and its stage. */
+const stageViewForSubAgent = (doc) => {
+  const a = doc && typeof doc.toObject === 'function' ? doc.toObject() : doc || {};
+  const phases = ((a.portalApplicationStatus && a.portalApplicationStatus.applicationPhases) || []).map((p) => ({
+    status: p.status,
+    phaseState: p.phaseState,
+    isCurrent: Boolean(p.isCurrent),
+    isPrevious: Boolean(p.isPrevious),
+    updatedDate: p.updatedDate || p.createdDate,
+  }));
+  const institute = a.institute || {};
+  return {
+    id: String(a._id || a.id),
+    institute: { name: institute.name || institute.universityName || '', country: institute.country || '' },
+    courseName: a.courseName || (a.course && a.course.name) || '',
+    courseLevel: a.courseLevel || '',
+    intakeMonth: a.intakeMonth || '',
+    intakeYear: a.intakeYear || null,
+    reviewStatus: a.reviewStatus,
+    rejected: Boolean(a.rejected),
+    portalApplicationStatus: { applicationPhases: phases },
+    createdAt: a.createdAt,
+  };
+};
+
 const getApplicationByStudentId = catchAsync(async (req, res) => {
   // A school counsellor reads applications through the STUDENT they own, not
   // through application.createdBy (Ulearn staff create the applications for
@@ -616,9 +641,25 @@ const getApplicationByStudentId = catchAsync(async (req, res) => {
     return res.send(forPartner(req, await applicationService.getApplicationByStudentId(req.params.studentId)));
   }
 
-  const application = isSubAgent(req.user)
-    ? await applicationService.getApplicationsByStudentForOwner(req.params.studentId, req.user.id)
-    : await applicationService.getApplicationByStudentId(req.params.studentId);
+  // A sub-agent, likewise, reads through the STUDENT they referred: Ulearn
+  // staff create the applications, so scoping by application.createdBy showed
+  // them nothing. They get the stage view only — which university and course,
+  // and where it stands — not the working record (comments, provider, who
+  // manages it, documents).
+  if (isSubAgent(req.user)) {
+    const student = await studentsService.getStudentById(req.params.studentId);
+    const owns =
+      student &&
+      ((student.createdBy && String(student.createdBy) === String(req.user.id)) ||
+        (student.assignedTo || []).some((a) => a && a.user && String(a.user) === String(req.user.id)));
+    if (!owns) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Application not found');
+    }
+    const rows = await applicationService.getApplicationByStudentId(req.params.studentId);
+    return res.send((rows || []).map(stageViewForSubAgent));
+  }
+
+  const application = await applicationService.getApplicationByStudentId(req.params.studentId);
 
   if (!application) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Application not found');

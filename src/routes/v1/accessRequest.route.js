@@ -65,6 +65,30 @@ router.post(
   accessRequestController.uploadCivilId
 );
 
+// Public: the organisation's logo (optional). Image only, 2 MB.
+const logoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+}).single('file');
+router.post(
+  '/logo',
+  accessRequestIpLimiter,
+  (req, res, next) => {
+    logoUpload(req, res, (err) => {
+      if (err) {
+        return next(
+          new ApiError(
+            httpStatus.BAD_REQUEST,
+            err.code === 'LIMIT_FILE_SIZE' ? 'The logo file is larger than 2 MB' : 'Could not read the uploaded file'
+          )
+        );
+      }
+      return next();
+    });
+  },
+  accessRequestController.uploadLogo
+);
+
 // Reviewers: the queue.
 router.get(
   '/',
@@ -90,6 +114,15 @@ router.get(
   requireReviewer,
   validate(accessRequestValidation.civilIdLink),
   accessRequestController.civilIdLink
+);
+
+// Reviewers: a short-lived link to the logo uploaded with the request.
+router.get(
+  '/:requestId/logo',
+  requireAuth,
+  requireReviewer,
+  validate(accessRequestValidation.civilIdLink),
+  accessRequestController.logoLink
 );
 
 // Reviewers: resend an expired or undelivered invite. Approved requests only.

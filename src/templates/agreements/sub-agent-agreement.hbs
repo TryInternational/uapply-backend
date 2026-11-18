@@ -21,9 +21,7 @@
     agent_signature_src, agent_signed_class, agent_signed_at, agent_ip
     certificate: { ... } (optional, appended as the last page once signed)
 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{{font_head}}}
 <style>
   :root{ --ink:#1b1f24; --muted:#5c6470; --rule:#d5d9df; --accent:#0f2f5b; --accent-soft:#eef2f8; }
   @page{ size:A4; margin:15mm 14mm 18mm 14mm; }
@@ -35,12 +33,13 @@
 
   /* header */
   .head{ display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:4mm; border-bottom:2px solid var(--accent); margin-bottom:4mm; }
-  .wordmark{ font-weight:700; font-size:22pt; letter-spacing:-0.03em; line-height:1; color:#111; }
-  .wordmark small{ display:block; font-size:7pt; font-weight:500; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:3px; }
-  .logo{ height:12mm; }
-  .meta{ text-align:right; font-size:8.6pt; color:var(--muted); line-height:1.55; }
+  .wordmark{ font-weight:700; font-size:28pt; letter-spacing:-0.035em; line-height:1; color:#111; padding-top:2mm; }
+  .logo{ height:11mm; width:auto; display:block; }
+  .meta{ text-align:right; font-size:9pt; color:var(--muted); line-height:1.6; }
   .meta b{ color:var(--ink); font-weight:600; }
-  .meta .ar{ font-family:"Noto Naskh Arabic","Tahoma",serif; font-size:10pt; direction:rtl; unicode-bidi:isolate; border:0; padding:0; }
+  .meta .dot{ margin:0 1.2mm; color:#9aa3ae; }
+  .meta .ar{ display:block; font-family:"Noto Naskh Arabic","Tahoma",serif; font-size:10.4pt; direction:rtl; unicode-bidi:isolate; border:0; padding:0; }
+  .meta .ar .civ{ font-family:"Inter",Arial,sans-serif; font-size:9pt; font-weight:600; direction:ltr; unicode-bidi:isolate; }
 
   /* two-column rows (table layout paginates reliably in Chrome) */
   .row{ display:table; width:100%; table-layout:fixed; border-collapse:collapse; }
@@ -64,28 +63,30 @@
   .ar ul{ padding:0 4.5mm 0 0; }
   li{ margin-bottom:.8mm; break-inside:avoid; page-break-inside:avoid; }
 
-  /* the deal, called out so nobody has to hunt for it in the prose */
-  .deal{ background:var(--accent-soft); border:1px solid #d6deea; border-radius:2px; padding:2mm 3mm; margin:1mm 0 2mm; break-inside:avoid; page-break-inside:avoid; }
-  .deal b{ color:var(--accent); }
+  /* the deal reads as the first sentence of the clause, as on the signed template */
+  .deal{ margin:0 0 1.6mm; }
 
-  /* signatures */
-  .sigs{ display:table; table-layout:fixed; border-spacing:8mm 0; margin:3mm -8mm 0; width:calc(100% + 16mm); break-inside:avoid; page-break-inside:avoid; }
-  .sig{ display:table-cell; width:50%; vertical-align:top; border:1px solid var(--rule); border-top:3px solid var(--accent); padding:3mm 4mm 2.5mm; border-radius:2px; }
-  .sig .who{ display:flex; justify-content:space-between; align-items:baseline; gap:4mm; margin-bottom:.6mm; }
-  .sig .who b{ color:var(--accent); font-size:10pt; }
-  .sig .who .ar{ border:0; padding:0; font-size:11.5pt; }
-  .sig .org{ display:flex; justify-content:space-between; gap:4mm; color:var(--muted); font-size:8.6pt; margin-bottom:2.5mm; }
-  .sig .org .ar{ border:0; padding:0; font-size:10pt; }
-  .sig .pad{ height:16mm; border-bottom:1px solid var(--ink); display:flex; align-items:flex-end; justify-content:center; position:relative; margin-bottom:2mm; }
-  .sig .pad img{ max-height:17mm; max-width:90%; object-fit:contain; }
-  .sig .pad .hint{ position:absolute; bottom:1.5mm; left:0; right:0; text-align:center; font-size:7.5pt; color:#b7bec8; letter-spacing:.1em; text-transform:uppercase; }
-  .sig .pad.signed .hint{ display:none; }
-  .sig table{ width:100%; border-collapse:collapse; font-size:8.8pt; }
-  .sig td{ padding:.6mm 0; vertical-align:top; }
-  .sig td.k{ color:var(--muted); width:26%; white-space:nowrap; }
-  .sig td.v{ font-weight:600; }
-  .sig td.ka{ color:var(--muted); text-align:right; direction:rtl; font-family:"Noto Naskh Arabic",serif; font-size:10pt; width:30%; white-space:nowrap; }
-  .sig .ar-inline{ font-family:"Noto Naskh Arabic",serif; font-size:10.5pt; direction:rtl; unicode-bidi:isolate; }
+  /* signatures: the same two columns as the clauses — each party is a block
+     with its title, the signature over a line, then name / Civil ID / time / IP */
+  .sigs-head{ margin-top:1mm; }
+  .sigs-head h2{ margin-bottom:0; }
+  .sigs-head + .row{ margin-top:1.2mm; }
+  .party{ break-inside:avoid; page-break-inside:avoid; margin-bottom:1.5mm; }
+  .party .who{ font-weight:700; color:var(--accent); font-size:10pt; margin:0 0 1.2mm; line-height:1.35; }
+  .ar .party .who{ font-size:11.4pt; }
+  .party .pad{ height:11mm; border-bottom:1.5px solid var(--accent); display:flex; align-items:flex-end; justify-content:center; position:relative; margin-bottom:1.2mm; }
+  .party .pad img{ max-height:11mm; max-width:60%; object-fit:contain; }
+  .party .pad .hint{ position:absolute; bottom:1.5mm; left:0; right:0; text-align:center; font-size:7.5pt; color:#b7bec8; letter-spacing:.1em; text-transform:uppercase; }
+  .party .pad.signed .hint{ display:none; }
+  .party table{ width:100%; border-collapse:collapse; font-size:8.8pt; }
+  .party td{ padding:.2mm 0; vertical-align:top; line-height:1.4; }
+  .party td.k{ color:var(--muted); width:30%; white-space:nowrap; }
+  .party td.v{ color:var(--ink); }
+  .ar .party table{ font-family:"Noto Naskh Arabic",serif; font-size:10.2pt; }
+  .ar .party td.k{ text-align:right; width:30%; }
+  .ar .party td.v{ text-align:right; }
+  .ar .party td.v .civ{ font-size:9pt; }
+  .ar-inline{ font-family:"Noto Naskh Arabic",serif; font-size:10.5pt; direction:rtl; unicode-bidi:isolate; }
 
   /* certificate of completion — its own page, appended once both have signed */
   .cert{ break-before:page; page-break-before:always; }
@@ -106,11 +107,12 @@
 <div class="page">
 
   <header class="head">
-    <div class="wordmark">ülearn<small>Ulearn Abroad · Kuwait</small></div>
+    <div class="wordmark"><svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 118 32" role="img" aria-label="Ulearn"><path fill="#111" d="M30.565 31.015c.97 0 2.11-.21 3.249-.629v-4.023c-.59.168-1.14.252-1.604.252-.928 0-1.477-.377-1.477-1.3V1.389H25.67V25.65c0 3.688 2.067 5.364 4.895 5.364zM55.349 19.994c0-5.741-3.123-10.476-9.58-10.476-6.92 0-9.874 5.447-9.874 10.853 0 5.532 3.038 10.644 10.212 10.644 3.503 0 6.245-1.215 8.524-3.73l-3.502-3.059c-1.435 1.635-3.123 2.221-4.98 2.221-3.291 0-4.98-1.802-5.19-4.525h14.263c.084-.671.127-1.3.127-1.928zM40.917 17.94c.295-2.054 1.73-4.233 4.81-4.233 2.659 0 4.684 1.592 4.769 4.232h-9.58zM67.567 9.518c-3.797 0-6.878 1.466-9.368 4.441l3.672 3.06c1.519-2.012 3.502-3.101 5.612-3.101 2.405 0 3.924 1.383 3.924 3.645v.587h-5.19c-2.363 0-4.135.293-5.528.922-2.026.922-3.123 2.766-3.123 5.196 0 3.94 3.123 6.747 7.512 6.747 2.742 0 5.106-1.173 6.33-3.101l.421 2.682h4.642V17.563c0-4.986-3.418-8.045-8.904-8.045zM65.88 26.74c-2.025 0-3.249-.922-3.249-2.389 0-.754.295-1.34.844-1.718.675-.503 1.688-.712 3.418-.712h4.515c0 2.681-2.49 4.819-5.528 4.819zM92.478 9.518c-2.363 0-4.684 1.382-5.57 3.939v-3.52h-5.106v20.659h5.063V20.203c0-3.897 1.52-5.782 4.6-5.782 1.013 0 1.815.25 2.532.712l2.448-4.442c-1.35-.838-2.574-1.173-3.967-1.173zM110.379 9.518c-2.532 0-4.811.838-6.288 2.807V9.937h-5.064v20.659h5.064V22.34c0-3.688 0-8.423 4.726-8.423 3.84 0 3.84 3.184 3.84 4.61v12.068h5.064V17.27c0-4.903-2.658-7.752-7.342-7.752z"/><path fill="#111" d="M16.718 5.156l.093.093c.961.954 2.52.954 3.48 0a2.431 2.431 0 000-3.456l-.093-.092a2.473 2.473 0 00-3.48 0 2.432 2.432 0 000 3.455z"/><path fill="#111" d="M2.512.988l2.091 4.99H.416L2.512.987z"/><path fill="#111" d="M0 9.862l.018 10.813c0 2.871 1.006 5.305 3.017 7.303 2.037 1.997 4.526 2.996 7.467 2.996 2.967 0 5.456-.999 7.468-2.996 2.036-1.998 3.055-4.432 3.055-7.303l-.019-10.813h-5.015v10.813c0 1.598-.498 2.721-1.529 3.82-1.03 1.073-2.35 1.61-3.96 1.61-1.609 0-2.929-.537-3.96-1.61-1.005-1.099-1.526-2.197-1.526-3.82V9.862H0z"/></svg></div>
     <div class="meta">
-      <div>Agreement No. · <span class="ar">رقم الاتفاقية</span>: &nbsp;<b>{{agreement_no}}</b></div>
-      <div>Date · <span class="ar">التاريخ</span>: &nbsp;<b>{{agreement_date}}</b></div>
-      <div>{{company_city_en}}, State of Kuwait · <span class="ar">{{company_city_ar}}، دولة الكويت</span></div>
+      <div>Agreement No. <b>{{agreement_no}}</b><span class="dot">·</span>Date <b>{{agreement_date}}</b></div>
+      <div>{{company_city_en}}, State of Kuwait</div>
+      <span class="ar">رقم الاتفاقية <b class="civ">{{agreement_no}}</b><span class="dot">·</span>التاريخ <b class="civ">{{agreement_date}}</b></span>
+      <span class="ar">{{company_city_ar}}، دولة الكويت</span>
     </div>
   </header>
 
@@ -183,7 +185,7 @@
   <section class="row">
     <div class="en">
       <h2>3. Commission</h2>
-      <div class="deal">For each referred student who enrols in a Foundation, Bachelor’s, Master’s or PhD programme, Ulearn pays the Sub-Agent a commission of <b>{{commission_en}}</b>.</div>
+      <p class="deal">For each referred student who enrols in a Foundation, Bachelor’s, Master’s or PhD programme, Ulearn pays the Sub-Agent a commission of {{commission_en}}.</p>
       <ul>
         <li>A student who had already contacted Ulearn before being referred by the Sub-Agent is not eligible for commission.</li>
         <li>If the commission is a percentage, it is calculated on the first-year tuition fee paid by the student.</li>
@@ -193,7 +195,7 @@
     </div>
     <div class="ar">
       <h2>3. العمولة</h2>
-      <div class="deal">عن كل طالب مُحال يلتحق ببرنامج السنة التحضيرية أو البكالوريوس أو الماجستير أو الدكتوراه، تدفع يوليرن للوكيل الفرعي عمولة قدرها <b>{{commission_ar}}</b>.</div>
+      <p class="deal">عن كل طالب مُحال يلتحق ببرنامج السنة التحضيرية أو البكالوريوس أو الماجستير أو الدكتوراه، تدفع يوليرن للوكيل الفرعي عمولة قدرها <span class="civ">{{commission_ar}}</span>.</p>
       <ul>
         <li>الطالب الذي سبق له التواصل مع يوليرن قبل إحالته من الوكيل الفرعي لا يستحق عمولة.</li>
         <li>إذا كانت العمولة نسبة مئوية، فتُحتسب على الرسوم الدراسية للسنة الأولى التي يسددها الطالب.</li>
@@ -246,34 +248,74 @@
   {{/if}}
 
   <!-- SIGNATURES -->
-  <section class="sigs">
-    <div class="sig">
-      <div class="who"><b>First Party</b><span class="ar"><b>الطرف الأول</b></span></div>
-      <div class="org"><span>{{company_name_en}}</span><span class="ar">{{company_name_ar}}</span></div>
-      <div class="pad {{company_signed_class}}">
-        {{#if company_signature_src}}<img src="{{{company_signature_src}}}" alt="">{{/if}}
-        <span class="hint">Signature · التوقيع</span>
+  <section class="row sigs-head">
+    <div class="en"><h2>Signatures</h2></div>
+    <div class="ar"><h2>التوقيعات</h2></div>
+  </section>
+
+  <section class="row keep">
+    <div class="en">
+      <div class="party">
+        <div class="who">First Party — {{company_name_en}}</div>
+        <div class="pad {{company_signed_class}}">
+          {{#if company_signature_src}}<img src="{{{company_signature_src}}}" alt="">{{/if}}
+          <span class="hint">Signature</span>
+        </div>
+        <table>
+          <tr><td class="k">Name</td><td class="v">{{signatory_name_en}}</td></tr>
+          <tr><td class="k">Civil ID</td><td class="v">{{signatory_civil_id}}</td></tr>
+          <tr><td class="k">Signed at</td><td class="v">{{company_signed_at}}</td></tr>
+          <tr><td class="k">IP address</td><td class="v">{{company_ip}}</td></tr>
+        </table>
       </div>
-      <table>
-        <tr><td class="k">Name</td><td class="v">{{signatory_name_en}}<br><span class="ar-inline">{{signatory_name_ar}}</span></td><td class="ka">الاسم</td></tr>
-        <tr><td class="k">Civil ID</td><td class="v">{{signatory_civil_id}}</td><td class="ka">البطاقة المدنية</td></tr>
-        <tr><td class="k">Signed at</td><td class="v">{{company_signed_at}}</td><td class="ka">وقت التوقيع</td></tr>
-        <tr><td class="k">IP address</td><td class="v">{{company_ip}}</td><td class="ka">عنوان IP</td></tr>
-      </table>
     </div>
-    <div class="sig">
-      <div class="who"><b>Second Party</b><span class="ar"><b>الطرف الثاني</b></span></div>
-      <div class="org"><span>{{#if agent_org_en}}{{agent_org_en}}{{else}}Sub-Agent{{/if}}</span><span class="ar">{{#if agent_org_ar}}{{agent_org_ar}}{{else}}الوكيل الفرعي{{/if}}</span></div>
-      <div class="pad {{agent_signed_class}}">
-        {{#if agent_signature_src}}<img src="{{{agent_signature_src}}}" alt="">{{/if}}
-        <span class="hint">Signature · التوقيع</span>
+    <div class="ar">
+      <div class="party">
+        <div class="who">الطرف الأول — {{company_name_ar}}</div>
+        <div class="pad {{company_signed_class}}">
+          {{#if company_signature_src}}<img src="{{{company_signature_src}}}" alt="">{{/if}}
+          <span class="hint">التوقيع</span>
+        </div>
+        <table>
+          <tr><td class="k">الاسم</td><td class="v">{{signatory_name_ar}}</td></tr>
+          <tr><td class="k">البطاقة المدنية</td><td class="v"><span class="civ">{{signatory_civil_id}}</span></td></tr>
+          <tr><td class="k">وقت التوقيع</td><td class="v"><span class="civ">{{company_signed_at}}</span></td></tr>
+          <tr><td class="k">عنوان IP</td><td class="v"><span class="civ">{{company_ip}}</span></td></tr>
+        </table>
       </div>
-      <table>
-        <tr><td class="k">Name</td><td class="v">{{agent_name_en}}<br><span class="ar-inline">{{agent_name_ar}}</span></td><td class="ka">الاسم</td></tr>
-        <tr><td class="k">Civil ID</td><td class="v">{{agent_civil_id}}</td><td class="ka">البطاقة المدنية</td></tr>
-        <tr><td class="k">Signed at</td><td class="v">{{agent_signed_at}}</td><td class="ka">وقت التوقيع</td></tr>
-        <tr><td class="k">IP address</td><td class="v">{{agent_ip}}</td><td class="ka">عنوان IP</td></tr>
-      </table>
+    </div>
+  </section>
+
+  <section class="row keep">
+    <div class="en">
+      <div class="party">
+        <div class="who">Second Party — {{#if agent_org_en}}{{agent_org_en}}{{else}}Sub-Agent{{/if}}</div>
+        <div class="pad {{agent_signed_class}}">
+          {{#if agent_signature_src}}<img src="{{{agent_signature_src}}}" alt="">{{/if}}
+          <span class="hint">Signature</span>
+        </div>
+        <table>
+          <tr><td class="k">Name</td><td class="v">{{agent_name_en}}</td></tr>
+          <tr><td class="k">Civil ID</td><td class="v">{{agent_civil_id}}</td></tr>
+          <tr><td class="k">Signed at</td><td class="v">{{agent_signed_at}}</td></tr>
+          <tr><td class="k">IP address</td><td class="v">{{agent_ip}}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="ar">
+      <div class="party">
+        <div class="who">الطرف الثاني — {{#if agent_org_ar}}{{agent_org_ar}}{{else}}الوكيل الفرعي{{/if}}</div>
+        <div class="pad {{agent_signed_class}}">
+          {{#if agent_signature_src}}<img src="{{{agent_signature_src}}}" alt="">{{/if}}
+          <span class="hint">التوقيع</span>
+        </div>
+        <table>
+          <tr><td class="k">الاسم</td><td class="v">{{agent_name_ar}}</td></tr>
+          <tr><td class="k">البطاقة المدنية</td><td class="v"><span class="civ">{{agent_civil_id}}</span></td></tr>
+          <tr><td class="k">وقت التوقيع</td><td class="v"><span class="civ">{{agent_signed_at}}</span></td></tr>
+          <tr><td class="k">عنوان IP</td><td class="v"><span class="civ">{{agent_ip}}</span></td></tr>
+        </table>
+      </div>
     </div>
   </section>
 

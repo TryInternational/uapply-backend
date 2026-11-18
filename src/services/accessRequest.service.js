@@ -141,6 +141,56 @@ const receiptSecret = () => `${config.jwt.secret}:access-request-civil-id`;
 const b64url = (buf) => Buffer.from(buf).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
 const sign = (payload) => b64url(crypto.createHmac('sha256', receiptSecret()).update(payload).digest());
 
+// The organisation's logo, offered on the same form. Image only, smaller cap,
+// same private-upload + receipt mechanics; it is made public only when the
+// request is approved and the account exists (provisionUserForRequest).
+const LOGO_TYPES = new Map([
+  ['image/jpeg', 'jpg'],
+  ['image/png', 'png'],
+  ['image/webp', 'webp'],
+  ['image/svg+xml', 'svg'],
+]);
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+
+const storeLogoUpload = async (file) => {
+  if (!file || !file.buffer || !file.size) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Attach the logo as a PNG, JPG, WEBP or SVG file');
+  }
+  const ext = LOGO_TYPES.get(String(file.mimetype || '').toLowerCase());
+  if (!ext) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'The logo must be a PNG, JPG, WEBP or SVG file');
+  }
+  if (file.size > LOGO_MAX_BYTES) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'The logo file is larger than 2 MB');
+  }
+  const objectPath = `access-requests/logo/${crypto.randomBytes(16).toString('hex')}.${ext}`;
+  await storage().uploadPrivateBuffer(file.buffer, objectPath, file.mimetype);
+  const fileName = path.basename(String(file.originalname || `logo.${ext}`)).slice(0, 120);
+  const body = b64url(
+    JSON.stringify({
+      k: 'logo',
+      p: objectPath,
+      n: fileName,
+      t: file.mimetype,
+      s: file.size,
+      e: Date.now() + CIVIL_ID_RECEIPT_HOURS * 60 * 60 * 1000,
+    })
+  );
+  return { receipt: `${body}.${sign(body)}`, fileName, contentType: file.mimetype, size: file.size };
+};
+
+/** A short-lived read link for the logo on a request (reviewers), or null. */
+const logoLink = async (request) => {
+  if (!request.logo || !request.logo.path) return null;
+  const minutes = 10;
+  return {
+    url: await storage().signedReadUrl(request.logo.path, minutes),
+    expiresAt: new Date(Date.now() + minutes * 60 * 1000),
+    fileName: request.logo.fileName,
+    contentType: request.logo.contentType,
+  };
+};
+
 /**
  * Store a Civil ID scan privately and return the signed receipt for it.
  * @param {{buffer: Buffer, mimetype: string, originalname: string, size: number}} file  a multer memory file
@@ -177,10 +227,11 @@ const storeCivilIdUpload = async (file) => {
  * Turn a receipt back into the stored object's details, or throw.
  * Returns the `civilId` sub-document to store on the request.
  */
-const verifyCivilIdReceipt = (receipt) => {
+const verifyCivilIdReceipt = (receipt, kind = 'civil-id') => {
   const [body, sig] = String(receipt || '').split('.');
+  const what = kind === 'logo' ? 'logo' : 'Civil ID';
   const bad = () =>
-    new ApiError(httpStatus.BAD_REQUEST, 'The Civil ID upload could not be verified — please attach it again');
+    new ApiError(httpStatus.BAD_REQUEST, `The ${what} upload could not be verified — please attach it again`);
   if (!body || !sig) throw bad();
   const expected = sign(body);
   if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) throw bad();
@@ -191,8 +242,9 @@ const verifyCivilIdReceipt = (receipt) => {
     throw bad();
   }
   if (!data || !data.p || !data.e || Number(data.e) < Date.now()) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'The Civil ID upload has expired — please attach it again');
+    throw new ApiError(httpStatus.BAD_REQUEST, `The ${what} upload has expired — please attach it again`);
   }
+  if ((data.k || 'civil-id') !== kind) throw bad();
   return { path: data.p, fileName: data.n, contentType: data.t, size: data.s, uploadedAt: new Date() };
 };
 
@@ -258,7 +310,7 @@ const queryAccessRequests = async ({ status, limit = 100 } = {}) => {
   if (status) filter.status = status;
   return AccessRequest.find(filter).sort({ createdAt: -1 }).limit(limit).populate({
     path: 'agreement',
-    select: 'agreementNo status commission sentAt viewedAt agentSignedAt completedAt expiresAt autoCountersign',
+    select: 'agreementNo status commission sentAt viewedAt agentSignedAt completedAt expiresAt autoCountersign lastEmail',
   });
 };
 
@@ -295,6 +347,8 @@ const partnerProfileFrom = (request) => {
     nameAr: request.nameAr,
     organisationAr: request.organisationAr,
     title: request.title,
+    phoneCode: request.phoneCode,
+    phone: request.phone,
     legalName: d.legalName,
     yearEstablished: d.yearEstablished,
     address: d.address,
@@ -327,6 +381,17 @@ const partnerProfileFrom = (request) => {
 const provisionUserForRequest = async (request) => {
   const role = await roleIdForRequestedRole(request.requestedRole);
   const throwawayPassword = `${crypto.randomBytes(24).toString('hex')}A1`;
+  // The logo the applicant uploaded sat private until now; the account is
+  // real, so publish it and carry the URL the same way the staff path does.
+  let logoUrl = request.organisationLogo || undefined;
+  if (!logoUrl && request.logo && request.logo.path) {
+    try {
+      logoUrl = await storage().makePublic(request.logo.path);
+      request.organisationLogo = logoUrl;
+    } catch (err) {
+      logger.warn(`access request ${request.id}: could not publish logo: ${err.message}`);
+    }
+  }
   return userService.createUser({
     name: request.name,
     email: request.email,
@@ -335,9 +400,10 @@ const provisionUserForRequest = async (request) => {
     // Carried across so the portal can say which school or agency they are
     // from. Nothing else links a User back to the request that created it.
     organisation: request.organisation,
-    // Only ever set on the staff-created path; undefined for public requests,
-    // where staff add the logo later from the directory.
-    organisationLogo: request.organisationLogo || undefined,
+    // Staff-created path: the URL the admin uploaded. Public path: the
+    // applicant's own upload, published just above. Otherwise staff add it
+    // later from the directory.
+    organisationLogo: logoUrl,
     accessRequest: request.id || request._id,
     partnerProfile: partnerProfileFrom(request),
   });
@@ -418,6 +484,8 @@ module.exports = {
   storeCivilIdUpload,
   verifyCivilIdReceipt,
   civilIdLink,
+  storeLogoUpload,
+  logoLink,
   partnerProfileFrom,
   CIVIL_ID_MAX_BYTES,
   PUBLIC_FIELDS,

@@ -64,6 +64,9 @@ const userSchema = mongoose.Schema(
       nameAr: { type: String, trim: true },
       organisationAr: { type: String, trim: true },
       title: { type: String, trim: true },
+      // the contact's own phone (the person-in-charge phone is further down)
+      phoneCode: { type: String, trim: true },
+      phone: { type: String, trim: true },
       legalName: { type: String, trim: true },
       yearEstablished: { type: Number },
       address: { type: String, trim: true },
@@ -99,6 +102,17 @@ const userSchema = mongoose.Schema(
       maxlength: 2000,
     },
     ratedAt: {
+      type: Date,
+    },
+    // A closed account — "former staff". The person has left: they can't sign
+    // in (auth.service, passport) and the CRM leaves them out where work is
+    // assigned, but the record stays so every fee, student and comment that
+    // points at their id keeps their name. Deleting the user instead is what
+    // left "Unknown" on the dashboards. Set from Settings › Users.
+    former: {
+      type: Boolean,
+    },
+    formerAt: {
       type: Date,
     },
     password: {

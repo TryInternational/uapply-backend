@@ -44,6 +44,7 @@ const submitAccessRequest = catchAsync(async (req, res) => {
   // Verified before anything is written: a forged or expired receipt is a 400
   // the applicant can act on (re-attach the file), not a half-saved request.
   const civilId = req.body.civilIdUpload ? accessRequestService.verifyCivilIdReceipt(req.body.civilIdUpload) : undefined;
+  const logo = req.body.logoUpload ? accessRequestService.verifyCivilIdReceipt(req.body.logoUpload, 'logo') : undefined;
 
   const [existingUser, pending, latest] = await Promise.all([
     userService.getUserByEmail(email),
@@ -67,13 +68,15 @@ const submitAccessRequest = catchAsync(async (req, res) => {
         previousStatus: latest && latest.status !== 'Pending' ? latest.status : undefined,
         previousReason: latest && latest.decision ? latest.decision.reason : undefined,
         civilId,
+        logo,
       }
     );
-  } else if (civilId || req.body.organisationDetails || req.body.personInCharge) {
+  } else if (civilId || logo || req.body.organisationDetails || req.body.personInCharge) {
     // A resubmission while the first is pending: keep the one row, but let the
     // newer paperwork win -- this is how an applicant fixes a wrong upload.
     const refresh = {};
     if (civilId) refresh.civilId = civilId;
+    if (logo) refresh.logo = logo;
     if (req.body.organisationDetails) refresh.organisationDetails = req.body.organisationDetails;
     if (req.body.personInCharge) refresh.personInCharge = req.body.personInCharge;
     if (req.body.title) refresh.title = req.body.title;
@@ -316,6 +319,21 @@ const uploadCivilId = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send(result);
 });
 
+/** POST /access-requests/logo  (public, rate-limited, multipart "file") */
+const uploadLogo = catchAsync(async (req, res) => {
+  const result = await accessRequestService.storeLogoUpload(req.file);
+  res.status(httpStatus.CREATED).send(result);
+});
+
+/** GET /access-requests/:requestId/logo  (reviewers) — a short-lived link, or 404. */
+const logoLink = catchAsync(async (req, res) => {
+  const request = await accessRequestService.getAccessRequestById(req.params.requestId);
+  if (!request) throw new ApiError(httpStatus.NOT_FOUND, 'Access request not found');
+  const link = await accessRequestService.logoLink(request);
+  if (!link) throw new ApiError(httpStatus.NOT_FOUND, 'No logo was uploaded with this request');
+  res.send(link);
+});
+
 /**
  * GET /access-requests/:requestId/civil-id  (reviewers only)
  *
@@ -339,4 +357,6 @@ module.exports = {
   resendInvite,
   uploadCivilId,
   civilIdLink,
+  uploadLogo,
+  logoLink,
 };

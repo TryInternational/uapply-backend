@@ -32,6 +32,9 @@ const EVENT_TYPES = [
   'expired',
   'reminder_sent',
   'invite_sent',
+  // what the email provider answered when the signing link went out
+  'emailed',
+  'email_failed',
 ];
 
 const signatureSchema = new mongoose.Schema(
@@ -40,7 +43,7 @@ const signatureSchema = new mongoose.Schema(
     imagePath: { type: String, trim: true },
     // 'drawn' on a signature pad, 'typed' (name rendered in a script face),
     // 'stored' (the company signatory's signature on file).
-    method: { type: String, enum: ['drawn', 'typed', 'stored'] },
+    method: { type: String, enum: ['drawn', 'typed', 'uploaded', 'stored'] },
     typedName: { type: String, trim: true },
     signedAt: { type: Date },
     ip: { type: String, trim: true },
@@ -161,6 +164,16 @@ const agreementSchema = new mongoose.Schema(
     },
 
     events: { type: [eventSchema], default: [] },
+    // The last attempt to email the partner their signing link: who it went
+    // to, the provider's message id when it was accepted, the error when not.
+    // Reviewers see this next to the status, so "the mail never came" can be
+    // answered from the CRM instead of the server log.
+    lastEmail: {
+      to: { type: String, trim: true, lowercase: true },
+      at: { type: Date },
+      providerId: { type: String, trim: true },
+      error: { type: String, trim: true },
+    },
 
     declineReason: { type: String, trim: true },
     voidReason: { type: String, trim: true },

@@ -2,6 +2,21 @@ const Joi = require('joi');
 const { objectId } = require('./custom.validation');
 const { dealBody } = require('./agreement.validation');
 
+/**
+ * "Students placed each year" band.
+ *
+ * The app-wide xss-clean middleware HTML-escapes every "<" in a request body
+ * before validation, so the "<25" band arrives as "&lt;25" and was refused —
+ * nobody could send the form with "Under 25" chosen. Undo that one escape,
+ * then check against the list. The form offers the first three; '100-500' and
+ * '500+' are older bands some stored profiles still carry.
+ */
+const STUDENTS_PER_YEAR = Joi.string()
+  .replace(/^&lt;/, '<')
+  .valid('<25', '25-100', '100+', '100-500', '500+')
+  // Said in the form's own words: the three bands it offers.
+  .messages({ 'any.only': 'Choose how many students are placed each year: Under 25, 25–100, or 100 or more.' });
+
 // Joi rejects unknown keys by default, so a body carrying `status`, `user`,
 // `decision` or a role id is a 400 before it ever reaches the controller.
 const submitAccessRequest = {
@@ -12,7 +27,14 @@ const submitAccessRequest = {
     name: Joi.string().trim().min(2).max(120).required(),
     // Arabic spellings are optional (staff can add them later for the agreement).
     nameAr: Joi.string().trim().max(120).allow('', null),
-    email: Joi.string().trim().lowercase().email().max(254).required(),
+    // Shape only, no TLD list: Joi's bundled list lags behind real domains,
+    // and a genuine address on a newer ending was being refused.
+    email: Joi.string()
+      .trim()
+      .lowercase()
+      .email({ tlds: { allow: false } })
+      .max(254)
+      .required(),
     phoneCode: Joi.string().trim().max(8).allow('', null),
     phone: Joi.string().trim().min(5).max(32).required(),
     organisation: Joi.string().trim().min(2).max(160).required(),
@@ -29,7 +51,7 @@ const submitAccessRequest = {
         yearEstablished: Joi.number().integer().min(1900).max(2100).allow(null, ''),
         address: Joi.string().trim().max(240).allow('', null),
         staffCount: Joi.string().valid('1-5', '6-20', '21-50', '50+').allow('', null),
-        studentsPerYear: Joi.string().valid('<25', '25-100', '100+', '100-500', '500+').allow('', null),
+        studentsPerYear: STUDENTS_PER_YEAR.allow('', null),
         // No office — works online / from home. Lifts the address requirement.
         noOffice: Joi.boolean(),
         destinations: Joi.array().items(Joi.string().trim().max(60)).max(20),
@@ -53,7 +75,12 @@ const submitAccessRequest = {
         name: Joi.string().trim().max(120).allow('', null),
         nameAr: Joi.string().trim().max(120).allow('', null),
         title: Joi.string().trim().max(80).allow('', null),
-        email: Joi.string().trim().lowercase().email().max(254).allow('', null),
+        email: Joi.string()
+          .trim()
+          .lowercase()
+          .email({ tlds: { allow: false } })
+          .max(254)
+          .allow('', null),
         phoneCode: Joi.string().trim().max(8).allow('', null),
         phone: Joi.string().trim().max(32).allow('', null),
         civilIdNumber: Joi.string().trim().max(40).allow('', null),
@@ -70,6 +97,8 @@ const submitAccessRequest = {
       .max(2000)
       .allow('', null)
       .when('requestedRole', { is: 'subAgent', then: Joi.required().disallow('', null) }),
+    // Optional: the receipt from POST /access-requests/logo.
+    logoUpload: Joi.string().trim().max(2000).allow('', null),
   }),
 };
 
@@ -112,6 +141,7 @@ const resendInvite = {
 };
 
 module.exports = {
+  STUDENTS_PER_YEAR,
   submitAccessRequest,
   listAccessRequests,
   decideAccessRequest,

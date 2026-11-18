@@ -215,6 +215,13 @@ const studentsSchema = mongoose.Schema(
       closedAt: Date,
     },
 
+    // The student's photo — a storage URL. Added by the partner who referred
+    // them from the portal's student page ("Student photo" card); optional.
+    photo: {
+      type: String,
+      trim: true,
+    },
+
     // Reason + timestamp captured when an admin/counselor denies a sub-agent
     // submission (createdAt/updatedAt are stripped by the toJSON plugin, so we
     // persist the review time explicitly for the "Action needed" UI).
@@ -391,7 +398,10 @@ const studentsSchema = mongoose.Schema(
       trim: true,
       lowercase: true,
       validate(value) {
-        if (!validator.isEmail(value)) {
+        // Email is optional. An empty value used to fail isEmail(''), so adding
+        // a student without one was refused — and the refusal reached the
+        // partner portals as a bare 500.
+        if (value && !validator.isEmail(value)) {
           throw new Error('Invalid email');
         }
       },

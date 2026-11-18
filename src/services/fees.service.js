@@ -4,13 +4,35 @@ const httpStatus = require('http-status');
 const { Fees } = require('../models');
 const ApiError = require('../utils/ApiError');
 
+const KUWAIT_TZ = 'Asia/Kuwait';
+/** The Kuwait calendar day of an instant, as the "YYYY-MM-DD" the fee forms store. */
+const kuwaitDay = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: KUWAIT_TZ });
+
 /**
- * Create a role
- * @param {Object} documentBody
- * @returns {Promise<Documents>}
+ * The instant a fee's createdDate is stored as: noon UTC on the chosen day.
+ *
+ * The date picker used to send local midnight — 21:00 UTC the evening before
+ * in Kuwait — and the dashboard files office fees by UTC month, so a fee dated
+ * the 1st was counted in the previous month. Noon UTC keeps the UTC month, and
+ * the day shown in any office timezone, equal to the day that was picked.
+ * Fees already saved are left exactly as they are (see updateFeesById), so the
+ * dashboard's historical figures stay the same as production's.
+ */
+const storedFeeDay = (value) => {
+  if (!value) return value;
+  const day = kuwaitDay(value);
+  return /^\d{4}-\d{2}-\d{2}$/.test(day) ? new Date(`${day}T12:00:00.000Z`) : value;
+};
+
+/**
+ * Create a fee
+ * @param {Object} body
+ * @returns {Promise<Fees>}
  */
 const createFees = async (body) => {
-  const fees = await Fees.create(body);
+  const doc = { ...body };
+  if (doc.createdDate) doc.createdDate = storedFeeDay(doc.createdDate);
+  const fees = await Fees.create(doc);
   return fees;
 };
 
@@ -44,9 +66,6 @@ const getFeesById = async (id) => {
    dropped the fils; a raw $sum skipped strings. */
 const AMOUNT = { $convert: { input: '$tag.amount', to: 'double', onError: 0, onNull: 0 } };
 const asDate = (field) => ({ $convert: { input: field, to: 'date', onError: null, onNull: null } });
-const KUWAIT_TZ = 'Asia/Kuwait';
-/** The Kuwait calendar day of an instant, as the "YYYY-MM-DD" the fee forms store. */
-const kuwaitDay = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: KUWAIT_TZ });
 /** [start of the Kuwait day of `s`, start of the day after the Kuwait day of `e`) for date-only fields. */
 const dayBounds = (s, e) => {
   const from = new Date(kuwaitDay(s));
@@ -56,8 +75,10 @@ const dayBounds = (s, e) => {
 };
 
 const getAmounts = async () => {
-  // Months are Kuwait months: an office fee entered at 00:30 on the 1st (21:30 UTC
-  // the day before) belongs to the new month, not the previous one.
+  // Months are UTC months, exactly as production files them, so the historical
+  // figures match production to the dinar. Fees saved from now on carry noon
+  // UTC on the chosen day (storedFeeDay), so their UTC month is the month that
+  // was picked; the older ones stay where production puts them.
   const dated = {
     $cond: {
       if: { $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']] },
@@ -70,8 +91,8 @@ const getAmounts = async () => {
     { $match: { _d: { $ne: null } } },
     {
       $addFields: {
-        month: { $month: { date: '$_d', timezone: KUWAIT_TZ } },
-        year: { $year: { date: '$_d', timezone: KUWAIT_TZ } },
+        month: { $month: '$_d' },
+        year: { $year: '$_d' },
       },
     },
     {
@@ -134,7 +155,17 @@ const updateFeesById = async (id, updateBody) => {
   if (!fees) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
   }
-  Object.assign(fees, updateBody);
+  const changes = { ...updateBody };
+  if (changes.createdDate) {
+    if (fees.createdDate && kuwaitDay(changes.createdDate) === kuwaitDay(fees.createdDate)) {
+      // the edit form re-sends the date it was shown — same day, so keep the
+      // stored instant (an older fee keeps the month it has always counted in)
+      delete changes.createdDate;
+    } else {
+      changes.createdDate = storedFeeDay(changes.createdDate);
+    }
+  }
+  Object.assign(fees, changes);
   await fees.save();
   return fees;
 };

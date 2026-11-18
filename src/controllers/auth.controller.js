@@ -1,6 +1,13 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { authService, userService, tokenService, emailService, roleAccessService } = require('../services');
+const {
+  authService,
+  userService,
+  tokenService,
+  emailService,
+  roleAccessService,
+  accessRequestService,
+} = require('../services');
 
 /**
  * What the CRM is allowed to do, decided here and sent as booleans.
@@ -52,7 +59,18 @@ const refreshTokens = catchAsync(async (req, res) => {
 
 const forgotPassword = catchAsync(async (req, res) => {
   const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
-  await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
+  // A partner's link points at THEIR portal and says which sign-in door the
+  // reset page should offer afterwards; staff keep the back-office link.
+  const user = await userService.getUserByEmail(req.body.email);
+  let portal;
+  if (roleAccessService.isSubAgent(user)) portal = 'subAgent';
+  else if (roleAccessService.isSchoolCounselor(user)) portal = 'schoolCounselor';
+  await emailService.sendResetPasswordEmail(
+    req.body.email,
+    resetPasswordToken,
+    portal ? accessRequestService.portalUrlFor(portal) : undefined,
+    portal
+  );
   res.status(httpStatus.NO_CONTENT).send();
 });
 

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
-const { User, Students } = require('../models');
+const { User, Students, Agreement, Token } = require('../models');
 const config = require('../config/config');
 const ApiError = require('../utils/ApiError');
 
@@ -24,7 +24,9 @@ const getPartnerDirectory = async (kind) => {
   const roleId = partnerRoleId(kind);
   if (!roleId || !mongoose.isValidObjectId(roleId)) return [];
 
-  const users = await User.find({ role: roleId }).select('name email organisation organisationLogo avatar createdAt');
+  const users = await User.find({ role: roleId }).select(
+    'name email organisation organisationLogo avatar createdAt partnerProfile agreement'
+  );
   if (!users.length) return [];
 
   const ids = users.map((u) => u._id);
@@ -74,6 +76,7 @@ const getPartnerDirectory = async (kind) => {
       const r = byId.get(String(u._id)) || {};
       const students = r.students || 0;
       const enrolled = r.enrolled || 0;
+      const pp = u.partnerProfile || {};
       return {
         id: String(u._id),
         name: u.name || 'Unknown',
@@ -82,6 +85,20 @@ const getPartnerDirectory = async (kind) => {
         avatar: u.avatar || '',
         organisationLogo: u.organisationLogo || '',
         since: u.createdAt,
+        hasAgreement: Boolean(u.agreement),
+        // What the edit drawer shows; the card itself stays about performance.
+        profile: {
+          phoneCode: pp.phoneCode || '',
+          phone: pp.phone || '',
+          country: pp.country || '',
+          city: pp.city || '',
+          website: pp.website || '',
+          socialMedia: pp.socialMedia || '',
+          address: pp.address || '',
+          noOffice: Boolean(pp.noOffice),
+          studentsPerYear: pp.studentsPerYear || '',
+          destinations: Array.isArray(pp.destinations) ? pp.destinations : [],
+        },
         students,
         applied: r.applied || 0,
         enrolled,
@@ -143,4 +160,118 @@ const setPartnerLogo = async (partnerId, kind, url) => {
   return { id: String(user._id), organisationLogo: user.organisationLogo || '' };
 };
 
-module.exports = { getPartnerDirectory, getPartnerStudents, requestedRoleFor, setPartnerLogo };
+/** Fields the edit drawer may change, and where each one lives on the user. */
+const PROFILE_FIELDS = ['phoneCode', 'phone', 'country', 'city', 'website', 'socialMedia', 'address', 'studentsPerYear'];
+
+/**
+ * Edit a partner's contact details and profile.
+ *
+ * Scoped to a user of the kind named, like setPartnerLogo, so this can never
+ * rewrite a staff account by id. The email is the login, so a change is
+ * checked for clashes first; the password and role are untouchable here.
+ */
+const updatePartner = async (partnerId, kind, body) => {
+  if (!mongoose.isValidObjectId(partnerId)) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid partner id');
+  const roleId = partnerRoleId(kind);
+  if (!roleId) throw new ApiError(httpStatus.BAD_REQUEST, `No role configured for ${kind}`);
+  const user = await User.findOne({ _id: partnerId, role: roleId });
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'No such partner');
+
+  const email = body.email ? String(body.email).trim().toLowerCase() : undefined;
+  if (email && email !== user.email && (await User.isEmailTaken(email, partnerId))) {
+    throw new ApiError(httpStatus.CONFLICT, `${email} already belongs to another account.`);
+  }
+
+  if (body.organisation !== undefined) user.organisation = String(body.organisation).trim();
+  if (body.contact !== undefined) user.name = String(body.contact).trim();
+  if (email) user.email = email;
+  if (body.organisationLogo !== undefined) user.organisationLogo = body.organisationLogo || '';
+
+  const profile = {
+    ...((user.partnerProfile && user.partnerProfile.toObject && user.partnerProfile.toObject()) ||
+      user.partnerProfile ||
+      {}),
+  };
+  PROFILE_FIELDS.forEach((k) => {
+    if (body[k] === undefined) return;
+    const v = typeof body[k] === 'string' ? body[k].trim() : body[k];
+    if (v === '' || v === null) delete profile[k];
+    else profile[k] = v;
+  });
+  if (body.noOffice !== undefined) {
+    if (body.noOffice) {
+      profile.noOffice = true;
+      delete profile.address;
+    } else delete profile.noOffice;
+  }
+  if (body.destinations !== undefined) {
+    const list = Array.isArray(body.destinations) ? body.destinations.map((d) => String(d).trim()).filter(Boolean) : [];
+    if (list.length) profile.destinations = list;
+    else delete profile.destinations;
+  }
+  user.partnerProfile = profile;
+  user.markModified('partnerProfile');
+  await user.save();
+
+  return {
+    id: String(user._id),
+    name: user.name,
+    organisation: user.organisation || '',
+    email: user.email,
+    organisationLogo: user.organisationLogo || '',
+  };
+};
+
+/**
+ * Remove a partner.
+ *
+ * What goes: the login (the user document and its tokens) and any agreement
+ * still in flight, which is voided with the reason recorded. What stays: the
+ * students they sent — those are Ulearn's leads and their history, and they
+ * keep `createdBy` pointing at the removed id so the record of who brought
+ * them is not erased — plus the completed agreements and the original access
+ * request, as the paper trail. The same email can apply again afterwards.
+ */
+const removePartner = async (partnerId, kind, { by } = {}) => {
+  if (!mongoose.isValidObjectId(partnerId)) throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid partner id');
+  const roleId = partnerRoleId(kind);
+  if (!roleId) throw new ApiError(httpStatus.BAD_REQUEST, `No role configured for ${kind}`);
+  const user = await User.findOne({ _id: partnerId, role: roleId });
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'No such partner');
+
+  const students = await Students.countDocuments({ createdBy: user._id });
+
+  const open = await Agreement.find({ user: user._id, status: { $in: ['Draft', 'Sent', 'Viewed', 'AgentSigned'] } });
+  const byName = (by && by.name) || 'staff';
+  await Promise.all(
+    open.map((agreement) => {
+      agreement.set({
+        status: 'Voided',
+        voidedAt: new Date(),
+        voidReason: `Partner removed from the directory by ${byName}`,
+        signToken: undefined,
+      });
+      agreement.events.push({
+        type: 'voided',
+        at: new Date(),
+        by: by && (by.id || by._id),
+        byName: by && by.name,
+        note: 'partner removed',
+      });
+      return agreement.save();
+    })
+  );
+
+  await Token.deleteMany({ user: user._id });
+  await User.deleteOne({ _id: user._id });
+
+  return {
+    id: String(user._id),
+    organisation: user.organisation || user.name,
+    email: user.email,
+    students,
+    agreementsVoided: open.length,
+  };
+};
+
+module.exports = { getPartnerDirectory, getPartnerStudents, requestedRoleFor, setPartnerLogo, updatePartner, removePartner };

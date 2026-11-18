@@ -130,6 +130,29 @@ const denySubAgent = (req, res, next) => {
   return next();
 };
 
+/**
+ * Refuse a SUB-AGENT on a staff-only router, and change nothing for anyone
+ * else.
+ *
+ * Mounted on whole routers (fees, leads, quotes, WhatsApp, …) that a sub-agent
+ * holding a valid token could otherwise read by URL — the portal never calls
+ * them, but nothing stopped a direct request. It only IDENTIFIES the caller:
+ * no token, an expired token, staff, a school counsellor — all pass through
+ * exactly as before, which is why this is safe to mount on routers that carry
+ * public webhooks and payment redirects. (softAuth, by contrast, 401s a stale
+ * token, and denySubAgent also refuses school counsellors; mounting either here
+ * would have changed behaviour for other roles.)
+ */
+const denyIdentifiedSubAgent = (req, res, next) => {
+  if (!(req.headers && req.headers.authorization)) return next();
+  return passport.authenticate('jwt', { session: false }, (err, user) => {
+    if (user && isSubAgent(user)) {
+      return next(new ApiError(httpStatus.FORBIDDEN, 'Partner accounts cannot perform this action'));
+    }
+    return next();
+  })(req, res, next);
+};
+
 /** Allow only sub-agents. Used on the portal-only endpoints. */
 const requireSubAgent = (req, res, next) => {
   if (!isSubAgent(req.user)) {
@@ -325,6 +348,7 @@ module.exports = {
   legacyGate,
   requireAuth,
   denySubAgent,
+  denyIdentifiedSubAgent,
   requireSubAgent,
   requireSchoolCounselor,
   requireReviewer,

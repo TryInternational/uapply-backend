@@ -8,6 +8,47 @@ const logger = require('../../../src/config/logger');
 
 describe('Error middlewares', () => {
   describe('Error converter', () => {
+    // A request that fails validation is the caller's mistake: it must reach
+    // them as a 400 they can read, not be masked as a 500 outside development.
+    test('should turn a Mongoose ValidationError into an operational 400 built from the field messages', () => {
+      const Model = mongoose.model(
+        `ErrProbe${Date.now()}`,
+        new mongoose.Schema({
+          firstName: { type: String, required: true },
+          email: {
+            type: String,
+            validate(value) {
+              if (value && !/@/.test(value)) throw new Error('Invalid email');
+            },
+          },
+        })
+      );
+      const error = new Model({ email: 'nope' }).validateSync();
+      const next = jest.fn();
+
+      errorConverter(error, httpMocks.createRequest(), httpMocks.createResponse(), next);
+
+      expect(next).toHaveBeenCalledWith(expect.any(ApiError));
+      const converted = next.mock.calls[0][0];
+      expect(converted.statusCode).toBe(httpStatus.BAD_REQUEST);
+      expect(converted.isOperational).toBe(true);
+      expect(converted.message).toContain('firstName is required');
+      expect(converted.message).toContain('Invalid email');
+      expect(converted.message).not.toMatch(/validation failed/i);
+    });
+
+    test('should turn a malformed id (CastError) into an operational 404', () => {
+      const error = new mongoose.Error.CastError('ObjectId', 'not-an-id', '_id');
+      const next = jest.fn();
+
+      errorConverter(error, httpMocks.createRequest(), httpMocks.createResponse(), next);
+
+      const converted = next.mock.calls[0][0];
+      expect(converted).toBeInstanceOf(ApiError);
+      expect(converted.statusCode).toBe(httpStatus.NOT_FOUND);
+      expect(converted.isOperational).toBe(true);
+    });
+
     test('should return the same ApiError object it was called with', () => {
       const error = new ApiError(httpStatus.BAD_REQUEST, 'Any error');
       const next = jest.fn();
