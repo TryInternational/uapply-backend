@@ -9,6 +9,8 @@ const roleAccessService = require('./services/roleAccess.service');
 const agreementService = require('./services/agreement.service');
 const agreementRenderService = require('./services/agreementRender.service');
 const ensureUlearnStudentIndexes = require('./utils/ensureUlearnStudentIndexes');
+const { socketAuth, joinOwnRoom } = require('./utils/socketAuth');
+const { User } = require('./models');
 
 // Every host the CRM is served from. backoffice.ulearnabroad.com is a second
 // domain on the STAGING hosting site (same build as staging.backoffice.uapplyabroad.com).
@@ -18,8 +20,6 @@ const CRM_ORIGINS = [
   'https://backoffice.uapplyabroad.com',
   'https://backoffice.ulearnabroad.com',
 ];
-
-let server;
 
 // Create HTTP server
 const httpServer = http.createServer(app);
@@ -42,14 +42,29 @@ const io = new Server(httpServer, {
 // Attach io to the app instance
 app.set('io', io);
 
+// Only a signed-in user gets a socket, and only their own room: the handshake
+// must carry a valid access token (see utils/socketAuth.js for why).
+io.use(
+  socketAuth({
+    secret: config.jwt.secret,
+    findUser: (id) => User.findById(id).select('_id former').lean(),
+    logger,
+  })
+);
+
 // Socket.io connection handler
 io.on('connection', (socket) => {
   logger.info(`A user connected: ${socket.id}`);
 
-  // Join a room for the user (e.g., using userId)
+  // The room is the user's id. Joined here from the token, so realtime works
+  // even for a client that never sends `subscribe`.
+  joinOwnRoom(socket);
+
+  // Older CRM builds send their id with `subscribe`. It is no longer trusted:
+  // the socket stays in the room of the user its token belongs to.
   socket.on('subscribe', (userId) => {
-    socket.join(userId);
-    logger.info(`User ${userId} subscribed to notifications`);
+    const room = joinOwnRoom(socket, userId, logger);
+    logger.info(`User ${room} subscribed to notifications`);
   });
 
   // Handle disconnection
