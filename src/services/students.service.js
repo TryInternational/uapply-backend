@@ -1,5 +1,6 @@
 const httpStatus = require('http-status');
 const { Students } = require('../models');
+const logger = require('../config/logger');
 
 /**
  * "A student who applied", for the dashboard's student-level stats: in the
@@ -87,7 +88,7 @@ const updateStudentById = async (studentId, updateBody) => {
 
     return student;
   } catch (error) {
-    console.error('Error saving student:', error);
+    logger.error(`Error saving student: ${(error && error.stack) || error}`);
     // Rethrow. Swallowing it here returned `undefined`, and every caller then
     // dereferenced it — so a failed save (a missing student, a field that did
     // not validate) surfaced as an unrelated TypeError and a 500 instead of
@@ -396,6 +397,8 @@ const getStudentsByStudyLevel = async () => {
 
 // Students grouped by the role that handles them (assignedTo.role slot:
 // sales / account manager / operations / counsellor) — "Where students come from".
+// Not exported and nothing calls it (the dashboard no longer reads this aggregate).
+// eslint-disable-next-line no-unused-vars
 const getStudentsByRole = async ({ startDate, endDate }) => {
   const match = { 'assignedTo.0': { $exists: true } };
   if (startDate && endDate) {
@@ -475,57 +478,61 @@ const getStudentsByDestination = async () => {
 
 // Sales leaderboard (Admin "Sales" panel, Counselor desk "Sales" card and
 // applied pulse). For a date range it ranks each counsellor / salesperson by
-// the students who APPLIED in that range — a student counts in the range of
-// their first LIVE application (the same rule as "Students who applied") —
-// and, of those students, how many have reached an offer and how many
-// enrolled:
+// the students who APPLIED in that range, and, of those students, how many
+// have reached an offer and how many enrolled:
 //
-//   applied   first LIVE application created in the range
-//   offers    of those: enrolled, or a LIVE application that is not rejected
-//             and has reached Conditional offer or later (an offer that moved
-//             on to Confirmation / CAS / Done still counts — the old rule only
-//             counted applications sitting AT an offer right now)
-//   enrolled  of those: Enrolled now or in an earlier journey
-//
-// It used to scope students by `createdAt` (a student added in August who
-// applied today never counted) and to count stage PendingReview (partner
-// submissions not yet accepted) as applied.
+//   applied   an applied event in the range — application.service
+//             `appliedStudentIdsBetween`, the same rule as "Students who
+//             applied", Team rankings and the Stats tab: the student's first
+//             LIVE application for an intake (so a student back for a new
+//             intake counts again), or the stage move when they were marked
+//             applied without a university application
+//   offers    of those, SINCE they applied: enrolled, or a LIVE application
+//             that is not rejected and has reached Conditional offer or later
+//   enrolled  of those, SINCE they applied: Enrolled, or an earlier journey
+//             that ended Enrolled after that date. A student back for a new
+//             intake used to bring an old enrolment along — Conversion read
+//             8% beside 0 enrolled.
 //
 // Each row also carries the student ids behind it (`appliedStudents` with the
 // student's course-level name, `offerIds`, `enrolledIds`) so the client can total
 // DISTINCT students across people — summing per-person counts counted a
 // student with two salespeople twice — and filter by level.
+//
+// Students with no counsellor / salesperson come back as one last row flagged
+// `unassigned`. They were dropped, so the panel's total was short of the
+// students who applied (82 shown, 84 applied) with nothing to say why.
 const getCounselorLeaderboard = async ({ startDate, endDate } = {}) => {
   // required here: application.service and dashboardBreakdowns.service load models and each other
   // eslint-disable-next-line global-require
   const { Application, CourseLevels, User } = require('../models');
   // eslint-disable-next-line global-require
-  const { LIVE_ONLY } = require('./application.service');
+  const { LIVE_ONLY, appliedStudentsBetween } = require('./application.service');
   // eslint-disable-next-line global-require
-  const { reachedIdx } = require('./dashboardBreakdowns.service');
+  const { reachedIdx, enrolledSince, appsSince } = require('./dashboardBreakdowns.service');
   const OFFER_IDX = 2; // Conditional offer
   const idOf = (x) => String((x && (x._id || x.id)) || x || '');
 
-  const s = startDate ? new Date(startDate) : null;
-  const e = endDate ? new Date(endDate) : null;
-  const ranged = s && e && !Number.isNaN(s.getTime()) && !Number.isNaN(e.getTime());
-  const firsts = await Application.aggregate([
-    { $match: { ...LIVE_ONLY, studentId: { $ne: null } } },
-    { $group: { _id: '$studentId', first: { $min: '$createdAt' } } },
-    ...(ranged ? [{ $match: { first: { $gte: s, $lte: e } } }] : []),
-  ]);
-  const ids = firsts.map((f) => f._id);
+  const appliedAt = await appliedStudentsBetween(startDate, endDate);
+  const ids = Array.from(appliedAt.keys());
   if (!ids.length) return [];
 
   const [students, apps, levels] = await Promise.all([
     Students.find(
       { _id: { $in: ids } },
-      { assignedTo: 1, stage: 1, 'journeys.outcome': 1, 'preference.courseLevel': 1 },
+      {
+        assignedTo: 1,
+        stage: 1,
+        enrolledAt: 1,
+        'journeys.outcome': 1,
+        'journeys.closedAt': 1,
+        'preference.courseLevel': 1,
+      },
       { autopopulate: false }
     ).lean(),
     Application.find(
       { ...LIVE_ONLY, studentId: { $in: ids } },
-      { studentId: 1, rejected: 1, courseLevel: 1, 'portalApplicationStatus.applicationPhases': 1 },
+      { studentId: 1, rejected: 1, courseLevel: 1, createdAt: 1, 'portalApplicationStatus.applicationPhases': 1 },
       { autopopulate: false }
     ).lean(),
     CourseLevels.find({}, { en_name: 1 }).lean(),
@@ -538,12 +545,13 @@ const getCounselorLeaderboard = async ({ startDate, endDate } = {}) => {
 
   const COUNSELOR_ROLE = /^\s*(counsell?or|sales)\s*$/i;
   const rows = new Map();
+  const unassigned = { appliedStudents: [], offerIds: [], enrolledIds: [] };
   students.forEach((st) => {
     const sid = idOf(st);
     const list = appsBy.get(sid) || [];
-    const enrolled =
-      st.stage === 'Enrolled' || (Array.isArray(st.journeys) && st.journeys.some((j) => j && j.outcome === 'Enrolled'));
-    const offer = enrolled || list.some((a) => !a.rejected && reachedIdx(a) >= OFFER_IDX);
+    const at = appliedAt.get(sid);
+    const enrolled = enrolledSince(st, at);
+    const offer = enrolled || appsSince(list, at).some((a) => !a.rejected && reachedIdx(a) >= OFFER_IDX);
     const level =
       nameOfLevel(st.preference && st.preference.courseLevel) ||
       list.map((a) => nameOfLevel(a.courseLevel)).find(Boolean) ||
@@ -560,23 +568,32 @@ const getCounselorLeaderboard = async ({ startDate, endDate } = {}) => {
       if (enrolled) row.enrolledIds.push(sid);
       rows.set(user, row);
     });
+    if (!seen.size) {
+      unassigned.appliedStudents.push({ id: sid, level });
+      if (offer) unassigned.offerIds.push(sid);
+      if (enrolled) unassigned.enrolledIds.push(sid);
+    }
   });
 
   const users = await User.find({ _id: { $in: Array.from(rows.keys()) } }, { name: 1 }).lean();
   const nameOf = new Map(users.map((u) => [idOf(u), u.name]));
-  return Array.from(rows.values())
-    .map((r) => ({
-      userId: r.userId,
-      name: nameOf.get(r.userId) || 'Unknown',
-      applied: r.appliedStudents.length,
-      offers: r.offerIds.length,
-      enrolled: r.enrolledIds.length,
-      students: r.appliedStudents.length,
-      appliedStudents: r.appliedStudents,
-      offerIds: r.offerIds,
-      enrolledIds: r.enrolledIds,
-    }))
+  const shape = (r, name) => ({
+    userId: r.userId,
+    name,
+    applied: r.appliedStudents.length,
+    offers: r.offerIds.length,
+    enrolled: r.enrolledIds.length,
+    students: r.appliedStudents.length,
+    appliedStudents: r.appliedStudents,
+    offerIds: r.offerIds,
+    enrolledIds: r.enrolledIds,
+  });
+  const ranked = Array.from(rows.values())
+    .map((r) => shape(r, nameOf.get(r.userId) || 'Unknown'))
     .sort((a, b) => b.applied - a.applied || b.offers - a.offers);
+  return unassigned.appliedStudents.length
+    ? ranked.concat({ ...shape({ ...unassigned, userId: 'unassigned' }, 'No sales person'), unassigned: true })
+    : ranked;
 };
 
 // Maps a raw course-level name (courselevels.en_name) into one of the four

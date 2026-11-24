@@ -21,6 +21,7 @@ const notificationsService = require('./notifications.services');
 // here. Admins may view the Unassigned / All inboxes; everyone else is scoped
 // to their own chats.
 const roleAccess = require('./roleAccess.service');
+const { attachWaitingSince } = require('./whatsappWaiting.service');
 // Required lazily: both modules import models/thirdparty only, but keeping the
 // require inside the handlers avoids any load-order surprise in services/index.
 const broadcastService = () => require('./whatsappBroadcast.services'); // eslint-disable-line global-require
@@ -355,6 +356,11 @@ const toConversationDTO = (conv) => {
     priority: conv.priority || 'medium',
     tags: conv.tags || [],
     nextFollowUpAt: isoOrNull(conv.nextFollowUpAt),
+    resolvedAt: isoOrNull(conv.resolvedAt),
+    // set on a chat that is waiting for a reply (whatsappWaiting.service): when
+    // the wait began, and how many messages the student has sent since
+    waitingSince: isoOrNull(conv.waitingSince),
+    unanswered: conv.waitingSince ? conv.unanswered || 0 : undefined,
   };
 };
 
@@ -636,11 +642,26 @@ const handleStatusUpdates = async (io, value) => {
   );
 };
 
+/**
+ * Is this webhook event for OUR WhatsApp number? Every real event names the
+ * number it was sent to (`metadata.phone_number_id`). The "Test" button on
+ * Meta's webhook page sends a sample for a made-up number, from "test user
+ * name", dated 2017 — it was stored as a conversation and sat at the top of
+ * "Waiting longest" with a nine-year wait. An event that names no number, or
+ * a server with none configured, is let through as before.
+ */
+const isOurNumber = (value) => {
+  const ours = config.whatsapp && config.whatsapp.phoneNumberId;
+  const theirs = value && value.metadata && value.metadata.phone_number_id;
+  return !ours || !theirs || String(ours) === String(theirs);
+};
+
 const processWebhook = async (io, body) => {
   const changes = (body.entry || []).flatMap((e) => e.changes || []);
   await Promise.all(
     changes.map(async (change) => {
       const value = (change && change.value) || {};
+      if (!isOurNumber(value)) return;
       if (change && change.field === 'calls') {
         await callService().handleCallEvents(io, value);
         return;
@@ -676,6 +697,7 @@ const queryConversations = async (filter, options, reqUser) => {
   });
   await WhatsappConversation.populate(result.results, { path: 'student', select: STUDENT_FIELDS });
   await attachStudentContext(result.results);
+  await attachWaitingSince(result.results);
   return { ...result, results: result.results.map(toConversationDTO) };
 };
 
@@ -683,6 +705,7 @@ const getConversation = async (id) => {
   const conv = await WhatsappConversation.findById(id).populate('student', STUDENT_FIELDS);
   if (!conv) throw new ApiError(httpStatus.NOT_FOUND, 'Conversation not found');
   await attachStudentContext(conv);
+  await attachWaitingSince(conv);
   return toConversationDTO(conv);
 };
 
@@ -854,7 +877,15 @@ const addNote = async (io, conversationId, text, mentions, user, clientRef) => {
     timestamp: new Date(),
     sentByUser: user._id,
   });
-  conv.lastMessage = { preview: '📝 Internal note', at: msg.timestamp, direction: 'outbound' };
+  // The note tops the chat list, but it is not a reply: `direction` stays that
+  // of the last real message. Set to 'outbound' it took a chat where the
+  // student was still waiting out of "Needs reply" and off the dashboard's
+  // waiting count, though nothing had been sent to them.
+  conv.lastMessage = {
+    preview: '📝 Internal note',
+    at: msg.timestamp,
+    direction: (conv.lastMessage && conv.lastMessage.direction) || undefined,
+  };
   conv.lastMessageAt = msg.timestamp;
   await conv.save();
   // Let teammates assigned to this conversation see the note in realtime.
@@ -1081,7 +1112,12 @@ const saveMessageAsDocument = async (messageId, { docTypeKey, label, application
 const updateConversationMeta = async (conversationId, patch) => {
   const conv = await WhatsappConversation.findById(conversationId).populate('student', STUDENT_FIELDS);
   if (!conv) throw new ApiError(httpStatus.NOT_FOUND, 'Conversation not found');
-  if (patch.status !== undefined) conv.status = patch.status;
+  if (patch.status !== undefined) {
+    // stamp the moment it was resolved; reopening clears it
+    if (patch.status === 'resolved' && conv.status !== 'resolved') conv.resolvedAt = new Date();
+    else if (patch.status !== 'resolved') conv.resolvedAt = undefined;
+    conv.status = patch.status;
+  }
   if (patch.priority !== undefined) conv.priority = patch.priority;
   if (patch.tags !== undefined) conv.tags = patch.tags;
   if (patch.nextFollowUpAt !== undefined) conv.nextFollowUpAt = patch.nextFollowUpAt;

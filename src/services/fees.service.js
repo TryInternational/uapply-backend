@@ -12,11 +12,10 @@ const kuwaitDay = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: KUW
  * The instant a fee's createdDate is stored as: noon UTC on the chosen day.
  *
  * The date picker used to send local midnight — 21:00 UTC the evening before
- * in Kuwait — and the dashboard files office fees by UTC month, so a fee dated
- * the 1st was counted in the previous month. Noon UTC keeps the UTC month, and
- * the day shown in any office timezone, equal to the day that was picked.
- * Fees already saved are left exactly as they are (see updateFeesById), so the
- * dashboard's historical figures stay the same as production's.
+ * in Kuwait. Noon UTC keeps the day shown in any office timezone equal to the
+ * day that was picked. Fees already saved are left exactly as they are (see
+ * updateFeesById); the dashboard now files months in Kuwait time (getAmounts),
+ * which puts those older ones in the month they were dated as well.
  */
 const storedFeeDay = (value) => {
   if (!value) return value;
@@ -74,11 +73,21 @@ const dayBounds = (s, e) => {
   return [from, to];
 };
 
-const getAmounts = async () => {
-  // Months are UTC months, exactly as production files them, so the historical
-  // figures match production to the dinar. Fees saved from now on carry noon
-  // UTC on the chosen day (storedFeeDay), so their UTC month is the month that
-  // was picked; the older ones stay where production puts them.
+/**
+ * @param {Date} [now]
+ *
+ * Each row also carries `amountToDay` / `countToDay`: that month up to
+ * today's day of the month (Kuwait). "Same time last year" reads last year's
+ * row for the month in progress — it used to be estimated from the whole month.
+ */
+const getAmounts = async (now = new Date()) => {
+  const today = Number(kuwaitDay(now).slice(8, 10));
+  // Months are KUWAIT months. They were UTC months, kept that way so the
+  // figures matched the old production dashboard to the dinar — but that left
+  // every fee the old date picker saved for the 1st (stored as 21:00 UTC the
+  // evening before) in the previous month: three payments, 130 KD in all.
+  // Fees saved since carry noon UTC on the chosen day (storedFeeDay) and the
+  // date-only fields parse to midnight UTC, so all of them keep their day.
   const dated = {
     $cond: {
       if: { $in: ['$feeType', ['english-self-funded', 'ielts-booking', 'student-visa']] },
@@ -91,8 +100,9 @@ const getAmounts = async () => {
     { $match: { _d: { $ne: null } } },
     {
       $addFields: {
-        month: { $month: '$_d' },
-        year: { $year: '$_d' },
+        month: { $month: { date: '$_d', timezone: KUWAIT_TZ } },
+        year: { $year: { date: '$_d', timezone: KUWAIT_TZ } },
+        _toDay: { $lte: [{ $dayOfMonth: { date: '$_d', timezone: KUWAIT_TZ } }, today] },
       },
     },
     {
@@ -100,6 +110,8 @@ const getAmounts = async () => {
         _id: { feeType: '$feeType', month: '$month', year: '$year' },
         totalAmount: { $sum: AMOUNT },
         bookingCount: { $sum: 1 }, // Count the number of documents (bookings)
+        amountToDay: { $sum: { $cond: ['$_toDay', AMOUNT, 0] } },
+        countToDay: { $sum: { $cond: ['$_toDay', 1, 0] } },
       },
     },
     {
@@ -110,6 +122,8 @@ const getAmounts = async () => {
         year: '$_id.year',
         totalAmount: 1,
         bookingCount: 1,
+        amountToDay: 1,
+        countToDay: 1,
       },
     },
   ]);
@@ -121,7 +135,12 @@ const getAmounts = async () => {
   const sumMap = new Map();
   monthlySums.forEach((item) => {
     const key = `${item.feeType}-${item.year}-${item.month}`;
-    sumMap.set(key, { totalAmount: item.totalAmount, bookingCount: item.bookingCount });
+    sumMap.set(key, {
+      totalAmount: item.totalAmount,
+      bookingCount: item.bookingCount,
+      amountToDay: item.amountToDay,
+      countToDay: item.countToDay,
+    });
   });
 
   // Create an array to hold the final result
@@ -135,8 +154,8 @@ const getAmounts = async () => {
     uniqueYears.forEach((year) => {
       allMonths.forEach((month) => {
         const key = `${feeType}-${year}-${month}`;
-        const { totalAmount = 0, bookingCount = 0 } = sumMap.get(key) || {};
-        result.push({ feeType, year, month, totalAmount, bookingCount });
+        const { totalAmount = 0, bookingCount = 0, amountToDay = 0, countToDay = 0 } = sumMap.get(key) || {};
+        result.push({ feeType, year, month, totalAmount, bookingCount, amountToDay, countToDay });
       });
     });
   });

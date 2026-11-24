@@ -318,6 +318,176 @@ const getPipelineDrilldown = async (metric, startDate, endDate) => {
   ]);
 };
 
+/* ---------------------------------------------------------------------------
+   "Needs action" — the two student lists (Dormant 30+ days, IELTS not booked).
+   They are about students, not applications, and about right now, not a
+   date range. Each row says why the student is on the list.
+   ------------------------------------------------------------------------- */
+const DORMANT_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+/** a sortable number for an intake (month name or number + year); Infinity when unknown */
+const intakeRank = (month, year) => {
+  const y = Number(year);
+  if (!y) return Infinity;
+  const n = Number(month);
+  const m =
+    Number.isInteger(n) && n >= 1 && n <= 12
+      ? n - 1
+      : MONTH_KEYS.indexOf(
+          String(month || '')
+            .trim()
+            .slice(0, 3)
+            .toLowerCase()
+        );
+  return y * 12 + (m < 0 ? 0 : m);
+};
+/** this month, in Kuwait, on the same scale: an intake at or below it has started (the 1st has passed) */
+const kuwaitMonthRank = (now) => {
+  const [month, year] = now
+    .toLocaleString('en-US', { timeZone: 'Asia/Kuwait', month: 'numeric', year: 'numeric' })
+    .split('/')
+    .map(Number);
+  return year * 12 + (month - 1);
+};
+const nameKey = (parts) => parts.filter(Boolean).join(' ').trim().toLowerCase().replace(/\s+/g, ' ');
+
+/**
+ * @param {'dormant'|'ielts'} metric
+ *   dormant — students still in the pipeline (not applied yet, or applied) with
+ *             nothing recorded for 30 days or more: no change to the student,
+ *             no application update, no comment and no timeline entry.
+ *             Longest quiet first.
+ *   ielts   — applied students whose intake has not started yet (or is not
+ *             recorded) with no English test on file (not marked as taken or
+ *             waiting for results, no score) and no IELTS booking, matched by
+ *             the booking's student link or, for older bookings that have
+ *             none, by name. Soonest intake first. A student still marked
+ *             Applied for an intake that has begun is past booking a test:
+ *             that is the Dormant list's business.
+ */
+const getStudentDrilldown = async (metric, now = new Date()) => {
+  if (metric !== 'dormant' && metric !== 'ielts') return [];
+  // required here: these models are only needed for this list
+  // eslint-disable-next-line global-require
+  const { Comments, Activity, Fees, User } = require('../models');
+  const idOf = (x) => String((x && (x._id || x.id)) || x || '');
+
+  const students = await Students.find(
+    { stage: { $in: metric === 'ielts' ? ['Applied'] : ['NotApplied', 'Applied'] } },
+    {
+      firstName: 1,
+      middleName: 1,
+      lastName: 1,
+      stage: 1,
+      assignedTo: 1,
+      createdAt: 1,
+      updatedAt: 1,
+      testTaken: 1,
+      testScore: 1,
+      'englishTest.overall': 1,
+      'preference.intakeMonth': 1,
+      'preference.intakeYear': 1,
+    },
+    { autopopulate: false }
+  ).lean();
+  if (!students.length) return [];
+  const ids = students.map((s) => s._id);
+
+  const [apps, team] = await Promise.all([
+    Application.find(
+      { ...LIVE_ONLY, studentId: { $in: ids } },
+      { studentId: 1, createdAt: 1, updatedAt: 1, intakeMonth: 1, intakeYear: 1, courseName: 1, institute: 1 },
+      { autopopulate: false }
+    ).lean(),
+    User.find(
+      { _id: { $in: [].concat(...students.map((s) => (s.assignedTo || []).map((a) => a && a.user))).filter(Boolean) } },
+      { name: 1 }
+    ).lean(),
+  ]);
+  const teamName = new Map(team.map((u) => [idOf(u), u.name]));
+  const appsBy = new Map();
+  apps.forEach((a) => appsBy.set(idOf(a.studentId), (appsBy.get(idOf(a.studentId)) || []).concat(a)));
+  const stamp = (d) => (d ? new Date(d).getTime() : 0);
+
+  const base = (s) => {
+    const list = (appsBy.get(idOf(s)) || []).slice().sort((a, b) => stamp(b.updatedAt) - stamp(a.updatedAt));
+    const latest = list[0];
+    const pref = s.preference || {};
+    const withIntake = list.find((a) => a.intakeMonth && a.intakeYear);
+    return {
+      _id: idOf(s),
+      kind: 'student',
+      studentId: idOf(s),
+      studentName: [s.firstName, s.lastName].filter(Boolean).join(' '),
+      studentStage: s.stage,
+      stage: s.stage === 'NotApplied' ? 'Not applied yet' : s.stage,
+      counselors: (s.assignedTo || []).map((a) => teamName.get(idOf(a && a.user))).filter(Boolean),
+      courseName: latest ? latest.courseName : undefined,
+      institute: latest && latest.institute ? { name: latest.institute.name, logoUrl: latest.institute.logoUrl } : undefined,
+      applications: list.length,
+      intakeMonth: pref.intakeMonth || (withIntake && withIntake.intakeMonth) || undefined,
+      intakeYear: pref.intakeYear || (withIntake && withIntake.intakeYear) || undefined,
+    };
+  };
+
+  if (metric === 'dormant') {
+    const [comments, activity] = await Promise.all([
+      Comments.aggregate([
+        { $match: { studentId: { $in: ids } } },
+        { $group: { _id: '$studentId', at: { $max: '$createdAt' } } },
+      ]),
+      Activity.aggregate([
+        { $match: { student: { $in: ids } } },
+        { $group: { _id: '$student', at: { $max: '$createdAt' } } },
+      ]),
+    ]);
+    const lastComment = new Map(comments.map((r) => [idOf(r._id), stamp(r.at)]));
+    const lastEntry = new Map(activity.map((r) => [idOf(r._id), stamp(r.at)]));
+    return students
+      .map((s) => {
+        const k = idOf(s);
+        const last = Math.max(
+          stamp(s.updatedAt || s.createdAt),
+          ...(appsBy.get(k) || []).map((a) => stamp(a.updatedAt || a.createdAt)),
+          lastComment.get(k) || 0,
+          lastEntry.get(k) || 0
+        );
+        return {
+          ...base(s),
+          lastActivityAt: last ? new Date(last) : null,
+          quietDays: Math.floor((now.getTime() - last) / DAY_MS),
+        };
+      })
+      .filter((r) => r.lastActivityAt && r.quietDays >= DORMANT_DAYS)
+      .sort((a, b) => b.quietDays - a.quietDays);
+  }
+
+  // ielts
+  const bookings = await Fees.find({ feeType: 'ielts-booking' }, { student: 1, 'tag.fullName': 1 }).lean();
+  const booked = new Set(bookings.map((f) => idOf(f.student)).filter(Boolean));
+  const bookedNames = new Set(bookings.map((f) => nameKey([f.tag && f.tag.fullName])).filter(Boolean));
+  const hasTest = (s) =>
+    s.testTaken === 'Yes' ||
+    s.testTaken === 'Waiting for results' ||
+    !!s.testScore ||
+    !!(s.englishTest && s.englishTest.overall);
+  const hasBooking = (s) =>
+    booked.has(idOf(s)) ||
+    bookedNames.has(nameKey([s.firstName, s.middleName, s.lastName])) ||
+    bookedNames.has(nameKey([s.firstName, s.lastName]));
+  const thisMonth = kuwaitMonthRank(now);
+  return students
+    .filter((s) => !hasTest(s) && !hasBooking(s))
+    .map(base)
+    .filter((r) => intakeRank(r.intakeMonth, r.intakeYear) > thisMonth)
+    .sort(
+      (a, b) =>
+        intakeRank(a.intakeMonth, a.intakeYear) - intakeRank(b.intakeMonth, b.intakeYear) ||
+        a.studentName.localeCompare(b.studentName)
+    );
+};
+
 const getApplicationsCountByPhase = async (startDate, endDate) => {
   try {
     // Get all unique phases
@@ -404,7 +574,7 @@ const getOverdueCandidateApplications = async () => {
   // the phase the find() projection never carried. The phases stay in the
   // projection because whether a row is actually overdue is decided on the
   // client, against the SLA config it already holds.
-  return Application.aggregate([
+  const rows = await Application.aggregate([
     {
       $match: {
         ...LIVE_ONLY,
@@ -421,7 +591,15 @@ const getOverdueCandidateApplications = async () => {
     { $unwind: { path: '$_stu', preserveNullAndEmptyArrays: true } },
     // Nobody is working a rejected application, or one whose student is Lost /
     // Denied (or deleted): those have no clock, so they are not "overdue".
-    { $match: { rejected: { $ne: true }, '_stu._id': { $exists: true }, '_stu.stage': { $nin: ['Lost', 'Denied'] } } },
+    // Nor one whose student has ENROLLED: the offers they did not take are
+    // finished business, yet they were 467 of the 1,234 rows weighed here.
+    {
+      $match: {
+        rejected: { $ne: true },
+        '_stu._id': { $exists: true },
+        '_stu.stage': { $nin: ['Lost', 'Denied', 'Enrolled'] },
+      },
+    },
     { $lookup: { from: 'users', localField: '_stu.assignedTo.user', foreignField: '_id', as: '_team' } },
     { $lookup: { from: 'users', localField: '_stu.createdBy', foreignField: '_id', as: '_owner' } },
     { $unwind: { path: '$_owner', preserveNullAndEmptyArrays: true } },
@@ -446,6 +624,8 @@ const getOverdueCandidateApplications = async () => {
         studentPhone: '$_stu.phoneNo',
         studentCity: '$_stu.city',
         studentCreatedAt: '$_stu.createdAt',
+        studentIntakeMonth: '$_stu.preference.intakeMonth',
+        studentIntakeYear: '$_stu.preference.intakeYear',
         channel: '$_stu.channel',
         testScore: '$_stu.testScore',
         testTaken: '$_stu.testTaken',
@@ -460,6 +640,19 @@ const getOverdueCandidateApplications = async () => {
       },
     },
   ]);
+  // An application for an intake that has already begun is past chasing: the
+  // student went, or did not. They were 418 of the 767 rows — every September
+  // 2026 application still sitting at Submitted — and kept the count high
+  // whatever the team did. The application's own intake decides, else the
+  // student's; one with no intake recorded stays in.
+  const thisMonth = kuwaitMonthRank(new Date());
+  return rows.filter((a) => {
+    const rank =
+      a.intakeMonth && a.intakeYear
+        ? intakeRank(a.intakeMonth, a.intakeYear)
+        : intakeRank(a.studentIntakeMonth, a.studentIntakeYear);
+    return rank > thisMonth;
+  });
 };
 
 const getTopUniversitiesByApplications = async (startDate, endDate, limit = 10) => {
@@ -785,27 +978,74 @@ const countAppliedStudents = async (startDate, endDate) => {
   return events.filter((ev) => ev.at >= s && ev.at <= e).length;
 };
 
-const kuwaitYM = (d) => {
-  const [m, y] = new Date(d).toLocaleString('en-US', { timeZone: KUWAIT_TZ, month: 'numeric', year: 'numeric' }).split('/');
-  return { y: Number(y), m: Number(m) };
+/**
+ * THE rule for "students who applied in a period", shared by the applied
+ * chart, the Sales panel, Team rankings and the Stats tab: the distinct
+ * students with an applied event (above) between the two instants. With no
+ * (valid) range, every student who has ever applied.
+ *
+ * The cards used to disagree — Sales counted a student's first-EVER
+ * application, Team rankings any application created in the range, the Stats
+ * tab the students ADDED in the range — so the same person read 26 on one tab
+ * and 19 on the next.
+ *
+ * Returns a Map of student id → WHEN they applied (their earliest applied
+ * event in the range). "Offers" and "Enrolled" of these students are counted
+ * from that moment on: a student back for a new intake brought an enrolment
+ * from an earlier year with them, which read as 8% conversion beside 0 enrolled.
+ */
+const appliedStudentsBetween = async (startDate, endDate) => {
+  const s = startDate ? new Date(startDate) : null;
+  const e = endDate ? new Date(endDate) : null;
+  const ranged = !!s && !!e && !Number.isNaN(s.getTime()) && !Number.isNaN(e.getTime());
+  const events = await appliedEvents();
+  const first = new Map();
+  events.forEach((ev) => {
+    if (ranged && !(ev.at >= s && ev.at <= e)) return;
+    const k = String(ev.student);
+    const prev = first.get(k);
+    if (!prev || ev.at < prev) first.set(k, ev.at);
+  });
+  return first;
+};
+
+/** The ids of `appliedStudentsBetween` (every card's "students who applied"). */
+const appliedStudentIdsBetween = async (startDate, endDate) =>
+  Array.from((await appliedStudentsBetween(startDate, endDate)).keys());
+
+const kuwaitYMD = (date) => {
+  const [m, d, y] = new Date(date)
+    .toLocaleString('en-US', { timeZone: KUWAIT_TZ, month: 'numeric', day: 'numeric', year: 'numeric' })
+    .split('/');
+  return { y: Number(y), m: Number(m), d: Number(d) };
 };
 
 /**
  * @param {number} [year] the year shown (Kuwait); defaults to the current one, so
  *   a range in an earlier year ("Last year") gets that year and the one before it
+ * @param {Date} [now]
+ *
+ * `lastYearToDay[m]` is last year's month m up to today's day of the month —
+ * what "Same time last year" needs for the month in progress. The card used to
+ * estimate it (last year's whole month × the share of the month gone).
  */
-const getAppliedStudentsByMonth = async (year) => {
-  const thisYear = Number(year) || kuwaitYearOf(new Date());
-  const events = await appliedEvents();
-  const series = (y) => {
+const getAppliedStudentsByMonth = async (year, now = new Date()) => {
+  const thisYear = Number(year) || kuwaitYearOf(now);
+  const today = kuwaitYMD(now).d;
+  const events = (await appliedEvents()).map((ev) => kuwaitYMD(ev.at));
+  const series = (y, uptoDay = 31) => {
     const out = Array.from({ length: 12 }, () => 0);
     events.forEach((ev) => {
-      const { y: ey, m } = kuwaitYM(ev.at);
-      if (ey === y) out[m - 1] += 1;
+      if (ev.y === y && ev.d <= uptoDay) out[ev.m - 1] += 1;
     });
     return out;
   };
-  return { year: thisYear, thisYear: series(thisYear), lastYear: series(thisYear - 1) };
+  return {
+    year: thisYear,
+    thisYear: series(thisYear),
+    lastYear: series(thisYear - 1),
+    lastYearToDay: series(thisYear - 1, today),
+  };
 };
 
 // Buckets an application's course level (either a courselevels ObjectId string
@@ -1106,6 +1346,7 @@ module.exports = {
   getApplicationByStudentId,
   getPipelineTotals,
   getPipelineDrilldown,
+  getStudentDrilldown,
   getApplicationsForOwner,
   getApplicationForOwner,
   getApplicationsByStudentForOwner,
@@ -1121,6 +1362,8 @@ module.exports = {
   getEnrolledApplicationsCountByMonth,
   getAppliedStudentsByMonth,
   countAppliedStudents,
+  appliedStudentsBetween,
+  appliedStudentIdsBetween,
   firstLiveApplications,
   getDashboardData,
 };

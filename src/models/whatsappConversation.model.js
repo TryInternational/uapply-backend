@@ -31,6 +31,9 @@ const whatsappConversationSchema = mongoose.Schema(
     windowExpiresAt: { type: Date },
     // Handling state + triage (set by staff from the inbox).
     status: { type: String, enum: ['open', 'waiting', 'resolved'], default: 'open' },
+    // When the chat was marked resolved (cleared when it is reopened) — what the
+    // dashboard's "resolved in the period" counts by.
+    resolvedAt: { type: Date },
     priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' },
     tags: [{ type: String }],
     nextFollowUpAt: { type: Date },

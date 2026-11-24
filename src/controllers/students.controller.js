@@ -12,6 +12,7 @@ const catchAsync = require('../utils/catchAsync');
 const { studentsService, userService, notificationsService, activitiesService } = require('../services');
 const { isSubAgent, isSchoolCounselor, isExternalPartner } = require('../middlewares/subAgentScope');
 const { Students, Application } = require('../models');
+const logger = require('../config/logger');
 const { actorOf } = require('../utils/actor');
 
 const SLACK_API_URL = 'https://slack.com/api/chat.postMessage';
@@ -35,12 +36,12 @@ const sendSlackNotification = async (memberId, slackBody) => {
       }
     );
     if (response.data.ok) {
-      console.log('Slack notification sent successfully.');
+      logger.info('Slack notification sent successfully.');
     } else {
-      console.error('Error sending Slack notification:', response.data.error);
+      logger.error(`Error sending Slack notification: ${response.data.error}`);
     }
   } catch (error) {
-    console.error('Error sending Slack notification:', error.message);
+    logger.error(`Error sending Slack notification: ${error.message}`);
   }
 };
 
@@ -232,7 +233,7 @@ const createStudent = catchAsync(async (req, res) => {
     try {
       await notifyReviewersOfSubmission(req.app.get('io'), student, false);
     } catch (err) {
-      console.error('Review-submission notification failed:', err.message);
+      logger.error(`Review-submission notification failed: ${err.message}`);
     }
   }
 
@@ -458,7 +459,7 @@ const startNewJourney = catchAsync(async (req, res) => {
     try {
       await notifyReviewersOfSubmission(req.app.get('io'), student, true);
     } catch (err) {
-      console.error('New-journey notification failed:', err.message);
+      logger.error(`New-journey notification failed: ${err.message}`);
     }
   }
 
@@ -727,7 +728,7 @@ const getStudents = catchAsync(async (req, res) => {
 
         // Combine conditions with $and to match all specified user-userRole pairs
         if (elemMatchConditions.length === 1) {
-          filter.assignedTo = elemMatchConditions[0];
+          [filter.assignedTo] = elemMatchConditions;
         } else {
           filter.$and = [...(filter.$and || []), ...elemMatchConditions.map((condition) => ({ assignedTo: condition }))];
         }
@@ -915,7 +916,7 @@ const partnerResubmit = catchAsync(async (req, res) => {
     });
     await notifyReviewersOfSubmission(req.app.get('io'), student, true);
   } catch (err) {
-    console.error('Resubmit notification failed:', err.message);
+    logger.error(`Resubmit notification failed: ${err.message}`);
   }
   res.send(student);
 });
@@ -959,7 +960,7 @@ const partnerWithdraw = catchAsync(async (req, res) => {
       meta: { stage: 'Lost', reason },
     });
   } catch (err) {
-    console.error('Withdraw activity failed:', err.message);
+    logger.error(`Withdraw activity failed: ${err.message}`);
   }
   res.send(student);
 });
@@ -1085,7 +1086,7 @@ const updateStudent = catchAsync(async (req, res) => {
         });
       }
     } catch (err) {
-      console.error('Review-transition notification failed:', err.message);
+      logger.error(`Review-transition notification failed: ${err.message}`);
     }
   }
 
@@ -1244,8 +1245,13 @@ const getDashboardStudentData = catchAsync(async (req, res) => {
     zone: 'Asia/Riyadh',
   }).endOf('day');
 
-  const sd = convertASTToUTC(startDate, true).toString();
-  const ed = convertASTToUTC(endDate, true).toString();
+  // The Kuwait days as real instants. They were sent on as wall time read as
+  // UTC — three hours late at both ends — while every other dashboard card
+  // took the range as instants, so "Students applied by nationality" counted a
+  // different window from the cards beside it (82 against 55 from a browser
+  // outside Kuwait).
+  const sd = convertASTToUTC(startDate).toString();
+  const ed = convertASTToUTC(endDate).toString();
 
   const dashboardData = await studentsService.getDashboardData({
     startDate: sd,

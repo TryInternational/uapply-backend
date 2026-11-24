@@ -88,6 +88,55 @@ describe('whatsapp webhook processing', () => {
     expect(store.conversations[0].unreadCount).toBe(2);
   });
 
+  test('an event for a number that is not ours (the sample the Meta "Test" button sends) is not stored', async () => {
+    // eslint-disable-next-line global-require
+    const config = require('../../../src/config/config');
+    config.whatsapp.phoneNumberId = '700000000000001';
+    const forNumber = (phoneNumberId, id) => {
+      const body = inbound(id);
+      body.entry[0].changes[0].value.metadata = { display_phone_number: '16505551111', phone_number_id: phoneNumberId };
+      return body;
+    };
+    try {
+      await whatsappService.processWebhook(io, forNumber('123456123', 'wamid.SAMPLE'));
+      expect(store.messages).toHaveLength(0);
+      expect(store.conversations).toHaveLength(0);
+
+      await whatsappService.processWebhook(io, forNumber('700000000000001', 'wamid.REAL'));
+      expect(store.messages).toHaveLength(1);
+      // an event that names no number is let through, as before
+      await whatsappService.processWebhook(io, inbound('wamid.NO_META'));
+      expect(store.messages).toHaveLength(2);
+    } finally {
+      delete config.whatsapp.phoneNumberId;
+    }
+  });
+
+  test('an internal note does not answer the student: the chat still needs a reply', async () => {
+    await whatsappService.processWebhook(io, inbound('wamid.Q', 'is anyone there?'));
+    const [conv] = store.conversations;
+    expect(conv.lastMessage.direction).toBe('inbound');
+    await whatsappService.addNote(io, conv._id, 'call them back', [], { _id: new mongoose.Types.ObjectId(), name: 'Staff' });
+    expect(conv.lastMessage.preview).toBe('📝 Internal note');
+    // the dashboard's waiting count and the inbox's "Needs reply" chip read this
+    expect(conv.lastMessage.direction).toBe('inbound');
+    expect(store.messages.filter((m) => m.internal)).toHaveLength(1);
+  });
+
+  test('resolving a chat stamps the moment; reopening clears it', async () => {
+    await whatsappService.processWebhook(io, inbound('wamid.R'));
+    const [conv] = store.conversations;
+    await whatsappService.updateConversationMeta(conv._id, { status: 'resolved' });
+    expect(conv.status).toBe('resolved');
+    expect(conv.resolvedAt).toBeInstanceOf(Date);
+    const first = conv.resolvedAt;
+    // saving other details of a resolved chat does not move the date
+    await whatsappService.updateConversationMeta(conv._id, { status: 'resolved', priority: 'low' });
+    expect(conv.resolvedAt).toBe(first);
+    await whatsappService.updateConversationMeta(conv._id, { status: 'open' });
+    expect(conv.resolvedAt).toBeUndefined();
+  });
+
   test('status receipts only move forward, and failed always wins', async () => {
     const conv = doc({ contact: { phone: '96550000002', waId: '96550000002' }, assignees: [] });
     store.conversations.push(conv);

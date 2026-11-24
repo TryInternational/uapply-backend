@@ -29,6 +29,10 @@
  *             reached Conditional offer or later (an offer that has moved on
  *             to Confirmation / CAS / Done still counts)
  *   enrolled  Enrolled now or in an earlier journey (everEnrolled)
+ * For the students who APPLIED in a range (the per-person table, the Sales
+ * leaderboard) offer and enrolled are counted from the moment they applied
+ * (enrolledSince / appsSince): an enrolment or an offer from an earlier year
+ * does not belong to this period's application.
  * Students are scoped by createdAt (Stats, Analysis), applications by
  * createdAt + LIVE_ONLY (Top statistics, Offer rate, Team rankings).
  *
@@ -288,6 +292,35 @@ const BUCKETS = [
 const everEnrolled = (s) =>
   !!s && (s.stage === 'Enrolled' || (Array.isArray(s.journeys) && s.journeys.some((j) => j && j.outcome === 'Enrolled')));
 
+/**
+ * Enrolled SINCE they applied at `at` — the question the Conversion column
+ * asks of the students who applied in a period. A student who enrolled two
+ * years ago and is back for a new intake has not enrolled from this
+ * application yet; `everEnrolled` said they had.
+ *
+ *   · Enrolled now: by the enrolment date (a student with no date counts)
+ *   · an earlier journey that ended Enrolled: when that journey closed after
+ *     `at` — the application they applied with belonged to it
+ *
+ * With no `at` (an intake cohort, a student with no applied date) it is
+ * `everEnrolled`.
+ */
+const enrolledSince = (s, at) => {
+  if (!s) return false;
+  const t = at ? new Date(at).getTime() : NaN;
+  if (Number.isNaN(t)) return everEnrolled(s);
+  const onOrAfter = (d) => !d || new Date(d).getTime() >= t;
+  if (s.stage === 'Enrolled') return onOrAfter(s.enrolledAt);
+  return Array.isArray(s.journeys) && s.journeys.some((j) => j && j.outcome === 'Enrolled' && onOrAfter(j.closedAt));
+};
+
+/** The applications a student has made since applying at `at` (all of them with no `at`). */
+const appsSince = (list, at) => {
+  const t = at ? new Date(at).getTime() : NaN;
+  if (Number.isNaN(t)) return list || [];
+  return (list || []).filter((a) => !a.createdAt || new Date(a.createdAt).getTime() >= t);
+};
+
 const computeBreakdowns = ({
   students = [],
   apps = [],
@@ -302,11 +335,27 @@ const computeBreakdowns = ({
   last = null,
   rangeStudents = [],
   enrolledStudents = null,
+  // The students who APPLIED in the range (application.service
+  // `appliedStudentIdsBetween`) and their applications. When given, the
+  // per-person table and Team rankings describe THESE students — the same ones
+  // the Sales panel and the applied chart count — instead of the students
+  // added in the range. Left null for an intake cohort.
+  appliedStudents = null,
+  appliedCohortApps = [],
+  // student id → when they applied (application.service `appliedStudentsBetween`).
+  // Offers, Enrolled and the universities of the per-person table count from
+  // that moment, so an enrolment from an earlier year is not this period's.
+  appliedAt = null,
   intake = null,
   now = new Date(),
 }) => {
   const appsByStudent = new Map();
-  apps.forEach((a) => {
+  const mapped = new Set();
+  apps.concat(appliedCohortApps || []).forEach((a) => {
+    // the two lists overlap (a student added AND applying in the range)
+    const key = idOf(a);
+    if (mapped.has(key)) return;
+    mapped.add(key);
     const k = idOf(a.studentId);
     appsByStudent.set(k, (appsByStudent.get(k) || []).concat(a));
   });
@@ -365,6 +414,16 @@ const computeBreakdowns = ({
 
   /* ---------- per person ---------- */
   const spans = speedSpans(students, appsByStudent);
+  // whose rows these are: the students who applied in the range, else the cohort
+  const peopleBase = appliedStudents || students;
+  const peopleSpans = appliedStudents ? speedSpans(appliedStudents, appsByStudent) : spans;
+  // every student of the applied list applied (one marked applied with no
+  // university application has no application to find)
+  const appliedOf = (list) => (appliedStudents ? list : list.filter(hasApplied));
+  const atOf = (s) => (appliedStudents && appliedAt ? appliedAt.get(idOf(s)) : null);
+  const appsOf = (s) => appsSince(appsByStudent.get(idOf(s)) || [], atOf(s));
+  const enrolledOf = (s) => enrolledSince(s, atOf(s));
+  const offerOf = (s) => enrolledOf(s) || appsOf(s).some((a) => !a.rejected && reachedIdx(a) >= OFFER_IDX);
   const people = { sales: new Map(), am: new Map(), ops: new Map() };
   const eachSlot = (s, fn) => {
     const seen = new Set();
@@ -381,17 +440,18 @@ const computeBreakdowns = ({
     people[slot].set(user, row);
     return row;
   };
-  students.forEach((s) => eachSlot(s, (slot, user) => rowFor(slot, user).list.push(s)));
+  peopleBase.forEach((s) => eachSlot(s, (slot, user) => rowFor(slot, user).list.push(s)));
   // someone whose only students in the period are enrolments still gets a row
   enrolledSet.forEach((s) => eachSlot(s, (slot, user) => rowFor(slot, user).enrolledList.push(s)));
   const personRow = ({ userId, list, enrolledList }) => {
-    const applied = list.filter(hasApplied);
-    // cohort enrolled: the Conversion column (enrolled ÷ applied of the students added)
-    const enrolled = list.filter(everEnrolled);
-    const offers = list.filter(hasOffer);
+    const applied = appliedOf(list);
+    // cohort enrolled: the Conversion column (enrolled ÷ applied of these students)
+    // (of the students who applied in the range: since they applied)
+    const enrolled = list.filter(enrolledOf);
+    const offers = list.filter(offerOf);
     const tag = (s) => ({ ...s, __student: ref(s) });
     const withLogo = (rows) => rows.map((r) => ({ ...r, logoUrl: logos[r.label] || null }));
-    const leads = list.map((s) => spans.perStudent.get(idOf(s))).filter(Boolean);
+    const leads = list.map((s) => peopleSpans.perStudent.get(idOf(s))).filter(Boolean);
     return {
       userId,
       students: list.length,
@@ -400,7 +460,7 @@ const computeBreakdowns = ({
       enrolled: enrolled.length,
       // enrolled in the period, by enrolment date (the Enrolled column)
       enrolledInPeriod: enrolledList.length,
-      universities: withLogo(tally(applied.map(tag), (s) => (appsByStudent.get(idOf(s)) || []).map(uniOf))),
+      universities: withLogo(tally(applied.map(tag), (s) => appsOf(s).map(uniOf))),
       enrolledAt: withLogo(tally(enrolledList.map(tag), enrolledUni)),
       cities: tally(applied.map(tag), studyCities),
       levels: tally(applied.map(tag), levelOfStudent),
@@ -580,7 +640,9 @@ const computeBreakdowns = ({
     const k = idOf(a.studentId);
     rangeByStudent.set(k, (rangeByStudent.get(k) || []).concat(a));
   });
-  const team = rangeStudents
+  // the students who applied in the range when given; else (an intake cohort,
+  // or a caller without the list) every student with an application in it
+  const team = (appliedStudents || rangeStudents)
     .filter((s) => s && !['Lost', 'Denied'].includes(s.stage))
     .map((s) => {
       const list = rangeByStudent.get(idOf(s)) || [];
@@ -649,7 +711,8 @@ const computeBreakdowns = ({
     .sort((a, b) => String(a.intake).localeCompare(String(b.intake)) || a.studentName.localeCompare(b.studentName));
 
   return {
-    cohort: intake ? { intake } : { range: true },
+    // `people`: which students the per-person table and Team rankings describe
+    cohort: intake ? { intake } : { range: true, people: appliedStudents ? 'applied' : 'added' },
     arrivals,
     people: peopleOut,
     cities,
@@ -681,6 +744,7 @@ const STUDENT_FIELDS = {
   'preference.intakeYear': 1,
   'preference.provider': 1,
   'journeys.outcome': 1,
+  'journeys.closedAt': 1,
   enrolledAt: 1,
   channel: 1,
   createdBy: 1,
@@ -818,6 +882,26 @@ const getDashboardBreakdowns = async ({ startDate, endDate, intake } = {}) => {
     ? cohortApps.concat(enrolled.apps.filter((a) => !cohortApps.some((b) => idOf(b) === idOf(a))))
     : cohortApps;
 
+  // The students who APPLIED in the range — the rule the Sales panel and the
+  // applied chart use — for the per-person table and Team rankings. An intake
+  // cohort keeps its own students.
+  let appliedStudents = null;
+  let appliedApps = [];
+  let appliedAt = null;
+  if (created && !wantIntake) {
+    // required here: application.service loads this module back
+    // eslint-disable-next-line global-require
+    const { appliedStudentsBetween } = require('./application.service');
+    appliedAt = await appliedStudentsBetween(created.$gte, created.$lte);
+    const appliedIds = Array.from(appliedAt.keys());
+    [appliedStudents, appliedApps] = appliedIds.length
+      ? await Promise.all([
+          Students.find({ _id: { $in: appliedIds } }, STUDENT_FIELDS).lean(),
+          findApps({ ...LIVE_ONLY, studentId: { $in: appliedIds } }),
+        ])
+      : [[], []];
+  }
+
   // the stage of each range application's student (the top-universities card's gate)
   const stuIds = Array.from(new Set(rangeApps.map((a) => idOf(a.studentId)).filter(Boolean)));
   // the full fields: Team rankings filters these students by intake / level / channel and their team
@@ -833,7 +917,9 @@ const getDashboardBreakdowns = async ({ startDate, endDate, intake } = {}) => {
 
   // course names (for applications that only carry the course id) and the
   // course's study locations (the Cities panels)
-  const courseIds = Array.from(new Set([...rangeApps, ...apps].filter((a) => a.course).map((a) => idOf(a.course))));
+  const courseIds = Array.from(
+    new Set([...rangeApps, ...apps, ...appliedApps].filter((a) => a.course).map((a) => idOf(a.course)))
+  );
   const courseDocs = courseIds.length
     ? await Courses.find({ _id: { $in: courseIds } }, { name: 1, locations: 1 }, { autopopulate: false }).lean()
     : [];
@@ -852,7 +938,7 @@ const getDashboardBreakdowns = async ({ startDate, endDate, intake } = {}) => {
   // courses, keeping its most common UK city.
   const uniNames = Array.from(
     new Set(
-      [...rangeApps, ...apps]
+      [...rangeApps, ...apps, ...appliedApps]
         .filter((a) => !a.course)
         .map(uniOf)
         .filter(Boolean)
@@ -910,6 +996,9 @@ const getDashboardBreakdowns = async ({ startDate, endDate, intake } = {}) => {
     last,
     rangeStudents: stages,
     enrolledStudents: enrolled ? enrolled.students : null,
+    appliedStudents,
+    appliedCohortApps: appliedApps,
+    appliedAt,
     intake: wantIntake,
   });
   return { ...out, intakes };
@@ -920,6 +1009,8 @@ module.exports = {
   computeBreakdowns,
   slotOf,
   reachedIdx,
+  enrolledSince,
+  appsSince,
   submittedAt,
   firstOfferAt,
   median,

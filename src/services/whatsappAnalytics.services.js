@@ -1,4 +1,5 @@
-const { WhatsappMessage, WhatsappConversation, User } = require('../models');
+const { WhatsappMessage, WhatsappConversation, Students, User } = require('../models');
+const { WAITING_FILTER, firstUnanswered } = require('./whatsappWaiting.service');
 
 /**
  * WhatsApp analytics — the numbers behind the management dashboards.
@@ -6,10 +7,22 @@ const { WhatsappMessage, WhatsappConversation, User } = require('../models');
  * / Students); nothing is fabricated. Metrics the current schema can't support
  * (CSAT, marketing lead-source) are intentionally omitted rather than faked.
  *
- * Timezone: hour/day buckets use Asia/Kuwait so "today" matches the team's clock.
+ * Timezone: every day and hour is a KUWAIT day and hour, whatever clock the
+ * server runs on. "Today" starts at 00:00 Kuwait time; the 14-day charts are
+ * labelled with Kuwait dates. (The windows used the server's own midnight: on
+ * a UTC server "today" began at 03:00 Kuwait time, and on a machine east of
+ * Kuwait every day of the 14-day charts was labelled one day early, with
+ * today's messages on no bar at all.)
+ *
+ * One rule for "the student is waiting": the chat is not resolved and its last
+ * real message is the student's (the inbox's "Needs reply" chip). The KPI, the
+ * "Waiting longest" list and each person's Pending all count that same set.
  */
 
 const TZ = 'Asia/Kuwait';
+const KUWAIT_OFFSET_MS = 3 * 60 * 60 * 1000; // UTC+3 all year, no daylight saving
+const DAY_MS = 24 * 60 * 60 * 1000;
+const TREND_DAYS = 14;
 const SLA_SECONDS = 15 * 60; // a reply slower than this counts as "late"
 
 // Ordered, friendly labels for the real Students.stage enum.
@@ -22,14 +35,29 @@ const STAGE_ORDER = [
   { key: 'Denied', label: 'Denied' },
 ];
 
-const rangeToWindow = (range) => {
-  const end = new Date();
-  const start = new Date(end);
-  if (range === '7d') start.setDate(end.getDate() - 6);
-  else if (range === '30d') start.setDate(end.getDate() - 29);
-  else start.setHours(0, 0, 0, 0); // 'today' (default)
-  if (range === '7d' || range === '30d') start.setHours(0, 0, 0, 0);
-  return { start, end };
+/** The Kuwait calendar day an instant falls in, as "YYYY-MM-DD". */
+const kuwaitDayKey = (d) => new Date(new Date(d).getTime() + KUWAIT_OFFSET_MS).toISOString().slice(0, 10);
+
+/** 00:00 Kuwait time on the Kuwait day `now` falls in, `daysBack` days earlier. */
+const kuwaitDayStart = (now = new Date(), daysBack = 0) => {
+  const local = new Date(new Date(now).getTime() + KUWAIT_OFFSET_MS);
+  const midnight = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate());
+  return new Date(midnight - daysBack * DAY_MS - KUWAIT_OFFSET_MS);
+};
+
+/** The last `n` Kuwait days up to and including today, oldest first. */
+const lastKuwaitDays = (n, now = new Date()) =>
+  Array.from({ length: n }, (_, i) => kuwaitDayKey(kuwaitDayStart(now, n - 1 - i)));
+
+/**
+ * today → from 00:00 Kuwait time today; 7d / 30d → that many Kuwait days
+ * including today. An unknown range is "today", as before.
+ */
+const rangeToWindow = (range, now = new Date()) => {
+  let back = 0;
+  if (range === '7d') back = 6;
+  else if (range === '30d') back = 29;
+  return { start: kuwaitDayStart(now, back), end: new Date(now) };
 };
 
 const initials = (name = '') =>
@@ -87,12 +115,33 @@ const computeResponseTimes = async (start, end) => {
   return { globalAvg: avg(global), globalCount: global.length, globalLate, byUser, avg };
 };
 
+/**
+ * The chats where the student is waiting, longest wait first — the rule and
+ * the clock are whatsappWaiting.service's, shared with the inbox.
+ */
+const waitingConversations = async () => {
+  const convs = await WhatsappConversation.find(WAITING_FILTER, 'contact student assignees lastMessageAt').lean();
+  if (!convs.length) return [];
+  const open = await firstUnanswered(convs);
+  const time = (c) => (c.since ? new Date(c.since).getTime() : Infinity);
+  return convs
+    .map((c) => {
+      const o = open.get(String(c._id));
+      return { ...c, since: (o && o.since) || c.lastMessageAt || null, unanswered: o ? o.unanswered : 0 };
+    })
+    .sort((a, b) => time(a) - time(b));
+};
+
+/** the assignee ids of a chat, each once (a person can hold two roles on a student) */
+const assigneeIds = (conv) =>
+  Array.from(new Set((conv.assignees || []).map((a) => a && a.userId && String(a.userId)).filter(Boolean)));
+
 // ---------------------------------------------------------------------------
 // Overview
 // ---------------------------------------------------------------------------
 
-const overview = async (range = 'today') => {
-  const { start, end } = rangeToWindow(range);
+const overview = async (range = 'today', now = new Date()) => {
+  const { start, end } = rangeToWindow(range, now);
 
   const [msgAgg] = await WhatsappMessage.aggregate([
     { $match: { timestamp: { $gte: start, $lte: end }, internal: { $ne: true } } },
@@ -120,7 +169,7 @@ const overview = async (range = 'today') => {
   });
 
   // the state of the inbox right now (not range-bound)
-  const nowDate = new Date();
+  const nowDate = new Date(now);
   const openConversations = await WhatsappConversation.countDocuments({ status: { $ne: 'resolved' } });
   const unlinked = await WhatsappConversation.countDocuments({ status: { $ne: 'resolved' }, student: null });
   const followUpsOverdue = await WhatsappConversation.countDocuments({
@@ -128,7 +177,12 @@ const overview = async (range = 'today') => {
     nextFollowUpAt: { $lt: nowDate },
   });
   // what happened in the range
-  const resolved = await WhatsappConversation.countDocuments({ status: 'resolved', updatedAt: { $gte: start, $lte: end } });
+  // by the moment it was marked resolved; a chat resolved before that moment
+  // was recorded has only its last change to go by
+  const resolved = await WhatsappConversation.countDocuments({
+    status: 'resolved',
+    $or: [{ resolvedAt: { $gte: start, $lte: end } }, { resolvedAt: null, updatedAt: { $gte: start, $lte: end } }],
+  });
   const docsFiled = await WhatsappMessage.countDocuments({
     'savedDocument.id': { $ne: null },
     timestamp: { $gte: start, $lte: end },
@@ -139,29 +193,36 @@ const overview = async (range = 'today') => {
     timestamp: { $gte: start, $lte: end },
   });
 
-  const [unreadAgg] = await WhatsappConversation.aggregate([{ $group: { _id: null, unread: { $sum: '$unreadCount' } } }]);
+  // unread messages in the chats still open — what the inbox's Unread chip adds up
+  const [unreadAgg] = await WhatsappConversation.aggregate([
+    { $match: { status: { $ne: 'resolved' } } },
+    { $group: { _id: null, unread: { $sum: '$unreadCount' } } },
+  ]);
 
   const newConversations = await WhatsappConversation.countDocuments({ createdAt: { $gte: start, $lte: end } });
 
-  const waitingFilter = { 'lastMessage.direction': 'inbound', status: { $ne: 'resolved' } };
-  const waitingCount = await WhatsappConversation.countDocuments(waitingFilter);
-  const waitingDocs = await WhatsappConversation.find(waitingFilter)
-    .sort({ lastMessageAt: 1 })
-    .limit(8)
-    .populate('student', 'firstName lastName stage')
-    .lean();
-  const now = Date.now();
-  const waiting = waitingDocs.map((c) => {
+  const waitingAll = await waitingConversations();
+  const waitingCount = waitingAll.length;
+  const waitingTop = waitingAll.slice(0, 8);
+  const waitingStudentIds = waitingTop.map((c) => c.student).filter(Boolean);
+  const waitingStudents = waitingStudentIds.length
+    ? await Students.find({ _id: { $in: waitingStudentIds } }, 'firstName lastName stage').lean()
+    : [];
+  const studentOf = new Map(waitingStudents.map((st) => [String(st._id), st]));
+  const waiting = waitingTop.map((c) => {
     const contact = c.contact || {};
-    const student = c.student || {};
+    const student = (c.student && studentOf.get(String(c.student))) || {};
     const studentName = [student.firstName, student.lastName].filter(Boolean).join(' ');
+    const owners = assigneeIds(c);
     return {
       conversationId: String(c._id),
       name: contact.name || studentName || contact.phone,
       stage: student.stage,
-      assignee: c.assignees && c.assignees[0] ? String(c.assignees[0].userId) : null,
+      assignee: owners[0] || null,
       unlinked: !c.student,
-      waitingSec: c.lastMessageAt ? Math.round((now - new Date(c.lastMessageAt)) / 1000) : 0,
+      waitingSec: c.since ? Math.max(0, Math.round((nowDate - new Date(c.since)) / 1000)) : 0,
+      // how many messages they have sent since the last reply
+      unanswered: c.unanswered,
     };
   });
 
@@ -204,26 +265,20 @@ const overview = async (range = 'today') => {
   const stageMap = Object.fromEntries(stageAgg.map((s) => [s._id, s.c]));
   const funnel = STAGE_ORDER.map((s) => ({ key: s.key, label: s.label, count: stageMap[s.key] || 0 }));
 
-  // new conversations, last 14 days trend
-  const trendStart = new Date();
-  trendStart.setDate(trendStart.getDate() - 13);
-  trendStart.setHours(0, 0, 0, 0);
+  // new conversations, last 14 Kuwait days (today included)
+  const trendStart = kuwaitDayStart(now, TREND_DAYS - 1);
+  const trendDays = lastKuwaitDays(TREND_DAYS, now);
   const trendAgg = await WhatsappConversation.aggregate([
-    { $match: { createdAt: { $gte: trendStart } } },
+    { $match: { createdAt: { $gte: trendStart, $lte: end } } },
     { $group: { _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: TZ } }, c: { $sum: 1 } } },
     { $sort: { _id: 1 } },
   ]);
   const trendMap = Object.fromEntries(trendAgg.map((t) => [t._id, t.c]));
-  const newConversationsTrend = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(trendStart);
-    d.setDate(trendStart.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
-    return { date: key, count: trendMap[key] || 0 };
-  });
+  const newConversationsTrend = trendDays.map((key) => ({ date: key, count: trendMap[key] || 0 }));
 
-  // messages sent/received per day, last 14 days (Kuwait time)
+  // messages sent/received per day, last 14 Kuwait days
   const msgDayAgg = await WhatsappMessage.aggregate([
-    { $match: { timestamp: { $gte: trendStart }, internal: { $ne: true } } },
+    { $match: { timestamp: { $gte: trendStart, $lte: end }, internal: { $ne: true } } },
     {
       $group: {
         _id: { d: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp', timezone: TZ } }, dir: '$direction' },
@@ -238,10 +293,7 @@ const overview = async (range = 'today') => {
     if (r._id.dir === 'outbound') msgDayMap[key].sent = r.c;
     else if (r._id.dir === 'inbound') msgDayMap[key].received = r.c;
   });
-  const messagesPerDay = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(trendStart);
-    d.setDate(trendStart.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
+  const messagesPerDay = trendDays.map((key) => {
     const v = msgDayMap[key] || { sent: 0, received: 0 };
     return { date: key, sent: v.sent, received: v.received };
   });
@@ -250,6 +302,8 @@ const overview = async (range = 'today') => {
 
   return {
     range,
+    // the window the range-bound figures cover, and the moment "now" was read
+    window: { start: start.toISOString(), end: end.toISOString(), timezone: TZ },
     kpis: {
       messagesTotal: m.total,
       messagesSent: m.sent,
@@ -283,8 +337,8 @@ const overview = async (range = 'today') => {
 // Team performance
 // ---------------------------------------------------------------------------
 
-const team = async (range = '7d') => {
-  const { start, end } = rangeToWindow(range);
+const team = async (range = '7d', now = new Date()) => {
+  const { start, end } = rangeToWindow(range, now);
 
   const sentAgg = await WhatsappMessage.aggregate([
     {
@@ -305,36 +359,60 @@ const team = async (range = '7d') => {
     },
   ]);
 
-  // pending (awaiting-reply) conversations per assigned user
-  const pendingAgg = await WhatsappConversation.aggregate([
-    { $match: { 'lastMessage.direction': 'inbound' } },
-    { $unwind: '$assignees' },
-    { $group: { _id: '$assignees.userId', pending: { $sum: 1 } } },
-  ]);
-  const pendingMap = Object.fromEntries(pendingAgg.map((p) => [String(p._id), p.pending]));
+  // pending: the chats waiting for a reply (the overview's set — resolved chats
+  // were counted here and not there), once per person who owns the chat
+  const pendingMap = {};
+  (await waitingConversations()).forEach((c) =>
+    assigneeIds(c).forEach((uid) => {
+      pendingMap[uid] = (pendingMap[uid] || 0) + 1;
+    })
+  );
 
-  // overdue follow-ups and chats not yet on a student, per assignee (state now)
+  // open chats, overdue follow-ups and chats not yet on a student, per assignee
+  // (state now). Each chat counts once per person, whatever roles they hold on
+  // it. A chat with no follow-up date is not overdue, and one with no student
+  // is unlinked whether the field is null or absent — the comparisons used
+  // here treated a missing date as "before now" and a missing student as linked.
   const stateAgg = await WhatsappConversation.aggregate([
     { $match: { status: { $ne: 'resolved' } } },
     { $unwind: '$assignees' },
+    { $match: { 'assignees.userId': { $ne: null } } },
     {
       $group: {
-        _id: '$assignees.userId',
+        _id: { c: '$_id', u: '$assignees.userId' },
+        nextFollowUpAt: { $first: '$nextFollowUpAt' },
+        student: { $first: '$student' },
+      },
+    },
+    {
+      $group: {
+        _id: '$_id.u',
         open: { $sum: 1 },
-        overdue: { $sum: { $cond: [{ $lt: ['$nextFollowUpAt', new Date()] }, 1, 0] } },
-        unlinked: { $sum: { $cond: [{ $eq: ['$student', null] }, 1, 0] } },
+        overdue: {
+          $sum: {
+            $cond: [
+              { $and: [{ $eq: [{ $type: '$nextFollowUpAt' }, 'date'] }, { $lt: ['$nextFollowUpAt', new Date(now)] }] },
+              1,
+              0,
+            ],
+          },
+        },
+        unlinked: { $sum: { $cond: [{ $eq: [{ $ifNull: ['$student', null] }, null] }, 1, 0] } },
       },
     },
   ]);
   const stateMap = Object.fromEntries(stateAgg.map((r) => [String(r._id), r]));
 
-  // replies per day, last 14 days, per person (the counsellor's own chart)
-  const trendStart = new Date();
-  trendStart.setDate(trendStart.getDate() - 13);
-  trendStart.setHours(0, 0, 0, 0);
+  // replies per day, last 14 Kuwait days, per person (the counsellor's own chart)
+  const trendStart = kuwaitDayStart(now, TREND_DAYS - 1);
   const perDayAgg = await WhatsappMessage.aggregate([
     {
-      $match: { direction: 'outbound', internal: { $ne: true }, sentByUser: { $ne: null }, timestamp: { $gte: trendStart } },
+      $match: {
+        direction: 'outbound',
+        internal: { $ne: true },
+        sentByUser: { $ne: null },
+        timestamp: { $gte: trendStart, $lte: end },
+      },
     },
     {
       $group: {
@@ -349,11 +427,7 @@ const team = async (range = '7d') => {
     if (!perDayMap[u]) perDayMap[u] = {};
     perDayMap[u][r._id.d] = r.c;
   });
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(trendStart);
-    d.setDate(trendStart.getDate() + i);
-    return d.toISOString().slice(0, 10);
-  });
+  const days = lastKuwaitDays(TREND_DAYS, now);
 
   const resp = await computeResponseTimes(start, end);
 
@@ -400,6 +474,7 @@ const team = async (range = '7d') => {
 
   return {
     range,
+    window: { start: start.toISOString(), end: end.toISOString(), timezone: TZ },
     totals: {
       messagesSent: totals.messagesSent,
       conversationsHandled: totals.conversationsHandled,
@@ -410,4 +485,15 @@ const team = async (range = '7d') => {
   };
 };
 
-module.exports = { overview, team };
+module.exports = {
+  overview,
+  team,
+  // exported for the tests
+  rangeToWindow,
+  kuwaitDayKey,
+  kuwaitDayStart,
+  lastKuwaitDays,
+  computeResponseTimes,
+  waitingConversations,
+  SLA_SECONDS,
+};

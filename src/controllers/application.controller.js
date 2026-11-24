@@ -11,7 +11,8 @@ const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 
 const { applicationService, studentsService, userService, notificationsService, activitiesService } = require('../services');
-const { Application } = require('../models');
+const { Application, Students } = require('../models');
+const logger = require('../config/logger');
 const { isSubAgent, isSchoolCounselor, isExternalPartner, roleIdOf } = require('../middlewares/subAgentScope');
 const { actorOf } = require('../utils/actor');
 const roleAccess = require('../services/roleAccess.service');
@@ -137,12 +138,12 @@ const sendSlackNotification = async (memberId, slackBody) => {
       }
     );
     if (response.data.ok) {
-      console.log('Slack notification sent successfully.');
+      logger.info('Slack notification sent successfully.');
     } else {
-      console.error('Error sending Slack notification:', response.data.error);
+      logger.error(`Error sending Slack notification: ${response.data.error}`);
     }
   } catch (error) {
-    console.error('Error sending Slack notification:', error.message);
+    logger.error(`Error sending Slack notification: ${error.message}`);
   }
 };
 // ---------------------------------------------------------------------------
@@ -440,7 +441,7 @@ const createApplication = catchAsync(async (req, res) => {
         meta: { applicationId: application.id },
       });
     } catch (err) {
-      console.error('Application submission activity failed:', err.message);
+      logger.error(`Application submission activity failed: ${err.message}`);
     }
 
     // Attach the new application to the student SERVER-SIDE for partners.
@@ -450,15 +451,14 @@ const createApplication = catchAsync(async (req, res) => {
     // let a partner detach or reattach applications at will. $addToSet keeps
     // the write idempotent.
     try {
-      const { Students } = require('../models');
       await Students.updateOne({ _id: application.studentId }, { $addToSet: { applications: application.id } });
     } catch (err) {
-      console.error('Attaching application to student failed:', err.message);
+      logger.error(`Attaching application to student failed: ${err.message}`);
     }
     try {
       await notifyReviewersOfApplication(req.app.get('io'), application, actor, false);
     } catch (err) {
-      console.error('Application review-submission notification failed:', err.message);
+      logger.error(`Application review-submission notification failed: ${err.message}`);
     }
     return res.status(httpStatus.CREATED).send(application);
   }
@@ -941,7 +941,7 @@ const updateApplication = catchAsync(async (req, res) => {
           );
         }
       } catch (err) {
-        console.error('Partner phase notification failed:', err.message);
+        logger.error(`Partner phase notification failed: ${err.message}`);
       }
 
       // `holdPhase` opt-in: the caller has ALREADY positioned the marker on the
@@ -1026,7 +1026,7 @@ const updateApplication = catchAsync(async (req, res) => {
           const stillHeld = await findCycleHolder({ ...application.toObject(), _id: 'none' }, student);
           if (!stillHeld) await studentsService.updateStudentById(student.id, { onHold: false });
         } catch (err) {
-          console.error('Releasing the firm choice failed:', err.message);
+          logger.error(`Releasing the firm choice failed: ${err.message}`);
         }
       }
 
@@ -1064,7 +1064,7 @@ const updateApplication = catchAsync(async (req, res) => {
             });
           }
         } catch (err) {
-          console.error('Enrolled stage advance failed:', err.message);
+          logger.error(`Enrolled stage advance failed: ${err.message}`);
         }
       }
 
@@ -1074,7 +1074,7 @@ const updateApplication = catchAsync(async (req, res) => {
     const app = await applicationService.updateApplicationById(req.params.applicationId, req.body);
     res.send(app);
   } catch (error) {
-    console.log(error);
+    logger.error(error);
   }
 });
 
@@ -1172,7 +1172,10 @@ const getDashboardData = catchAsync(async (req, res) => {
  * totals, so the card and the list it opens can never disagree.
  */
 const getDashboardDrilldown = catchAsync(async (req, res) => {
-  const rows = await applicationService.getPipelineDrilldown(req.query.metric, req.query.startDate, req.query.endDate);
+  // the two student lists (about right now, no date range) and the application lists
+  const rows = ['dormant', 'ielts'].includes(req.query.metric)
+    ? await applicationService.getStudentDrilldown(req.query.metric)
+    : await applicationService.getPipelineDrilldown(req.query.metric, req.query.startDate, req.query.endDate);
   res.send(rows);
 });
 
@@ -1253,7 +1256,7 @@ const reviewApplication = catchAsync(async (req, res) => {
       meta: { applicationId: updated.id, decision },
     });
   } catch (err) {
-    console.error('Review decision activity failed:', err.message);
+    logger.error(`Review decision activity failed: ${err.message}`);
   }
 
   // Approving a SCHOOL COUNSELLOR's application also moves the student into the
@@ -1277,14 +1280,14 @@ const reviewApplication = catchAsync(async (req, res) => {
     } catch (err) {
       // The review decision itself succeeded; a failed stage move must not
       // roll it back. Log and continue — the timeline just misses one entry.
-      console.error('Stage advance after approval failed:', err.message);
+      logger.error(`Stage advance after approval failed: ${err.message}`);
     }
   }
 
   try {
     await notifySubAgentOfApplicationDecision(req.app.get('io'), updated, decision, req.user, note);
   } catch (err) {
-    console.error('Application decision notification failed:', err.message);
+    logger.error(`Application decision notification failed: ${err.message}`);
   }
 
   res.send(updated);
@@ -1340,7 +1343,7 @@ const resubmitApplication = catchAsync(async (req, res) => {
   try {
     await notifyReviewersOfApplication(req.app.get('io'), updated, req.user, true);
   } catch (err) {
-    console.error('Application resubmission notification failed:', err.message);
+    logger.error(`Application resubmission notification failed: ${err.message}`);
   }
 
   res.send(updated);
