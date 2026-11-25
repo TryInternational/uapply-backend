@@ -29,3 +29,9 @@ process.env.JWT_SECRET = 'test-only-secret-not-used-anywhere-else';
 // stand-in during tests (tests/mocks/firebase-admin.js) and never looks at them.
 process.env.PRIVATE_KEY = 'not-a-key-placeholder-for-tests';
 process.env.FIREBASE_PRIVATE_KEY = 'not-a-key-placeholder-for-tests';
+
+// Which roles are the two kinds of outside partner is a setting, not something
+// stored on the role. These ids exist only in tests; tests/fixtures/role.fixture.js
+// makes the two roles with them.
+process.env.SUB_AGENT_ROLE_ID = '64a000000000000000000001';
+process.env.SCHOOL_COUNSELOR_ROLE_ID = '64a000000000000000000002';
