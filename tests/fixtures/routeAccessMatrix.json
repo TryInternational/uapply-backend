@@ -43,8 +43,8 @@
     "noToken": "answers",
     "noRole": "refused",
     "staff": "answers",
-    "subAgent": "refused",
-    "schoolCounselor": "refused",
+    "subAgent": "answers",
+    "schoolCounselor": "answers",
     "admin": "answers"
   },
   "DELETE /v1/countries/:countryId": {
@@ -171,8 +171,8 @@
     "noToken": "answers",
     "noRole": "refused",
     "staff": "answers",
-    "subAgent": "refused",
-    "schoolCounselor": "refused",
+    "subAgent": "answers",
+    "schoolCounselor": "answers",
     "admin": "answers"
   },
   "DELETE /v1/partners/:partnerId": {
@@ -667,8 +667,8 @@
     "noToken": "answers",
     "noRole": "refused",
     "staff": "answers",
-    "subAgent": "refused",
-    "schoolCounselor": "refused",
+    "subAgent": "answers",
+    "schoolCounselor": "answers",
     "admin": "answers"
   },
   "GET /v1/comments/student/:studentId": {
@@ -1979,8 +1979,8 @@
     "noToken": "answers",
     "noRole": "refused",
     "staff": "answers",
-    "subAgent": "refused",
-    "schoolCounselor": "refused",
+    "subAgent": "answers",
+    "schoolCounselor": "answers",
     "admin": "answers"
   },
   "PATCH /v1/countries/:countryId": {
@@ -2091,8 +2091,8 @@
     "noToken": "answers",
     "noRole": "refused",
     "staff": "answers",
-    "subAgent": "refused",
-    "schoolCounselor": "refused",
+    "subAgent": "answers",
+    "schoolCounselor": "answers",
     "admin": "answers"
   },
   "PATCH /v1/partners/:partnerId": {
@@ -2467,8 +2467,8 @@
     "noToken": "answers",
     "noRole": "refused",
     "staff": "answers",
-    "subAgent": "refused",
-    "schoolCounselor": "refused",
+    "subAgent": "answers",
+    "schoolCounselor": "answers",
     "admin": "answers"
   },
   "POST /v1/comments/migrate-reactions": {
