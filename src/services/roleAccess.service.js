@@ -191,7 +191,9 @@ const isSchoolCounselor = (user) => {
 const isExternalPartner = (user) => isSubAgent(user) || isSchoolCounselor(user);
 
 /** Staff = internal. Everyone who is not one of the two partner roles. */
-const isStaff = (user) => !!user && !isExternalPartner(user);
+// Staff have a role, and it is not one of the two partner roles. A user with no
+// role is not staff.
+const isStaff = (user) => !!user && !!roleIdOf(user) && !isExternalPartner(user);
 
 /** True while the env fallback is still doing the work. For /health and tests. */
 const usingFallback = () => !anyRoleHas(ADMIN_RIGHT);

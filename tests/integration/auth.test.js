@@ -22,7 +22,12 @@ setupTestDB();
 describe('Auth routes', () => {
   describe('POST /v1/auth/register', () => {
     let newUser;
-    beforeEach(() => {
+    // Registering is for admins only: the account it makes has no role.
+    const register = (body) =>
+      request(app).post('/v1/auth/register').set('Authorization', `Bearer ${adminAccessToken}`).send(body);
+
+    beforeEach(async () => {
+      await insertUsers([admin]);
       newUser = {
         name: faker.name.findName(),
         email: faker.internet.email().toLowerCase(),
@@ -30,8 +35,26 @@ describe('Auth routes', () => {
       };
     });
 
-    test('should return 201 and successfully register user if request data is ok', async () => {
-      const res = await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.CREATED);
+    test('should return 401 if no access token is sent', async () => {
+      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.UNAUTHORIZED);
+
+      expect(await User.countDocuments({ email: newUser.email })).toBe(0);
+    });
+
+    test('should return 403 if the caller is not an admin', async () => {
+      await insertUsers([userOne]);
+
+      await request(app)
+        .post('/v1/auth/register')
+        .set('Authorization', `Bearer ${userOneAccessToken}`)
+        .send(newUser)
+        .expect(httpStatus.FORBIDDEN);
+
+      expect(await User.countDocuments({ email: newUser.email })).toBe(0);
+    });
+
+    test('should return 201 and register the user when an admin asks and the data is ok', async () => {
+      const res = await register(newUser).expect(httpStatus.CREATED);
 
       expect(res.body.user).not.toHaveProperty('password');
       expect(res.body.user).toEqual({
@@ -56,30 +79,30 @@ describe('Auth routes', () => {
     test('should return 400 error if email is invalid', async () => {
       newUser.email = 'invalidEmail';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await register(newUser).expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 400 error if email is already used', async () => {
       await insertUsers([userOne]);
       newUser.email = userOne.email;
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await register(newUser).expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 400 error if password length is less than 8 characters', async () => {
       newUser.password = 'passwo1';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await register(newUser).expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 400 error if password does not contain both letters and numbers', async () => {
       newUser.password = 'password';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await register(newUser).expect(httpStatus.BAD_REQUEST);
 
       newUser.password = '11111111';
 
-      await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.BAD_REQUEST);
+      await register(newUser).expect(httpStatus.BAD_REQUEST);
     });
   });
 
@@ -580,6 +603,18 @@ describe('Auth middleware', () => {
     const next = jest.fn();
 
     await auth(...adminRole.roleRights)(req, httpMocks.createResponse(), next);
+
+    expect(next).toHaveBeenCalledWith();
+  });
+
+  test('should call next with no errors for an admin, whichever right is asked for', async () => {
+    await insertUsers([admin]);
+    const req = httpMocks.createRequest({ headers: { Authorization: `Bearer ${adminAccessToken}` } });
+    const next = jest.fn();
+
+    // A right the admin role's document does not list.
+    expect(adminRole.roleRights).not.toContain('manageRoles');
+    await auth('manageRoles')(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
   });

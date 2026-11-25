@@ -18,6 +18,11 @@ const jwtVerify = async (payload, done) => {
     if (!user || user.former) {
       return done(null, false);
     }
+    // An account with no role is nobody yet. Without this it counted as staff,
+    // because staff meant "not a partner".
+    if (!user.role) {
+      return done(null, false);
+    }
     done(null, user);
   } catch (error) {
     done(error, false);
