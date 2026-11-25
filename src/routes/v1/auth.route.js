@@ -3,10 +3,15 @@ const validate = require('../../middlewares/validate');
 const authValidation = require('../../validations/auth.validation');
 const authController = require('../../controllers/auth.controller');
 const auth = require('../../middlewares/auth');
+const { requireAuth, requireAdmin } = require('../../middlewares/subAgentScope');
 
 const router = express.Router();
 
-router.post('/register', validate(authValidation.register), authController.register);
+// Admin only. This route used to need no token, and the account it makes has
+// no role, which every gate treats as staff: anyone could register and then
+// read what staff read. The CRM creates users through POST /users, which is
+// admin only too.
+router.post('/register', requireAuth, requireAdmin, validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
 router.get('/me', auth(), authController.me);
 router.post('/logout', validate(authValidation.logout), authController.logout);

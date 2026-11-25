@@ -3,6 +3,7 @@ const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 // const { roleRights } = require('../config/roles');
 const roleService = require('../services/role.service');
+const roleAccess = require('../services/roleAccess.service');
 
 const verifyCallback = (req, resolve, reject, requiredRights) => async (err, user, info) => {
   if (err || info || !user) {
@@ -22,7 +23,10 @@ const verifyCallback = (req, resolve, reject, requiredRights) => async (err, use
   }
   req.user = user;
 
-  if (requiredRights.length) {
+  // An admin may do everything, whichever right a route names. Without this an
+  // admin was refused wherever the route named a right that the admin role's
+  // document happens not to list.
+  if (requiredRights.length && !roleAccess.isAdmin(user)) {
     const userRights = await roleService.getRoleById(user.role);
 
     if (!userRights) {

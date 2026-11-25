@@ -50,7 +50,7 @@ const ulearnStudentRoute = require('./ulearnStudent.route');
 const accessRequestRoute = require('./accessRequest.route');
 
 // eslint-disable-next-line no-unused-vars
-const { softAuth, denySubAgent, denyIdentifiedSubAgent } = require('../../middlewares/subAgentScope');
+const { softAuth, denySubAgent, denyIdentifiedPartner } = require('../../middlewares/subAgentScope');
 
 const router = express.Router();
 
@@ -106,14 +106,13 @@ const STAFF_ONLY_PATHS = [
 ];
 
 // The wholesale version below (softAuth + denySubAgent) is off: softAuth 401s a
-// stale token and denySubAgent also refuses school counsellors, and these
-// routers carry public webhooks and are used by other roles. With it off,
-// though, a sub-agent's token read every one of them — GET /fees answered a
-// sub-agent with office fees. This narrower guard closes that for sub-agents
-// and touches nobody else: it only identifies the caller and refuses when it
-// is a sub-agent.
+// stale token, and these routers carry public webhooks. With it off, though, a
+// partner's token read every one of them — GET /fees answered a sub-agent with
+// office fees. This narrower guard closes that for both kinds of partner and
+// touches nobody else: it only identifies the caller and refuses when it is a
+// sub-agent or a school counsellor.
 STAFF_ONLY_PATHS.forEach((path) => {
-  router.use(path, denyIdentifiedSubAgent);
+  router.use(path, denyIdentifiedPartner);
 });
 
 // STAFF_ONLY_PATHS.forEach((path) => {

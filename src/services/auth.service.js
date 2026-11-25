@@ -20,6 +20,10 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   if (user.former) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'This account has been closed. Ask an admin if you need it reopened.');
   }
+  // an account with no role cannot do anything, so say so here instead of letting it in
+  if (!user.role) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'This account has not been given a role yet. Ask an admin.');
+  }
   return user;
 };
 

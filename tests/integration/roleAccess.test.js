@@ -124,8 +124,10 @@ describe('roleAccess', () => {
       });
     });
 
-    test('a user with no role gets none of the rights a role grants', () => {
+    test('a user with no role gets none of the rights a role grants, and is not staff', () => {
+      expect(roleAccess.isStaff(userWithNoRole)).toBe(false);
       expect(roleAccess.permissionsFor(userWithNoRole)).toMatchObject({
+        isStaff: false,
         isAdmin: false,
         isReviewer: false,
         canUseCounselorTools: false,

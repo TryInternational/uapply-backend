@@ -131,22 +131,25 @@ const denySubAgent = (req, res, next) => {
 };
 
 /**
- * Refuse a SUB-AGENT on a staff-only router, and change nothing for anyone
- * else.
+ * Refuse an outside partner (sub-agent or school counsellor) on a staff-only
+ * router, and change nothing for anyone else.
  *
- * Mounted on whole routers (fees, leads, quotes, WhatsApp, …) that a sub-agent
- * holding a valid token could otherwise read by URL — the portal never calls
+ * Mounted on whole routers (fees, leads, quotes, WhatsApp, …) that a partner
+ * holding a valid token could otherwise read by URL — neither portal calls
  * them, but nothing stopped a direct request. It only IDENTIFIES the caller:
- * no token, an expired token, staff, a school counsellor — all pass through
- * exactly as before, which is why this is safe to mount on routers that carry
- * public webhooks and payment redirects. (softAuth, by contrast, 401s a stale
- * token, and denySubAgent also refuses school counsellors; mounting either here
- * would have changed behaviour for other roles.)
+ * no token, an expired token, staff — all pass through exactly as before,
+ * which is why this is safe to mount on routers that carry public webhooks
+ * and payment redirects. (softAuth, by contrast, 401s a stale token; mounting
+ * it here would have changed behaviour for callers with no valid token.)
+ *
+ * This used to refuse sub-agents only. School counsellors are refused too
+ * since the owner's decision of 2026-11-25: the school portal calls none of
+ * these routers.
  */
-const denyIdentifiedSubAgent = (req, res, next) => {
+const denyIdentifiedPartner = (req, res, next) => {
   if (!(req.headers && req.headers.authorization)) return next();
   return passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (user && isSubAgent(user)) {
+    if (user && isExternalPartner(user)) {
       return next(new ApiError(httpStatus.FORBIDDEN, 'Partner accounts cannot perform this action'));
     }
     return next();
@@ -348,7 +351,7 @@ module.exports = {
   legacyGate,
   requireAuth,
   denySubAgent,
-  denyIdentifiedSubAgent,
+  denyIdentifiedPartner,
   requireSubAgent,
   requireSchoolCounselor,
   requireReviewer,

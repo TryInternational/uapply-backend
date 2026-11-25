@@ -4,12 +4,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/application/:applicationId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -20,7 +20,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/aptitude-tests/:id": {
@@ -28,7 +28,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/bookings/:bookingId": {
@@ -36,12 +36,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/comments/:commentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -81,7 +81,7 @@
   },
   "DELETE /v1/documents/:documentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -124,7 +124,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/fees/:id": {
@@ -132,7 +132,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/ielts-tests/:testId": {
@@ -140,7 +140,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/leads/:leadId": {
@@ -149,14 +149,14 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "DELETE /v1/majors/:majorId": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/news/:id": {
@@ -165,11 +165,11 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "DELETE /v1/notes/:noteId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -188,7 +188,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/reminders/:reminderId": {
@@ -196,7 +196,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/roles/:roleId": {
@@ -205,14 +205,14 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "DELETE /v1/school/:schoolId": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/sponsorStudents/:sponsorStudentsId": {
@@ -221,11 +221,11 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "DELETE /v1/students/:studentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -244,7 +244,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/testQuestions/section/:section": {
@@ -252,7 +252,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/testQuestions/testType/:testType": {
@@ -260,7 +260,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "DELETE /v1/universities/:uniId": {
@@ -313,7 +313,7 @@
   },
   "GET /v1/activities": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -396,7 +396,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ambassadors/:ambassadorId": {
@@ -404,12 +404,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/application": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -417,7 +417,7 @@
   },
   "GET /v1/application/:applicationId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -425,7 +425,7 @@
   },
   "GET /v1/application/application-counts": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -433,7 +433,7 @@
   },
   "GET /v1/application/application-counts-university": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -441,7 +441,7 @@
   },
   "GET /v1/application/application-dashboard-data": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -449,7 +449,7 @@
   },
   "GET /v1/application/application-enrolled-university": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -457,7 +457,7 @@
   },
   "GET /v1/application/applied-students": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -465,7 +465,7 @@
   },
   "GET /v1/application/count-by-month": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -473,7 +473,7 @@
   },
   "GET /v1/application/dashboard-drilldown": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -481,7 +481,7 @@
   },
   "GET /v1/application/enrolled-count-by-month": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -513,7 +513,7 @@
   },
   "GET /v1/application/student/:studentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -524,7 +524,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/appliedStudent/:id": {
@@ -532,7 +532,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/appliedStudent/counselor": {
@@ -540,7 +540,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/appliedStudent/degree-count": {
@@ -548,7 +548,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/appliedStudent/months": {
@@ -556,7 +556,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/aptitude-tests": {
@@ -564,7 +564,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/aptitude-tests/:id": {
@@ -572,7 +572,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/aptitude-tests/search/:text": {
@@ -580,12 +580,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/auth/me": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -596,7 +596,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/:bookingId": {
@@ -604,7 +604,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/:type/export": {
@@ -612,7 +612,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/months": {
@@ -620,7 +620,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/search/:text": {
@@ -628,7 +628,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/stays": {
@@ -636,7 +636,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/total-amounts": {
@@ -644,7 +644,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/bookings/unavailable-dates": {
@@ -652,12 +652,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/comments": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -665,7 +665,7 @@
   },
   "GET /v1/comments/:commentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -673,7 +673,7 @@
   },
   "GET /v1/comments/student/:studentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -809,7 +809,7 @@
   },
   "GET /v1/documents": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -817,7 +817,7 @@
   },
   "GET /v1/documents/:documentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -825,7 +825,7 @@
   },
   "GET /v1/documents/student/:studentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -836,7 +836,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/englishLangSchool": {
@@ -900,7 +900,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/event-system/event-auth/me": {
@@ -924,7 +924,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/event-system/events/:id": {
@@ -932,7 +932,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/event-system/events/:id/registrations": {
@@ -956,7 +956,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/event-system/registrations": {
@@ -972,7 +972,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/event-system/registrations/user/:email": {
@@ -980,7 +980,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/events": {
@@ -988,7 +988,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/events/:id": {
@@ -996,7 +996,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/events/:id/registrations": {
@@ -1020,7 +1020,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/exibitionStudent/:id": {
@@ -1028,7 +1028,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees": {
@@ -1036,7 +1036,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/:id": {
@@ -1044,7 +1044,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/fees-dashboard-data": {
@@ -1052,7 +1052,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/months": {
@@ -1060,7 +1060,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/sales": {
@@ -1068,7 +1068,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/search/:text": {
@@ -1076,7 +1076,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/top-cities": {
@@ -1084,7 +1084,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/top-schools": {
@@ -1092,7 +1092,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/top-tests": {
@@ -1100,7 +1100,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/fees/top-types": {
@@ -1108,12 +1108,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/goals/:year": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1124,7 +1124,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-registration/available-seats": {
@@ -1132,7 +1132,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-registration/confirmation/:confirmationCode": {
@@ -1140,7 +1140,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-registration/email/:email": {
@@ -1148,7 +1148,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-registration/stats": {
@@ -1157,14 +1157,14 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "GET /v1/ielts-tests": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/:testId": {
@@ -1172,7 +1172,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/dashboard": {
@@ -1180,7 +1180,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/export": {
@@ -1188,7 +1188,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/history/:phone": {
@@ -1196,7 +1196,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/latest/:phone": {
@@ -1204,7 +1204,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/search/:text": {
@@ -1212,7 +1212,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/statistics": {
@@ -1220,7 +1220,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ielts-tests/stats/:phone": {
@@ -1228,7 +1228,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads": {
@@ -1236,7 +1236,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads/:leadId": {
@@ -1244,7 +1244,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads/country": {
@@ -1252,7 +1252,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads/degree": {
@@ -1260,12 +1260,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads/facets": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1276,7 +1276,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads/months": {
@@ -1284,7 +1284,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/leads/search/:text": {
@@ -1292,7 +1292,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/majors": {
@@ -1300,7 +1300,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/majors/:majorId": {
@@ -1308,7 +1308,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/majors/search/:text": {
@@ -1316,7 +1316,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/news": {
@@ -1324,7 +1324,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/news/:id": {
@@ -1332,12 +1332,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/notes": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1345,7 +1345,7 @@
   },
   "GET /v1/notifications/:userId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -1353,7 +1353,7 @@
   },
   "GET /v1/partners/:partnerId/students": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1361,7 +1361,7 @@
   },
   "GET /v1/partners/directory": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1372,7 +1372,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/payments/get-payment-methods": {
@@ -1380,7 +1380,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/payments/redirect/confirm": {
@@ -1388,7 +1388,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/payments/redirect/error": {
@@ -1396,7 +1396,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/quotes": {
@@ -1404,7 +1404,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/quotes/:id": {
@@ -1412,7 +1412,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/registrations": {
@@ -1428,7 +1428,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/registrations/user/:email": {
@@ -1436,7 +1436,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/reminders": {
@@ -1444,12 +1444,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/reminders/calendar": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1460,7 +1460,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/roles": {
@@ -1468,7 +1468,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/roles/:roleId": {
@@ -1476,7 +1476,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/school": {
@@ -1484,7 +1484,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/school/:schoolId": {
@@ -1492,7 +1492,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/school/search/:text": {
@@ -1500,12 +1500,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/sla-settings": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -1516,7 +1516,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/sponsorStudents/:sponsorStudentsId": {
@@ -1524,12 +1524,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/students": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -1537,7 +1537,7 @@
   },
   "GET /v1/students/:studentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -1545,7 +1545,7 @@
   },
   "GET /v1/students/counselor-leaderboard": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1553,7 +1553,7 @@
   },
   "GET /v1/students/count": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1561,7 +1561,7 @@
   },
   "GET /v1/students/counts-by-user": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1569,7 +1569,7 @@
   },
   "GET /v1/students/dashboard-breakdowns": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1577,7 +1577,7 @@
   },
   "GET /v1/students/facets": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1585,7 +1585,7 @@
   },
   "GET /v1/students/months": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1593,7 +1593,7 @@
   },
   "GET /v1/students/search/:text": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1601,7 +1601,7 @@
   },
   "GET /v1/students/student-dashboard-data": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1609,7 +1609,7 @@
   },
   "GET /v1/students/top-nationalities": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1644,7 +1644,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/testQuestions/:subjectId": {
@@ -1652,7 +1652,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/testQuestions/:testType/:lang?": {
@@ -1660,7 +1660,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/testQuestions/:testType/section/:section?/:lang?": {
@@ -1668,7 +1668,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/testQuestions/search/:text": {
@@ -1676,7 +1676,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ulearn-students/back-office/students": {
@@ -1684,7 +1684,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ulearn-students/back-office/students/:studentId/tests": {
@@ -1692,7 +1692,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/ulearn-students/me": {
@@ -1777,7 +1777,7 @@
   },
   "GET /v1/users": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1785,7 +1785,7 @@
   },
   "GET /v1/users/:userId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1793,7 +1793,7 @@
   },
   "GET /v1/users/users": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -1801,90 +1801,90 @@
   },
   "GET /v1/whatsapp/analytics/overview": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/analytics/team": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/audience-segments": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/broadcasts": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/broadcasts/:id": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/conversations": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/conversations/:id": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/conversations/:id/call-permission": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/conversations/:id/calls": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/conversations/:id/messages": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/integration": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/integration/calling": {
@@ -1905,10 +1905,10 @@
   },
   "GET /v1/whatsapp/templates": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "GET /v1/whatsapp/webhook": {
@@ -1924,12 +1924,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/application/:applicationId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -1948,7 +1948,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/aptitude-tests/:id": {
@@ -1956,7 +1956,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/bookings/:bookingId": {
@@ -1964,7 +1964,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/bookings/:bookingId/deposit": {
@@ -1972,12 +1972,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/comments/:commentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2017,7 +2017,7 @@
   },
   "PATCH /v1/documents/:documentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2036,7 +2036,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/fees/:id": {
@@ -2044,7 +2044,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/ielts-tests/:testId": {
@@ -2052,7 +2052,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/leads/:leadId": {
@@ -2060,7 +2060,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/majors/:majorId": {
@@ -2068,7 +2068,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/majors/update-qualified": {
@@ -2076,7 +2076,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/news/:id": {
@@ -2085,11 +2085,11 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "PATCH /v1/notes/:noteId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2116,7 +2116,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/reminders/:reminderId": {
@@ -2124,7 +2124,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/roles/:roleId": {
@@ -2133,14 +2133,14 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "PATCH /v1/school/:schoolId": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/sponsorStudents/:sponsorStudentsId": {
@@ -2148,12 +2148,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/students/:studentId": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -2172,7 +2172,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/ulearn-students/back-office/students/:studentId": {
@@ -2180,7 +2180,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PATCH /v1/ulearn-students/me": {
@@ -2217,10 +2217,10 @@
   },
   "PATCH /v1/whatsapp/conversations/:id": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/access-requests": {
@@ -2265,7 +2265,7 @@
   },
   "POST /v1/activities": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2348,12 +2348,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/application": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -2372,7 +2372,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/aptitude-tests": {
@@ -2380,7 +2380,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/auth/forgot-password": {
@@ -2416,11 +2416,11 @@
     "admin": "answers"
   },
   "POST /v1/auth/register": {
-    "noToken": "answers",
-    "noRole": "answers",
-    "staff": "answers",
-    "subAgent": "answers",
-    "schoolCounselor": "answers",
+    "noToken": "refused",
+    "noRole": "refused",
+    "staff": "refused",
+    "subAgent": "refused",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/auth/reset-password": {
@@ -2433,7 +2433,7 @@
   },
   "POST /v1/auth/send-verification-email": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -2452,12 +2452,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/comments": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2465,7 +2465,7 @@
   },
   "POST /v1/comments/:commentId/tag": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2473,7 +2473,7 @@
   },
   "POST /v1/comments/migrate-reactions": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2513,7 +2513,7 @@
   },
   "POST /v1/documents": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2532,7 +2532,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/email/send-ielts-reminder": {
@@ -2540,7 +2540,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/email/send-template": {
@@ -2548,7 +2548,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/englishLangSchool": {
@@ -2572,7 +2572,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/event-system/event-auth/register": {
@@ -2604,7 +2604,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/events": {
@@ -2620,7 +2620,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/fees": {
@@ -2628,7 +2628,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ielts-registration": {
@@ -2636,7 +2636,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ielts-registration/:id/retry-sync": {
@@ -2645,7 +2645,7 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "POST /v1/ielts-tests": {
     "noToken": "refused",
@@ -2660,7 +2660,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ielts-tests/eligibility": {
@@ -2668,7 +2668,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ielts-tests/evaluate-writing": {
@@ -2676,7 +2676,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ielts-tests/reset-attempts/:phone": {
@@ -2684,7 +2684,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/leads": {
@@ -2692,12 +2692,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/leads/:leadId/assign": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2705,7 +2705,7 @@
   },
   "POST /v1/leads/:leadId/convert": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2713,7 +2713,7 @@
   },
   "POST /v1/leads/:leadId/follow-up": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2724,7 +2724,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/news": {
@@ -2732,7 +2732,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/news/generate-qr": {
@@ -2740,12 +2740,12 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/notes": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2753,7 +2753,7 @@
   },
   "POST /v1/notifications": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2773,14 +2773,14 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "POST /v1/quotes": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/registrations/:id/resend-confirmation": {
@@ -2796,7 +2796,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/reminders": {
@@ -2804,7 +2804,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/roles": {
@@ -2812,7 +2812,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/school": {
@@ -2820,7 +2820,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/sponsorStudents": {
@@ -2828,7 +2828,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/studentAuth/forgot-password": {
@@ -2881,7 +2881,7 @@
   },
   "POST /v1/studentAuth/send-verification-email": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -2897,7 +2897,7 @@
   },
   "POST /v1/students": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -2905,7 +2905,7 @@
   },
   "POST /v1/students/:studentId/new-journey": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -2929,7 +2929,7 @@
   },
   "POST /v1/students/:studentId/share": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
     "schoolCounselor": "refused",
@@ -2948,7 +2948,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ulearn-students/auth/google": {
@@ -2956,7 +2956,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ulearn-students/auth/phone": {
@@ -2964,7 +2964,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ulearn-students/auth/phone/otp/check": {
@@ -2972,7 +2972,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/ulearn-students/auth/phone/otp/start": {
@@ -2980,7 +2980,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/universities": {
@@ -3009,114 +3009,114 @@
   },
   "POST /v1/whatsapp/broadcasts": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/calls/:callId/accept": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/calls/:callId/reject": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/calls/:callId/terminate": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/assign": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/call-permission": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/calls": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/messages/media": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/messages/template": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/messages/text": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/messages/voice": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/notes": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/conversations/:id/read": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/integration/calling/enable": {
@@ -3129,26 +3129,26 @@
   },
   "POST /v1/whatsapp/integration/phone/register": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/media": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/messages/:messageId/save-document": {
     "noToken": "refused",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "POST /v1/whatsapp/webhook": {
@@ -3156,7 +3156,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PUT /v1/agreements/settings": {
@@ -3188,7 +3188,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PUT /v1/event-system/registrations/:id/status": {
@@ -3221,19 +3221,19 @@
     "staff": "refused",
     "subAgent": "refused",
     "schoolCounselor": "refused",
-    "admin": "refused"
+    "admin": "answers"
   },
   "PUT /v1/news/update": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PUT /v1/notifications/:notificationId/read": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -3241,7 +3241,7 @@
   },
   "PUT /v1/notifications/:notificationId/unread": {
     "noToken": "answers",
-    "noRole": "answers",
+    "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
     "schoolCounselor": "answers",
@@ -3252,7 +3252,7 @@
     "noRole": "answers",
     "staff": "answers",
     "subAgent": "refused",
-    "schoolCounselor": "answers",
+    "schoolCounselor": "refused",
     "admin": "answers"
   },
   "PUT /v1/registrations/:id/status": {
