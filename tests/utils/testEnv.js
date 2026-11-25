@@ -23,3 +23,9 @@ process.env.NODE_ENV = 'test';
 
 process.env.MONGODB_URL = 'mongodb://127.0.0.1:1/not-used-by-tests';
 process.env.JWT_SECRET = 'test-only-secret-not-used-anywhere-else';
+
+// config.js calls .replace() on these two as it loads, so it cannot be read at
+// all while they are missing. They are not keys: the Firebase client is a
+// stand-in during tests (tests/mocks/firebase-admin.js) and never looks at them.
+process.env.PRIVATE_KEY = 'not-a-key-placeholder-for-tests';
+process.env.FIREBASE_PRIVATE_KEY = 'not-a-key-placeholder-for-tests';
