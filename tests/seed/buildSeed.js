@@ -139,9 +139,13 @@ const buildSeed = () => {
   // ---- applications --------------------------------------------------------
   const applications = [];
   const apply = (aStudent, overrides) => {
+    const which = applications.length % courses.length;
     const made = build.application({
       studentId: aStudent._id,
-      course: courses[applications.length % courses.length]._id,
+      // eslint-disable-next-line security/detect-object-injection
+      course: courses[which]._id,
+      // eslint-disable-next-line security/detect-object-injection
+      institute: { name: universities[which].name },
       ...overrides,
     });
     applications.push(made);
