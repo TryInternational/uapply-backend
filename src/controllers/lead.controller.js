@@ -22,6 +22,35 @@ const residenceMatch = (v) => {
   return names.length > 1 ? { $in: names } : names[0];
 };
 
+// What the form on the website may set: what a visitor tells us about
+// themselves. POST /leads needs no token, so anything else in the request is
+// left out of what is stored. A lead's status, who works it, when to follow it
+// up, which student it became and whether it is qualified are decided here or
+// by staff afterwards, and nothing reads a password on a lead.
+const PUBLIC_LEAD_FIELDS = [
+  'fullname',
+  'email',
+  'phoneNo',
+  'city',
+  'nationality',
+  'residence',
+  'destination',
+  'degree',
+  'subjects',
+  'cgpa',
+  'engLevel',
+  'iltesScore',
+  'previousSchool',
+  'parentsIncome',
+  'countriesTraveled',
+  'selectedUniversity',
+  'applications',
+  'sponsored',
+  'sponsoredBy',
+  'webUrl',
+  'source',
+];
+
 const createLead = catchAsync(async (req, res) => {
   const checkQualified =
     req.body.nationality.english_name === 'United States of America' ||
@@ -39,7 +68,7 @@ const createLead = catchAsync(async (req, res) => {
 
   const qualified = (req.body.parentsIncome || checkQualified) && req.body.destination.en_name === 'UK';
 
-  const lead = await leadsService.createLead({ qualified, ...req.body });
+  const lead = await leadsService.createLead({ ...pick(req.body, PUBLIC_LEAD_FIELDS), qualified });
   const slackBody = {
     attachments: [
       {
@@ -183,7 +212,6 @@ const getTop5ByContry = catchAsync(async (req, res) => {
   res.send(lead);
 });
 const getTop5ByDegrees = catchAsync(async (req, res) => {
-  console.log(req.query);
   const lead = await leadsService.getTop5ByDegree({
     ...req.query,
   });
