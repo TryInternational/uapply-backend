@@ -20,19 +20,22 @@ const START_TIMEOUT_MS = 180000;
  * each test, so they must never be able to reach the database the settings
  * name, whatever those settings say.
  */
+
+// The address of the throw-away server this test file started, once it has.
+let uri;
+
+// Wiping and seeding are only ever acceptable on the throw-away server. This
+// checks the connection that is actually open, in case something else opened it.
+const assertThrowAwayConnection = () => {
+  const { host, port, name } = mongoose.connection;
+  assertLocalMongoUrl(`mongodb://${host}:${port}/`);
+  if (!uri || String(port) !== new URL(uri).port || name !== DB_NAME) {
+    throw new Error('Refusing to run database tests: the open connection is not the in-memory test database.');
+  }
+};
+
 const setupTestDB = () => {
   let server;
-  let uri;
-
-  // The wipe is only ever acceptable on the throw-away server. This checks the
-  // connection that is actually open, in case something else opened it.
-  const assertThrowAwayConnection = () => {
-    const { host, port, name } = mongoose.connection;
-    assertLocalMongoUrl(`mongodb://${host}:${port}/`);
-    if (!uri || String(port) !== new URL(uri).port || name !== DB_NAME) {
-      throw new Error('Refusing to run database tests: the open connection is not the in-memory test database.');
-    }
-  };
 
   beforeAll(async () => {
     if (mongoose.connection.readyState !== 0) {
@@ -56,7 +59,10 @@ const setupTestDB = () => {
   afterAll(async () => {
     await mongoose.disconnect();
     if (server) await server.stop();
+    uri = undefined;
   });
 };
 
 module.exports = setupTestDB;
+// For anything else that writes to the test database, such as the seed.
+module.exports.assertThrowAwayConnection = assertThrowAwayConnection;
