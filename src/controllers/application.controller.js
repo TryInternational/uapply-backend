@@ -682,7 +682,16 @@ const updateApplication = catchAsync(async (req, res) => {
   }
   try {
     if (req.body.phaseChanged) {
-      const stages = req.body.portalApplicationStatus.applicationPhases;
+      const stages = req.body.portalApplicationStatus && req.body.portalApplicationStatus.applicationPhases;
+      if (!Array.isArray(stages) || !stages.length) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'A phase change must send the list of phases');
+      }
+      // Who is making the move. The messages below read `req.body.editor`, and
+      // a request that left it out threw while they were being built. Fill it
+      // from the signed-in user, as the rest of the timeline does.
+      if (!req.body.editor || !req.body.editor.name) {
+        req.body.editor = { ...(req.body.editor || {}), ...actorOf(req) };
+      }
       // Which phase is being completed. The marker is AwaitingResponseStudent;
       // isCurrent is the repair path for records written before that was set
       // consistently — without it the old `|| status === 'Done'` fallback
@@ -696,6 +705,9 @@ const updateApplication = catchAsync(async (req, res) => {
       // stage the notification/Slack messages describe the move as.
       const movedToStatus = currentIndex !== -1 && stages[currentIndex] ? stages[currentIndex].status : null;
       const application = await applicationService.findApplicationById(req.params.applicationId);
+      if (!application) {
+        throw new ApiError(httpStatus.NOT_FOUND, 'Application not found');
+      }
       const student = await studentsService.getStudentById(application.studentId);
       const { assignedTo } = student;
 
@@ -962,7 +974,9 @@ const updateApplication = catchAsync(async (req, res) => {
           stages[currentIndex + 1].phaseState = 'AwaitingResponseStudent';
           stages[currentIndex + 1].isCurrent = true;
         }
-        if (currentIndex >= 0) {
+        // The first phase has none before it. Reaching for one threw, so an
+        // application could not be moved out of its first phase this way.
+        if (currentIndex > 0) {
           stages[currentIndex - 1].isPrevious = false;
         }
       }
@@ -1074,7 +1088,12 @@ const updateApplication = catchAsync(async (req, res) => {
     const app = await applicationService.updateApplicationById(req.params.applicationId, req.body);
     res.send(app);
   } catch (error) {
+    // Log it, then pass it on. This used to stop here, so whatever went wrong
+    // in a change to an application, the caller was sent nothing at all and
+    // waited until something timed out: not the 409 for a second place in the
+    // same intake that is thrown above, and not a 500.
     logger.error(error);
+    throw error;
   }
 });
 
