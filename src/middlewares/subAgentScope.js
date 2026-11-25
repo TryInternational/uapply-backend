@@ -241,6 +241,59 @@ const scopeSubAgentToOwnStudent = async (req, res, next) => {
 };
 
 /**
+ * For a partner asking for ONE comment, note or other per-student record by its
+ * id: find the student that record belongs to, and make that the student the
+ * request is about.
+ *
+ * Mount it in front of scopeSubAgentToOwnStudent. On its own that middleware
+ * checks the student NAMED IN THE REQUEST, which says nothing about the record
+ * in the path: a partner could name a student of their own and put somebody
+ * else's comment id in the path, and so read, change or delete it. After this
+ * runs, the student that is checked is the record's own, whatever the request
+ * named. The documents router does the same with its own resolver.
+ *
+ * It also takes any student id out of the body, so the request cannot move the
+ * record to another student.
+ *
+ * Staff, and requests with no token, pass through untouched.
+ *
+ * @param {string} modelName - a key of ../models, e.g. 'Comments'
+ * @param {string} field - the field on that model that holds the student id
+ */
+const resolveRecordStudent = (modelName, field) => async (req, res, next) => {
+  if (!isExternalPartner(req.user)) return next();
+  // '/<id>' and '/<id>/anything'. Not '/', and not '/student/<id>'.
+  const match = /^\/([0-9a-f]{24})(?:\/|$)/i.exec(req.path || '');
+  if (!match) return next();
+  try {
+    // eslint-disable-next-line global-require
+    const models = require('../models');
+    // eslint-disable-next-line security/detect-object-injection
+    const record = await models[modelName].findById(match[1]).select(field).lean();
+    // eslint-disable-next-line security/detect-object-injection
+    const student = record && record[field];
+    if (!student) {
+      return next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
+    }
+    // The query wins over the body in scopeSubAgentToOwnStudent, so this is the
+    // student that gets checked.
+    req.query.studentId = String(student._id || student);
+    // A record stays on the student it was written for. Without this a partner
+    // could move a comment from a student of their own onto somebody else's,
+    // because the update copies the whole body onto the record.
+    if (req.body && typeof req.body === 'object') {
+      delete req.body.studentId;
+      delete req.body.student;
+      // eslint-disable-next-line security/detect-object-injection
+      delete req.body[field];
+    }
+    return next();
+  } catch (err) {
+    return next(new ApiError(httpStatus.NOT_FOUND, 'Not found'));
+  }
+};
+
+/**
  * Notifications are addressed to a user, not a student, so these two are
  * attached at ROUTE level rather than with router.use() -- a pathless use()
  * cannot see :userId / :notificationId (see the note in
@@ -357,6 +410,7 @@ module.exports = {
   requireReviewer,
   scopeSubAgentUsers,
   scopeSubAgentToOwnStudent,
+  resolveRecordStudent,
   scopeSubAgentNotificationFeed,
   scopeSubAgentNotificationDoc,
 };
