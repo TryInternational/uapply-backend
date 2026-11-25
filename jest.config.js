@@ -3,8 +3,17 @@ module.exports = {
   testEnvironmentOptions: {
     NODE_ENV: 'test',
   },
-  // Throw-away settings for the run, loaded before any test file. No settings file is read.
-  setupFiles: ['<rootDir>/tests/utils/testEnv.js'],
+  // Loaded before any test file: throw-away settings (no settings file is read),
+  // and a block on every network connection that would leave this machine.
+  setupFiles: ['<rootDir>/tests/utils/testEnv.js', '<rootDir>/tests/utils/blockNetwork.js'],
+  // The clients for outside services are replaced by stand-ins, so tests need
+  // no credential and can send nothing.
+  moduleNameMapper: {
+    '^resend$': '<rootDir>/tests/mocks/resend.js',
+    '^openai$': '<rootDir>/tests/mocks/openai.js',
+    '^@slack/web-api$': '<rootDir>/tests/mocks/slack-web-api.js',
+    '^firebase-admin$': '<rootDir>/tests/mocks/firebase-admin.js',
+  },
   restoreMocks: true,
   coveragePathIgnorePatterns: ['node_modules', 'src/config', 'src/app.js', 'tests'],
   coverageReporters: ['text', 'lcov', 'clover', 'html'],
