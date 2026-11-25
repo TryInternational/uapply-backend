@@ -4,6 +4,7 @@ const httpStatus = require('http-status');
 const httpMocks = require('node-mocks-http');
 const { DateTime } = require('luxon');
 const bcrypt = require('bcryptjs');
+const resend = require('resend');
 const app = require('../../src/app');
 const config = require('../../src/config/config');
 const auth = require('../../src/middlewares/auth');
@@ -11,10 +12,10 @@ const { tokenService, emailService } = require('../../src/services');
 const ApiError = require('../../src/utils/ApiError');
 const setupTestDB = require('../utils/setupTestDB');
 const { User, Token } = require('../../src/models');
-const { roleRights } = require('../../src/config/roles');
 const { tokenTypes } = require('../../src/config/tokens');
 const { userOne, admin, insertUsers } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
+const { adminRole } = require('../fixtures/role.fixture');
 
 setupTestDB();
 
@@ -37,14 +38,14 @@ describe('Auth routes', () => {
         id: expect.anything(),
         name: newUser.name,
         email: newUser.email,
-        role: 'user',
-        isEmailVerified: false,
+        // A user is told what they may do. Nobody here is an admin or a reviewer.
+        permissions: expect.objectContaining({ isAdmin: false, isReviewer: false, canUseCounselorTools: false }),
       });
 
       const dbUser = await User.findById(res.body.user.id);
       expect(dbUser).toBeDefined();
       expect(dbUser.password).not.toBe(newUser.password);
-      expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email, role: 'user', isEmailVerified: false });
+      expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email });
 
       expect(res.body.tokens).toEqual({
         access: { token: expect.anything(), expires: expect.anything() },
@@ -96,8 +97,9 @@ describe('Auth routes', () => {
         id: expect.anything(),
         name: userOne.name,
         email: userOne.email,
-        role: userOne.role,
-        isEmailVerified: userOne.isEmailVerified,
+        role: userOne.role.toHexString(),
+        // A user is told what they may do. Nobody here is an admin or a reviewer.
+        permissions: expect.objectContaining({ isAdmin: false, isReviewer: false, canUseCounselorTools: false }),
       });
 
       expect(res.body.tokens).toEqual({
@@ -236,7 +238,8 @@ describe('Auth routes', () => {
 
   describe('POST /v1/auth/forgot-password', () => {
     beforeEach(() => {
-      jest.spyOn(emailService.transport, 'sendMail').mockResolvedValue();
+      // Mail goes through Resend, which is a stand-in during tests (tests/mocks/resend.js).
+      resend.reset();
     });
 
     test('should return 204 and send reset password email to the user', async () => {
@@ -245,7 +248,8 @@ describe('Auth routes', () => {
 
       await request(app).post('/v1/auth/forgot-password').send({ email: userOne.email }).expect(httpStatus.NO_CONTENT);
 
-      expect(sendResetPasswordEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String));
+      expect(sendResetPasswordEmailSpy.mock.calls[0].slice(0, 2)).toEqual([userOne.email, expect.any(String)]);
+      expect(resend.sent).toHaveLength(1);
       const resetPasswordToken = sendResetPasswordEmailSpy.mock.calls[0][1];
       const dbResetPasswordTokenDoc = await Token.findOne({ token: resetPasswordToken, user: userOne._id });
       expect(dbResetPasswordTokenDoc).toBeDefined();
@@ -271,8 +275,7 @@ describe('Auth routes', () => {
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: 'password2' })
+        .send({ token: resetPasswordToken, password: 'password2' })
         .expect(httpStatus.NO_CONTENT);
 
       const dbUser = await User.findById(userOne._id);
@@ -297,8 +300,7 @@ describe('Auth routes', () => {
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: 'password2' })
+        .send({ token: resetPasswordToken, password: 'password2' })
         .expect(httpStatus.UNAUTHORIZED);
     });
 
@@ -310,8 +312,7 @@ describe('Auth routes', () => {
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: 'password2' })
+        .send({ token: resetPasswordToken, password: 'password2' })
         .expect(httpStatus.UNAUTHORIZED);
     });
 
@@ -322,8 +323,7 @@ describe('Auth routes', () => {
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: 'password2' })
+        .send({ token: resetPasswordToken, password: 'password2' })
         .expect(httpStatus.UNAUTHORIZED);
     });
 
@@ -333,31 +333,29 @@ describe('Auth routes', () => {
       const resetPasswordToken = tokenService.generateToken(userOne._id, expires, tokenTypes.RESET_PASSWORD);
       await tokenService.saveToken(resetPasswordToken, userOne._id, expires, tokenTypes.RESET_PASSWORD);
 
-      await request(app).post('/v1/auth/reset-password').query({ token: resetPasswordToken }).expect(httpStatus.BAD_REQUEST);
+      await request(app).post('/v1/auth/reset-password').send({ token: resetPasswordToken }).expect(httpStatus.BAD_REQUEST);
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: 'short1' })
+        .send({ token: resetPasswordToken, password: 'short1' })
         .expect(httpStatus.BAD_REQUEST);
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: 'password' })
+        .send({ token: resetPasswordToken, password: 'password' })
         .expect(httpStatus.BAD_REQUEST);
 
       await request(app)
         .post('/v1/auth/reset-password')
-        .query({ token: resetPasswordToken })
-        .send({ password: '11111111' })
+        .send({ token: resetPasswordToken, password: '11111111' })
         .expect(httpStatus.BAD_REQUEST);
     });
   });
 
   describe('POST /v1/auth/send-verification-email', () => {
     beforeEach(() => {
-      jest.spyOn(emailService.transport, 'sendMail').mockResolvedValue();
+      // Mail goes through Resend, which is a stand-in during tests (tests/mocks/resend.js).
+      resend.reset();
     });
 
     test('should return 204 and send verification email to the user', async () => {
@@ -369,7 +367,8 @@ describe('Auth routes', () => {
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .expect(httpStatus.NO_CONTENT);
 
-      expect(sendVerificationEmailSpy).toHaveBeenCalledWith(userOne.email, expect.any(String));
+      expect(sendVerificationEmailSpy.mock.calls[0].slice(0, 2)).toEqual([userOne.email, expect.any(String)]);
+      expect(resend.sent).toHaveLength(1);
       const verifyEmailToken = sendVerificationEmailSpy.mock.calls[0][1];
       const dbVerifyEmailToken = await Token.findOne({ token: verifyEmailToken, user: userOne._id });
 
@@ -580,7 +579,7 @@ describe('Auth middleware', () => {
     });
     const next = jest.fn();
 
-    await auth(...roleRights.get('admin'))(req, httpMocks.createResponse(), next);
+    await auth(...adminRole.roleRights)(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
   });

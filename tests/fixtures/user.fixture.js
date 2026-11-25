@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const faker = require('faker');
 const User = require('../../src/models/user.model');
+const { userRole, adminRole, insertRoles } = require('./role.fixture');
 
 const password = 'password1';
 const salt = bcrypt.genSaltSync(8);
@@ -12,8 +13,7 @@ const userOne = {
   name: faker.name.findName(),
   email: faker.internet.email().toLowerCase(),
   password,
-  role: 'user',
-  isEmailVerified: false,
+  role: userRole._id,
 };
 
 const userTwo = {
@@ -21,8 +21,7 @@ const userTwo = {
   name: faker.name.findName(),
   email: faker.internet.email().toLowerCase(),
   password,
-  role: 'user',
-  isEmailVerified: false,
+  role: userRole._id,
 };
 
 const admin = {
@@ -30,11 +29,12 @@ const admin = {
   name: faker.name.findName(),
   email: faker.internet.email().toLowerCase(),
   password,
-  role: 'admin',
-  isEmailVerified: false,
+  role: adminRole._id,
 };
 
 const insertUsers = async (users) => {
+  // Users point at role documents, so the roles go in first.
+  await insertRoles();
   await User.insertMany(users.map((user) => ({ ...user, password: hashedPassword })));
 };
 

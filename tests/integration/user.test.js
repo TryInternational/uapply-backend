@@ -6,6 +6,7 @@ const setupTestDB = require('../utils/setupTestDB');
 const { User } = require('../../src/models');
 const { userOne, userTwo, admin, insertUsers } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
+const { userRole, adminRole } = require('../fixtures/role.fixture');
 
 setupTestDB();
 
@@ -18,7 +19,7 @@ describe('User routes', () => {
         name: faker.name.findName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
-        role: 'user',
+        role: userRole._id.toHexString(),
       };
     });
 
@@ -37,18 +38,18 @@ describe('User routes', () => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        isEmailVerified: false,
       });
 
       const dbUser = await User.findById(res.body.id);
       expect(dbUser).toBeDefined();
       expect(dbUser.password).not.toBe(newUser.password);
-      expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email, role: newUser.role, isEmailVerified: false });
+      expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email });
+      expect(String(dbUser.role)).toBe(newUser.role);
     });
 
     test('should be able to create an admin as well', async () => {
       await insertUsers([admin]);
-      newUser.role = 'admin';
+      newUser.role = adminRole._id.toHexString();
 
       const res = await request(app)
         .post('/v1/users')
@@ -56,10 +57,10 @@ describe('User routes', () => {
         .send(newUser)
         .expect(httpStatus.CREATED);
 
-      expect(res.body.role).toBe('admin');
+      expect(res.body.role).toBe(newUser.role);
 
       const dbUser = await User.findById(res.body.id);
-      expect(dbUser.role).toBe('admin');
+      expect(String(dbUser.role)).toBe(newUser.role);
     });
 
     test('should return 401 error if access token is missing', async () => {
@@ -162,8 +163,7 @@ describe('User routes', () => {
         id: userOne._id.toHexString(),
         name: userOne.name,
         email: userOne.email,
-        role: userOne.role,
-        isEmailVerified: userOne.isEmailVerified,
+        role: userOne.role.toHexString(),
       });
     });
 
@@ -210,7 +210,7 @@ describe('User routes', () => {
       const res = await request(app)
         .get('/v1/users')
         .set('Authorization', `Bearer ${adminAccessToken}`)
-        .query({ role: 'user' })
+        .query({ role: userRole._id.toHexString() })
         .send()
         .expect(httpStatus.OK);
 
@@ -365,8 +365,7 @@ describe('User routes', () => {
         id: userOne._id.toHexString(),
         email: userOne.email,
         name: userOne.name,
-        role: userOne.role,
-        isEmailVerified: userOne.isEmailVerified,
+        role: userOne.role.toHexString(),
       });
     });
 
@@ -418,17 +417,19 @@ describe('User routes', () => {
   });
 
   describe('DELETE /v1/users/:userId', () => {
-    test('should return 204 if data is ok', async () => {
+    // Deleting a user is for admins only (requireAdmin on the route), so a user
+    // cannot delete their own account. An admin deleting a user is tested below.
+    test('should return 403 if a user tries to delete their own account', async () => {
       await insertUsers([userOne]);
 
       await request(app)
         .delete(`/v1/users/${userOne._id}`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send()
-        .expect(httpStatus.NO_CONTENT);
+        .expect(httpStatus.FORBIDDEN);
 
       const dbUser = await User.findById(userOne._id);
-      expect(dbUser).toBeNull();
+      expect(dbUser).not.toBeNull();
     });
 
     test('should return 401 error if access token is missing', async () => {
@@ -498,14 +499,14 @@ describe('User routes', () => {
         id: userOne._id.toHexString(),
         name: updateBody.name,
         email: updateBody.email,
-        role: 'user',
-        isEmailVerified: false,
+        role: userOne.role.toHexString(),
       });
 
       const dbUser = await User.findById(userOne._id);
       expect(dbUser).toBeDefined();
       expect(dbUser.password).not.toBe(updateBody.password);
-      expect(dbUser).toMatchObject({ name: updateBody.name, email: updateBody.email, role: 'user' });
+      expect(dbUser).toMatchObject({ name: updateBody.name, email: updateBody.email });
+      expect(String(dbUser.role)).toBe(userOne.role.toHexString());
     });
 
     test('should return 401 error if access token is missing', async () => {

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const faker = require('faker');
 const { User } = require('../../../src/models');
 
@@ -9,7 +10,7 @@ describe('User model', () => {
         name: faker.name.findName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
-        role: 'user',
+        role: mongoose.Types.ObjectId(),
       };
     });
 
@@ -49,7 +50,7 @@ describe('User model', () => {
         name: faker.name.findName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
-        role: 'user',
+        role: mongoose.Types.ObjectId(),
       };
       expect(new User(newUser).toJSON()).not.toHaveProperty('password');
     });
