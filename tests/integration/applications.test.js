@@ -116,6 +116,39 @@ describe('applications and documents', () => {
       expect(made.reviewHistory).toEqual([]);
     });
 
+    // An application was stored before anybody looked whether its student
+    // was there. Staff were answered 500 with the application already saved,
+    // belonging to nobody; a school counsellor was answered 201.
+    describe('for a student that is not there', () => {
+      const NOBODY = '5eed00030000000000ffffff';
+
+      test.each([
+        ['a member of staff', () => u.counsellorA],
+        ['a school counsellor', () => u.schoolA],
+        ['a sub-agent', () => u.subAgentA],
+      ])('%s is told there is no such student, and nothing is stored', async (who, caller) => {
+        const before = await Application.countDocuments();
+
+        const res = await as(caller()).post('/v1/application', body({ _id: NOBODY }, { editor: editor(caller()) }));
+
+        expect(res.status).toBe(httpStatus.NOT_FOUND);
+        expect(res.body.message).toBe('Student not found');
+        expect(await Application.countDocuments()).toBe(before);
+      });
+
+      test.each([
+        ['no student at all', { studentId: undefined }],
+        ['a student id that is not an id', { studentId: 'not-an-id' }],
+      ])('with %s it is refused, and nothing is stored', async (what, extra) => {
+        const before = await Application.countDocuments();
+
+        const res = await as(u.counsellorA).post('/v1/application', body(aStudent(), extra));
+
+        expect(res.status).toBe(httpStatus.BAD_REQUEST);
+        expect(await Application.countDocuments()).toBe(before);
+      });
+    });
+
     // The message for the student's team is written after the application is
     // stored. It used to read the name from `editor` in the request and the
     // institute's name from the application; with either missing the request
