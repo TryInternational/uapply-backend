@@ -1,10 +1,9 @@
 const httpStatus = require('http-status');
 const mongoose = require('mongoose');
-const { DateTime } = require('luxon');
 const { Leads, Students, Reminder, CourseLevels, User } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { logActivity } = require('./activities.service');
-const { convertASTToUTC } = require('../utils/Common');
+const { kuwaitDayRange } = require('../utils/kuwaitDays');
 
 /**
  * Create a lead
@@ -43,21 +42,12 @@ const getTop5ByContries = async (data) => {
     matchQuery.status = data.status;
   }
 
-  const startDate = DateTime.fromISO(new Date(data.startDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).startOf('day');
-  const endDate = DateTime.fromISO(new Date(data.endDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).endOf('day');
-
-  const sd = convertASTToUTC(startDate, true).toString();
-  const ed = convertASTToUTC(endDate, true).toString();
-
-  if (data.startDate && data.endDate) {
-    matchQuery.createdAt = {
-      $gte: sd,
-      $lte: ed,
-    };
+  // The Kuwait days asked for, as dates. They were passed to the aggregate as
+  // text, which never matches a date there, so the list was always empty; and
+  // with no dates at all the conversion threw before the `if` was reached.
+  const range = kuwaitDayRange(data.startDate, data.endDate);
+  if (range) {
+    matchQuery.createdAt = { $gte: range.from, $lte: range.to };
   }
 
   const aggregationPipeline = [
@@ -88,21 +78,12 @@ const getTop5ByDegree = async (data) => {
     qualified: true,
   };
 
-  const startDate = DateTime.fromISO(new Date(data.startDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).startOf('day');
-  const endDate = DateTime.fromISO(new Date(data.endDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).endOf('day');
-
-  const sd = convertASTToUTC(startDate, true).toString();
-  const ed = convertASTToUTC(endDate, true).toString();
-
-  if (data.startDate && data.endDate) {
-    matchQuery.createdAt = {
-      $gte: sd,
-      $lte: ed,
-    };
+  // The Kuwait days asked for, as dates. They were passed to the aggregate as
+  // text, which never matches a date there, so the list was always empty; and
+  // with no dates at all the conversion threw before the `if` was reached.
+  const range = kuwaitDayRange(data.startDate, data.endDate);
+  if (range) {
+    matchQuery.createdAt = { $gte: range.from, $lte: range.to };
   }
   const aggregationPipeline = [
     {

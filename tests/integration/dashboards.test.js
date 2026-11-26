@@ -353,6 +353,78 @@ describe('the dashboards', () => {
         unqualifiedLeads: seed.leads.length,
       });
     });
+
+    test('the countries and degrees the qualified leads come from most are listed, biggest first', async () => {
+      const { top5ByCountry, top5ByDegree } = await dashboard();
+
+      expect(top5ByCountry).toEqual([
+        { _id: 'Kuwait', countryCode: 'KW', count: 3 },
+        { _id: 'Oman', countryCode: 'OM', count: 1 },
+      ]);
+      expect(top5ByDegree).toEqual([
+        { _id: 'Bachelor', count: 3 },
+        { _id: 'Master', count: 1 },
+      ]);
+    });
+
+    test('those lists stop at five, and keep to the dates asked for', async () => {
+      const countries = ['Bahrain', 'Qatar', 'Egypt', 'Jordan', 'Lebanon'];
+      await insert(
+        Leads,
+        countries.map((name, index) =>
+          lead(20 + index, { nationality: { english_name: name }, degree: { en_name: `Degree ${index}` } })
+        )
+      );
+
+      const inMarch = await dashboard();
+      const february = await dashboard('startDate=2025-02-01&endDate=2025-02-28');
+
+      expect(inMarch.top5ByCountry).toHaveLength(5);
+      expect(inMarch.top5ByCountry[0]).toMatchObject({ _id: 'Kuwait', count: 3 });
+      expect(inMarch.top5ByDegree).toHaveLength(5);
+      expect(february.top5ByCountry).toEqual([{ _id: null, countryCode: null, count: 1 }]);
+    });
+
+    describe('the days asked for are days in Kuwait', () => {
+      const early = (createdAt) =>
+        build.lead({ createdAt: at(createdAt), qualified: true, source: 'uapply', destination: { en_name: 'UK' } });
+
+      beforeEach(async () => {
+        await insert(Leads, [
+          early('2025-02-28T22:00:00.000Z'), // 01:00 on 1 March in Kuwait
+          early('2025-03-31T22:00:00.000Z'), // 01:00 on 1 April in Kuwait
+        ]);
+      });
+
+      test('a lead from the small hours of the first is counted, and one from the small hours after the last is not', async () => {
+        expect((await dashboard()).qualifiedLeads).toBe(5);
+        expect((await dashboard('startDate=2025-02-01&endDate=2025-02-28')).qualifiedLeads).toBe(1);
+        expect((await dashboard('startDate=2025-04-01&endDate=2025-04-30')).qualifiedLeads).toBe(1);
+      });
+
+      test('the same is so when the range is sent as the moments the days begin and end, as the dashboard sends it', async () => {
+        const from = encodeURIComponent('2025-02-28T21:00:00.000Z');
+        const to = encodeURIComponent('2025-03-31T20:59:59.999Z');
+
+        const sent = await dashboard(`startDate=${from}&endDate=${to}`);
+
+        expect(sent.qualifiedLeads).toBe(5);
+        expect(sent.top5ByCountry[0].count).toBe(3);
+      });
+    });
+
+    test('the two lists can also be asked for on their own, with dates or for all time', async () => {
+      const inMarch = await as(u.staff).get(`/v1/leads/country?${march}`).expect(httpStatus.OK);
+      const always = await as(u.staff).get('/v1/leads/country').expect(httpStatus.OK);
+      const degrees = await as(u.staff).get('/v1/leads/degree').expect(httpStatus.OK);
+
+      expect(inMarch.body.map((row) => [row._id, row.count])).toEqual([
+        ['Kuwait', 3],
+        ['Oman', 1],
+      ]);
+      expect(always.body.reduce((sum, row) => sum + row.count, 0)).toBe(5);
+      expect(degrees.body.reduce((sum, row) => sum + row.count, 0)).toBe(5);
+    });
   });
 
   describe('fees', () => {
@@ -475,11 +547,12 @@ describe('the dashboards', () => {
       expect(same.headers['x-cache']).toBe('HIT');
     });
 
-    test('an answer that is an error is not kept', async () => {
-      const first = await as(u.staff).get('/v1/students/student-dashboard-data');
-      const second = await as(u.staff).get('/v1/students/student-dashboard-data');
+    test('an answer that is a refusal is not kept', async () => {
+      const first = await as(u.staff).get('/v1/fees/fees-dashboard-data');
+      const second = await as(u.staff).get('/v1/fees/fees-dashboard-data');
 
-      expect(first.status).toBe(httpStatus.INTERNAL_SERVER_ERROR);
+      expect(first.status).toBe(httpStatus.BAD_REQUEST);
+      expect(second.status).toBe(httpStatus.BAD_REQUEST);
       expect(second.headers['x-cache']).toBe('MISS');
     });
   });
@@ -502,79 +575,55 @@ describe('the dashboards', () => {
     }
   });
 
-  // How things are today, written down so a change shows up. None of these lets
-  // anybody see or change what they should not. When one is changed, its test
-  // fails and is rewritten to say what is then true.
-  describe('not as one would expect yet', () => {
-    test('three of the dashboards answer 500 when no dates are sent', async () => {
-      await as(u.staff).get('/v1/students/student-dashboard-data').expect(httpStatus.INTERNAL_SERVER_ERROR);
-      await as(u.staff).get('/v1/fees/fees-dashboard-data').expect(httpStatus.INTERNAL_SERVER_ERROR);
-      await as(u.staff).get('/v1/leads/leads-dashboard-data').expect(httpStatus.INTERNAL_SERVER_ERROR);
-      await as(u.staff)
-        .get('/v1/fees/fees-dashboard-data?startDate=soon&endDate=later')
-        .expect(httpStatus.INTERNAL_SERVER_ERROR);
+  describe('when the dates are missing or are not dates', () => {
+    const NONSENSE = 'startDate=soon&endDate=later';
+
+    test('the students dashboard with no dates answers for all time', async () => {
+      const res = await as(u.staff).get('/v1/students/student-dashboard-data').expect(httpStatus.OK);
+
+      expect(res.body.newStudentsCount).toBe(seed.students.length);
     });
 
-    describe('on the leads dashboard', () => {
-      const qualified = (createdAt, extra = {}) =>
-        build.lead({
-          createdAt: at(createdAt),
-          qualified: true,
-          source: 'uapply',
-          destination: { en_name: 'UK' },
-          ...extra,
-        });
-      const dashboard = async (query) => {
-        const res = await as(u.staff).get(`/v1/leads/leads-dashboard-data?${query}`).expect(httpStatus.OK);
-        return res.body;
-      };
+    test('the students dashboard refuses half a range, and dates that are not dates', async () => {
+      await as(u.staff).get('/v1/students/student-dashboard-data?startDate=2025-04-01').expect(httpStatus.BAD_REQUEST);
+      await as(u.staff).get('/v1/students/student-dashboard-data?endDate=2025-04-30').expect(httpStatus.BAD_REQUEST);
+      await as(u.staff).get(`/v1/students/student-dashboard-data?${NONSENSE}`).expect(httpStatus.BAD_REQUEST);
+    });
 
-      test('the days are counted three hours behind Kuwait: a lead from the small hours of the first is left out, and one from the small hours after the last is let in', async () => {
-        await insert(Leads, [
-          qualified('2025-02-28T22:00:00.000Z'), // 01:00 on 1 March in Kuwait
-          qualified('2025-03-31T22:00:00.000Z'), // 01:00 on 1 April in Kuwait
-        ]);
+    test('the fees and leads dashboards ask for them', async () => {
+      const fees = await as(u.staff).get('/v1/fees/fees-dashboard-data').expect(httpStatus.BAD_REQUEST);
+      const leads = await as(u.staff).get('/v1/leads/leads-dashboard-data').expect(httpStatus.BAD_REQUEST);
 
-        const march = await dashboard('startDate=2025-03-01&endDate=2025-03-31');
-        const february = await dashboard('startDate=2025-02-01&endDate=2025-02-28');
+      expect(fees.body.message).toMatch(/startDate and endDate/);
+      expect(leads.body.message).toMatch(/startDate and endDate/);
+      await as(u.staff).get(`/v1/fees/fees-dashboard-data?${NONSENSE}`).expect(httpStatus.BAD_REQUEST);
+      await as(u.staff).get(`/v1/leads/leads-dashboard-data?${NONSENSE}`).expect(httpStatus.BAD_REQUEST);
+      await as(u.staff).get('/v1/leads/leads-dashboard-data?startDate=2025-03-01').expect(httpStatus.BAD_REQUEST);
+    });
+  });
 
-        expect(march.qualifiedLeads).toBe(1);
-        expect(february.qualifiedLeads).toBe(1);
-      });
+  // How things are today, written down so a change shows up. It does not let
+  // anybody see or change what they should not. When it is changed, the test
+  // fails and is rewritten to say what is then true.
+  describe('not as one would expect yet', () => {
+    test('on the leads dashboard a converted lead is in the total and under none of the stages, and "closed" is always nought', async () => {
+      const qualified = (createdAt, status) =>
+        build.lead({ createdAt: at(createdAt), qualified: true, source: 'uapply', destination: { en_name: 'UK' }, status });
+      await insert(Leads, [
+        qualified('2025-03-10T12:00:00.000Z', 'Converted'),
+        qualified('2025-03-11T12:00:00.000Z', 'New'),
+      ]);
 
-      test('a converted lead is in the total and under none of the stages, and "closed" is always nought', async () => {
-        await insert(Leads, [
-          qualified('2025-03-10T12:00:00.000Z', { status: 'Converted' }),
-          qualified('2025-03-11T12:00:00.000Z', { status: 'New' }),
-        ]);
+      const res = await as(u.staff)
+        .get('/v1/leads/leads-dashboard-data?startDate=2025-03-01&endDate=2025-03-31')
+        .expect(httpStatus.OK);
+      const march = res.body;
 
-        const march = await dashboard('startDate=2025-03-01&endDate=2025-03-31');
-
-        expect(march.qualifiedLeads).toBe(2);
-        expect(march.studentsNewCount + march.studentsWaCount + march.studentsAppliedCount + march.studentsClosedCount).toBe(
-          1
-        );
-        expect(march.studentsClosedCount).toBe(0);
-      });
-
-      test('the top countries and degrees come back empty whatever the leads', async () => {
-        await insert(Leads, [
-          qualified('2025-03-10T12:00:00.000Z', {
-            nationality: { english_name: 'Kuwait', alpha2_code: 'KW' },
-            degree: { en_name: 'Bachelor' },
-          }),
-          qualified('2025-03-11T12:00:00.000Z', {
-            nationality: { english_name: 'Oman', alpha2_code: 'OM' },
-            degree: { en_name: 'Master' },
-          }),
-        ]);
-
-        const march = await dashboard('startDate=2025-03-01&endDate=2025-03-31');
-
-        expect(march.qualifiedLeads).toBe(2);
-        expect(march.top5ByCountry).toEqual([]);
-        expect(march.top5ByDegree).toEqual([]);
-      });
+      expect(march.qualifiedLeads).toBe(2);
+      expect(march.studentsNewCount + march.studentsWaCount + march.studentsAppliedCount + march.studentsClosedCount).toBe(
+        1
+      );
+      expect(march.studentsClosedCount).toBe(0);
     });
   });
 

@@ -9,7 +9,7 @@ const catchAsync = require('../utils/catchAsync');
 const { Leads } = require('../models');
 const { leadsService } = require('../services');
 const config = require('../config/config');
-const { convertASTToUTC } = require('../utils/Common');
+const { kuwaitDayRange } = require('../utils/kuwaitDays');
 const { actorOf } = require('../utils/actor');
 
 // A residence filter may name one country or several spellings of it
@@ -295,30 +295,19 @@ const getLeadFacets = catchAsync(async (req, res) => {
   res.send(await leadsService.leadFacets(pick(req.query, ['qualified', 'status'])));
 });
 
-const getLeadsCountByDates = async (filter) => {
-  const startDate = DateTime.fromISO(new Date(filter.startDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).startOf('day');
-  const endDate = DateTime.fromISO(new Date(filter.endDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).endOf('day');
-
-  const sd = convertASTToUTC(startDate, true).toString();
-  const ed = convertASTToUTC(endDate, true).toString();
-
-  const formattedFilter = {
-    ...filter,
-    startDate: sd,
-    endDate: ed,
-  };
-
+// How many leads were made on the Kuwait days of `range` and fit the rest of
+// the filter. The days are real instants: they used to be passed on as Kuwait
+// wall time read as UTC, three hours late at both ends, so a lead from the
+// small hours of the first day was left out and one from the small hours after
+// the last was let in.
+const getLeadsCountByDates = async (range, filter) => {
   const count = await leadsService.countLeads({
     $and: [
-      { createdAt: { $gte: formattedFilter.startDate, $lte: formattedFilter.endDate } },
-      { qualified: formattedFilter.qualified },
-      ...(formattedFilter.status ? [{ status: formattedFilter.status }] : []),
-      ...(formattedFilter.source ? [{ source: formattedFilter.source }] : []),
-      ...(formattedFilter.destination ? [{ 'destination.en_name': formattedFilter.destination }] : []),
+      { createdAt: { $gte: range.from, $lte: range.to } },
+      { qualified: filter.qualified },
+      ...(filter.status ? [{ status: filter.status }] : []),
+      ...(filter.source ? [{ source: filter.source }] : []),
+      ...(filter.destination ? [{ 'destination.en_name': filter.destination }] : []),
     ],
   });
   return count;
@@ -326,6 +315,8 @@ const getLeadsCountByDates = async (filter) => {
 
 const getDashboardData = catchAsync(async (req, res) => {
   const { startDate, endDate } = req.query;
+  const range = kuwaitDayRange(startDate, endDate);
+  if (!range) throw new ApiError(httpStatus.BAD_REQUEST, 'startDate and endDate are required, and must be dates');
 
   const [
     studentsUlearnCount,
@@ -341,18 +332,18 @@ const getDashboardData = catchAsync(async (req, res) => {
     qualifiedLeads,
     unqualifiedLeads,
   ] = await Promise.all([
-    getLeadsCountByDates({ qualified: true, source: 'ulearn', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, source: 'uapply', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, status: 'Applied', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, status: 'Closed', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, status: 'New', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, status: 'Sent Whatsapp', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, destination: 'Others', startDate, endDate }),
-    getLeadsCountByDates({ qualified: true, destination: 'UK', startDate, endDate }),
+    getLeadsCountByDates(range, { qualified: true, source: 'ulearn' }),
+    getLeadsCountByDates(range, { qualified: true, source: 'uapply' }),
+    getLeadsCountByDates(range, { qualified: true, status: 'Applied' }),
+    getLeadsCountByDates(range, { qualified: true, status: 'Closed' }),
+    getLeadsCountByDates(range, { qualified: true, status: 'New' }),
+    getLeadsCountByDates(range, { qualified: true, status: 'Sent Whatsapp' }),
+    getLeadsCountByDates(range, { qualified: true, destination: 'Others' }),
+    getLeadsCountByDates(range, { qualified: true, destination: 'UK' }),
     leadsService.getTop5ByContries({ startDate, endDate, qualified: true }),
     leadsService.getTop5ByDegree({ startDate, endDate, qualified: true }),
-    getLeadsCountByDates({ qualified: true, startDate, endDate }),
-    getLeadsCountByDates({ qualified: false, startDate, endDate }),
+    getLeadsCountByDates(range, { qualified: true }),
+    getLeadsCountByDates(range, { qualified: false }),
   ]);
 
   res.status(200).send({
