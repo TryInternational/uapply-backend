@@ -34,35 +34,62 @@ const assertThrowAwayConnection = () => {
   }
 };
 
-const setupTestDB = () => {
-  let server;
+// The throw-away server itself, kept here so that whoever started it stops it.
+let server;
 
-  beforeAll(async () => {
-    if (mongoose.connection.readyState !== 0) {
-      throw new Error('Refusing to run database tests: a database connection was already open before the tests started.');
-    }
-    server = await MongoMemoryServer.create({
+// mongodb-memory-server looks for a free port by listening on every address,
+// then starts MongoDB on 127.0.0.1 alone. A port another program holds on
+// 127.0.0.1 only passes that check, and MongoDB then cannot take it ("Port
+// already in use"). It is rare and it is nobody's fault, so another port is
+// tried.
+const START_ATTEMPTS = 5;
+const createServer = async (attempt = 1) => {
+  try {
+    return await MongoMemoryServer.create({
       instance: { ip: '127.0.0.1', dbName: DB_NAME },
       binary: { version: MONGODB_VERSION },
     });
-    uri = server.getUri();
-    assertLocalMongoUrl(uri);
-    await mongoose.connect(uri, { dbName: DB_NAME });
-    assertThrowAwayConnection();
-  }, START_TIMEOUT_MS);
+  } catch (error) {
+    if (attempt >= START_ATTEMPTS || !/already in use/i.test(String(error && error.message))) throw error;
+    return createServer(attempt + 1);
+  }
+};
+
+/** Start the throw-away MongoDB and connect to it. Resolves with its address. */
+const startThrowAwayDB = async () => {
+  if (mongoose.connection.readyState !== 0) {
+    throw new Error('Refusing to run database tests: a database connection was already open before the tests started.');
+  }
+  server = await createServer();
+  uri = server.getUri();
+  assertLocalMongoUrl(uri);
+  await mongoose.connect(uri, { dbName: DB_NAME });
+  assertThrowAwayConnection();
+  return uri;
+};
+
+/** Disconnect and throw the server away. */
+const stopThrowAwayDB = async () => {
+  await mongoose.disconnect();
+  if (server) await server.stop();
+  server = undefined;
+  uri = undefined;
+};
+
+const setupTestDB = () => {
+  beforeAll(startThrowAwayDB, START_TIMEOUT_MS);
 
   beforeEach(async () => {
     assertThrowAwayConnection();
     await Promise.all(Object.values(mongoose.connection.collections).map(async (collection) => collection.deleteMany()));
   });
 
-  afterAll(async () => {
-    await mongoose.disconnect();
-    if (server) await server.stop();
-    uri = undefined;
-  });
+  afterAll(stopThrowAwayDB);
 };
 
 module.exports = setupTestDB;
 // For anything else that writes to the test database, such as the seed.
 module.exports.assertThrowAwayConnection = assertThrowAwayConnection;
+// For tests/e2e/serveSeed.js, which serves the same throw-away database to a browser.
+module.exports.startThrowAwayDB = startThrowAwayDB;
+module.exports.stopThrowAwayDB = stopThrowAwayDB;
