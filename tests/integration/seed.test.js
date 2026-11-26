@@ -22,6 +22,7 @@ const everyRecord = (seed) => [
   ...Object.values(seed.users),
   ...seed.universities,
   ...seed.courses,
+  ...seed.courseDetails,
   ...seed.students,
   ...seed.applications,
   ...seed.documents,
@@ -45,6 +46,7 @@ describe('the seed', () => {
         users: 10,
         universities: 2,
         courses: 2,
+        courseDetails: 2,
         students: 23,
         applications: 15,
         documents: 11,
@@ -185,6 +187,7 @@ describe('the seed', () => {
       expect(await models.User.countDocuments()).toBe(counts.users);
       expect(await models.Universities.countDocuments()).toBe(counts.universities);
       expect(await models.Courses.countDocuments()).toBe(counts.courses);
+      expect(await models.CourseDetails.countDocuments()).toBe(counts.courseDetails);
       expect(await models.Students.countDocuments()).toBe(counts.students);
       expect(await models.Application.countDocuments()).toBe(counts.applications);
       expect(await models.Documents.countDocuments()).toBe(counts.documents);
