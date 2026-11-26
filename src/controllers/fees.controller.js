@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const { pick } = require('lodash');
 const { DateTime } = require('luxon');
 const { convertASTToUTC } = require('../utils/Common');
+const { areDates } = require('../utils/kuwaitDays');
 
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -135,6 +136,12 @@ const topCities = catchAsync(async (req, res) => {
 });
 
 const getDashboardData = catchAsync(async (req, res) => {
+  // Asked for before the dates are read: reading a date that is missing or is
+  // not one threw, so the check that used to follow was never reached and the
+  // caller got a 500.
+  if (!areDates(req.query.startDate, req.query.endDate)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'startDate and endDate are required, and must be dates');
+  }
   const startDate = DateTime.fromISO(new Date(req.query.startDate).toISOString(), {
     zone: 'Asia/Riyadh',
   }).startOf('day');
@@ -142,10 +149,6 @@ const getDashboardData = catchAsync(async (req, res) => {
     zone: 'Asia/Riyadh',
   }).endOf('day');
 
-  // Validate startDate and endDate
-  if (!startDate || !endDate) {
-    return res.status(400).send('startDate and endDate are required');
-  }
   const sd = convertASTToUTC(startDate, true).toString();
   const ed = convertASTToUTC(endDate, true).toString();
 

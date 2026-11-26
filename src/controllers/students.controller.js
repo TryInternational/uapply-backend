@@ -5,6 +5,7 @@ const { DateTime } = require('luxon');
 const axios = require('axios');
 const { dmEnabled: slackDmEnabled } = require('../thirdparty/slack');
 const { convertASTToUTC } = require('../utils/Common');
+const { kuwaitDayRange } = require('../utils/kuwaitDays');
 // const { text } = require('express');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
@@ -1238,20 +1239,24 @@ const getDashboardStudentData = catchAsync(async (req, res) => {
     options: pick(req.query, ['sortBy', 'limit', 'page']),
   };
 
-  const startDate = DateTime.fromISO(new Date(req.query.startDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).startOf('day');
-  const endDate = DateTime.fromISO(new Date(req.query.endDate).toISOString(), {
-    zone: 'Asia/Riyadh',
-  }).endOf('day');
+  // No range = all time, the same as /students/dashboard-breakdowns: every
+  // count in the service already allows for it. Reading the missing dates used
+  // to throw first, and the caller got a 500. Half a range, or a date that is
+  // not one, is the caller's mistake and is said to be.
+  const { startDate: from, endDate: to } = req.query;
+  const noRange = !from && !to;
+  const range = noRange ? null : kuwaitDayRange(from, to);
+  if (!noRange && !range) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'startDate and endDate must both be dates');
+  }
 
   // The Kuwait days as real instants. They were sent on as wall time read as
   // UTC — three hours late at both ends — while every other dashboard card
   // took the range as instants, so "Students applied by nationality" counted a
   // different window from the cards beside it (82 against 55 from a browser
   // outside Kuwait).
-  const sd = convertASTToUTC(startDate).toString();
-  const ed = convertASTToUTC(endDate).toString();
+  const sd = range ? range.from.toISOString() : undefined;
+  const ed = range ? range.to.toISOString() : undefined;
 
   const dashboardData = await studentsService.getDashboardData({
     startDate: sd,
