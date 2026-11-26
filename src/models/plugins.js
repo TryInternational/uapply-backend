@@ -10,6 +10,17 @@ const slug = require('mongoose-slug-generator');
 const populate = require('mongoose-autopopulate');
 const trackable = require('mongoose-trackable');
 
+// Remove what is at `path` ("a" or "a.b.c") from `obj`. A private field inside
+// a nested object used to be left in: only top-level names were deleted.
+const deleteAtPath = (obj, path, index) => {
+  if (!obj || typeof obj !== 'object') return;
+  if (index === path.length - 1) {
+    delete obj[path[index]];
+    return;
+  }
+  deleteAtPath(obj[path[index]], path, index + 1);
+};
+
 const toJSON = (schema) => {
   let transform;
   if (schema.options.toJSON && schema.options.toJSON.transform) {
@@ -20,7 +31,7 @@ const toJSON = (schema) => {
     transform(doc, ret, options) {
       Object.keys(schema.paths).forEach((path) => {
         if (schema.paths[path].options && schema.paths[path].options.private) {
-          delete ret[path];
+          deleteAtPath(ret, path.split('.'), 0);
         }
       });
 
@@ -49,38 +60,35 @@ const paginate = (schema) => {
    * Query for documents with pagination
    * @param {Object} [filter] - Mongo filter
    * @param {Object} [options] - Query options
-   * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc)
+   * @param {string} [options.sortBy] - Sort option in the format: sortField:(desc|asc). Several can be given, separated by commas
    * @param {number} [options.limit] - Maximum number of results per page (default = 10)
    * @param {number} [options.page] - Current page (default = 1)
-   * @param {string} [options.populate] - Current page (default = 1)
    * @returns {Promise<QueryResult>}
    */
   schema.statics.paginate = async function (filter, options) {
+    // "name:asc" or "role:desc,name:asc". Only the first of several was read,
+    // and its direction was read wrongly when a second followed it.
     const sort = {};
     if (options.sortBy) {
-      const parts = options.sortBy.split(':');
-      sort[parts[0]] = parts[1] === 'desc' ? -1 : 1;
+      String(options.sortBy)
+        .split(',')
+        .forEach((criterion) => {
+          const [field, direction] = criterion.split(':');
+          if (field) sort[field.trim()] = direction === 'desc' ? -1 : 1;
+        });
     }
-    let populateQuery = [];
-    if (options.populate) {
-      const parts = options.populate.split(',');
-      populateQuery = parts.map((part) => {
-        const fields = part.split(':');
-        const query = {};
-        const [path, select] = fields[0];
-        query.path = path;
-        if (select) {
-          query.select = select;
-        }
 
-        return query;
-      });
-    }
+    // A `populate` option is not honoured. Nearly every list route passes the
+    // caller's ?populate= straight in, and the code that read it took the
+    // first two LETTERS of the path as a path and a field list, so any request
+    // that sent one was answered 500. Nothing in the back end or the CRM uses
+    // it. Making it work would let a caller pull in the records a list refers
+    // to (a lead's student, a document's application) on routes that were
+    // never meant to hand those out, so it is ignored instead.
+
     const limit = options.limit && parseInt(options.limit, 10) > 0 ? parseInt(options.limit, 10) : 10;
     const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
     const skip = (page - 1) * limit;
-    let docsPromise;
-
     if (options.webUrl) {
       filter = {
         ...filter,
@@ -88,12 +96,7 @@ const paginate = (schema) => {
       };
     }
     const countPromise = this.countDocuments(filter).exec();
-
-    if (populate.length) {
-      docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit).populate(populateQuery).exec();
-    } else {
-      docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit).exec();
-    }
+    const docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit).exec();
 
     return Promise.all([countPromise, docsPromise]).then((values) => {
       const [totalResults, results] = values;

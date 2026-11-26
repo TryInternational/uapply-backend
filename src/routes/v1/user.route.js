@@ -35,8 +35,14 @@ router.use(softAuth, scopeSubAgentUsers);
 router
   .route('/')
   .post(requireAuth, requireAdmin, validate(userValidation.createUser), userController.createUser)
-  .get(validate(userValidation.getUsers), userController.getUsers);
-router.route('/users').get(userController.getUsersWithoutPagination);
+  // Reading users needs a signed-in caller. The three GET routes on this
+  // router used to answer anybody: the whole staff list, with names, e-mail
+  // addresses and roles, could be read with no token. Every screen of the CRM
+  // that reads it is behind the sign-in. Any member of staff may read it (the
+  // assign and mention pickers need it); what a partner may read is narrowed
+  // by scopeSubAgentUsers above.
+  .get(requireAuth, validate(userValidation.getUsers), userController.getUsers);
+router.route('/users').get(requireAuth, userController.getUsersWithoutPagination);
 
 /**
  * PATCH accepted `password` with no authentication at all, so anyone could
@@ -47,7 +53,7 @@ router.route('/users').get(userController.getUsersWithoutPagination);
  */
 router
   .route('/:userId')
-  .get(validate(userValidation.getUser), userController.getUser)
+  .get(requireAuth, validate(userValidation.getUser), userController.getUser)
   .patch(requireAuth, requireSelfOrAdmin, validate(userValidation.updateUser), userController.updateUser)
   .delete(requireAuth, requireAdmin, validate(userValidation.deleteUser), userController.deleteUser);
 

@@ -799,14 +799,6 @@
     "schoolCounselor": "answers",
     "admin": "answers"
   },
-  "GET /v1/docs": {
-    "noToken": "answers",
-    "noRole": "answers",
-    "staff": "answers",
-    "subAgent": "answers",
-    "schoolCounselor": "answers",
-    "admin": "answers"
-  },
   "GET /v1/documents": {
     "noToken": "answers",
     "noRole": "refused",
@@ -1776,7 +1768,7 @@
     "admin": "answers"
   },
   "GET /v1/users": {
-    "noToken": "answers",
+    "noToken": "refused",
     "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
@@ -1784,7 +1776,7 @@
     "admin": "answers"
   },
   "GET /v1/users/:userId": {
-    "noToken": "answers",
+    "noToken": "refused",
     "noRole": "refused",
     "staff": "answers",
     "subAgent": "refused",
@@ -1792,7 +1784,7 @@
     "admin": "answers"
   },
   "GET /v1/users/users": {
-    "noToken": "answers",
+    "noToken": "refused",
     "noRole": "refused",
     "staff": "answers",
     "subAgent": "answers",
@@ -2424,22 +2416,6 @@
     "admin": "answers"
   },
   "POST /v1/auth/reset-password": {
-    "noToken": "answers",
-    "noRole": "answers",
-    "staff": "answers",
-    "subAgent": "answers",
-    "schoolCounselor": "answers",
-    "admin": "answers"
-  },
-  "POST /v1/auth/send-verification-email": {
-    "noToken": "refused",
-    "noRole": "refused",
-    "staff": "answers",
-    "subAgent": "answers",
-    "schoolCounselor": "answers",
-    "admin": "answers"
-  },
-  "POST /v1/auth/verify-email": {
     "noToken": "answers",
     "noRole": "answers",
     "staff": "answers",

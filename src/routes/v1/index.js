@@ -241,10 +241,6 @@ const defaultRoutes = [
     route: rolesRoute,
   },
   {
-    path: '/docs',
-    route: docsRoute,
-  },
-  {
     path: '/fees',
     route: feesRoute,
   },
@@ -304,6 +300,8 @@ const defaultRoutes = [
 
 const devRoutes = [
   // routes available only in development mode
+  // The API's documentation page. It was also in the list above, which served
+  // it in production: every route and what it takes, to anybody.
   {
     path: '/docs',
     route: docsRoute,
