@@ -239,6 +239,18 @@ const createApplication = catchAsync(async (req, res) => {
     }
   }
   const actorIsSubAgent = isSubAgent(actor);
+  // Whoever is adding it, an application is for a student there is. This is
+  // settled before anything is written: the application used to be stored
+  // first, so for a student that was not there staff were answered 500 with
+  // the application already saved and belonging to nobody, and a school
+  // counsellor was answered 201.
+  if (!req.body.studentId || !mongoose.isValidObjectId(req.body.studentId)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'An application needs the student it is for');
+  }
+  if (!(await studentsService.getStudentById(req.body.studentId))) {
+    // The same answer a sub-agent is given for a student that is not theirs.
+    throw new ApiError(httpStatus.NOT_FOUND, 'Student not found');
+  }
   // A school counsellor may only open an application for a student the
   // internal team has already approved. Before approval the student sits in
   // PendingReview (or Denied), and an application at that point would put an
