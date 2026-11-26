@@ -792,6 +792,12 @@ const updateApplication = catchAsync(async (req, res) => {
         }
       }
 
+      // The messages below name the institute. `institute` is not required on an
+      // application, and reading its name directly threw when there was none:
+      // every phase move for such an application was answered 500 and nothing
+      // was saved.
+      const universityName = (application.institute && application.institute.name) || 'not recorded';
+
       if (movedTo === 'Submitted') {
         slackBody = {
           attachments: [
@@ -799,11 +805,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to Submitted by ${req.body.editor.name} for ${
                 student.firstName || ''
               } ${student.middleName || ''} ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
@@ -819,11 +825,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to Conditional offer by ${req.body.editor.name} for ${
                 student.firstName || ''
               } ${student.middleName || ''} ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
@@ -839,11 +845,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to UnConditional offer by ${req.body.editor.name} for ${
                 student.firstName || ''
               } ${student.middleName || ''} ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
@@ -859,11 +865,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to Confirmation by ${req.body.editor.name} for ${
                 student.firstName || ''
               } ${student.middleName || ''} ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
@@ -879,11 +885,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to FG/BS by ${req.body.editor.name} for ${student.firstName || ''} ${
                 student.middleName || ''
               } ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
@@ -899,11 +905,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to CAS Received by ${req.body.editor.name} for ${
                 student.firstName || ''
               } ${student.middleName || ''} ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''
@@ -919,11 +925,11 @@ const updateApplication = catchAsync(async (req, res) => {
               pretext: `*An application has been moved to Done by ${req.body.editor.name} for ${student.firstName || ''} ${
                 student.middleName || ''
               } ${student.lastName || ''}*`,
-              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${
-                application.institute.name
-              }.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${
-                application.intakeMonth
-              } ${application.intakeYear}\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
+              text: `\nApplication No - ${application.applicationId}.\nUniversity - ${universityName}.\nDegree - ${
+                application.courseLevel
+              }.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${
+                application.intakeYear
+              }\nAccount Manager - ${accountManager ? accountManager.name : ''}\nSales - ${
                 sales ? sales.name : ''
               }\nOperation - ${operations ? operations.name : ''}\nFilled out by - ${
                 filledBy.length ? filledBy[0].name : ''

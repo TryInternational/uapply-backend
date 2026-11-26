@@ -4,7 +4,7 @@ const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
 const { Students, Application, Documents, Notifications } = require('../../src/models');
 const { loadSeed } = require('../seed/loadSeed');
-const { PHASES, phasesUpTo } = require('../factories');
+const { build, PHASES, phasesUpTo } = require('../factories');
 const { accessTokenFor } = require('../fixtures/token.fixture');
 const { blocked } = require('../utils/blockNetwork');
 
@@ -281,6 +281,38 @@ describe('applications and documents', () => {
         ]);
       });
     });
+
+    // The message a phase move writes for the student's team names the
+    // institute. It read the name without looking whether the application had
+    // one, so for an application with no institute every move was answered 500
+    // and nothing was saved: the application could not be moved at all. Each
+    // phase has a message of its own, so each move is tried. The move is sent
+    // the way the student's profile sends it, with the marker on the phase
+    // being entered.
+    test.each(PHASES.slice(0, -1).map((from, index) => [from, PHASES[index + 1]]))(
+      'an application with no institute moves on from %s to %s like any other, and the team is told',
+      async (from, to) => {
+        const student = build.student({
+          stage: 'Applied',
+          createdBy: u.counsellorA._id,
+          assignedTo: [{ user: u.counsellorA._id, role: 'sales' }],
+        });
+        const application = build.application({ studentId: student._id, phase: from });
+        expect(application.institute).toBeUndefined();
+        await Students.insertMany([student], { timestamps: false });
+        await Application.insertMany([application], { timestamps: false });
+
+        const res = await placeAt(u.counsellorB, application, to);
+
+        expect(res.status).toBe(httpStatus.OK);
+        expect(currentOf(await stored(application))).toBe(to);
+        const told = await Notifications.find({ type: 'application', applicationId: application._id }).lean();
+        expect(told).toHaveLength(1);
+        // capitals are not compared: one of the messages writes "UnConditional offer"
+        expect(told[0].message.toLowerCase()).toContain(`moved to ${to} by ${u.counsellorB.name}`.toLowerCase());
+        expect(told[0].userIds.map(String)).toEqual([String(u.counsellorA._id)]);
+      }
+    );
 
     test('completing the last phase enrols the student', async () => {
       // Counsellor B's student at Applied has an application at CAS Received and no other place held.
@@ -661,6 +693,27 @@ describe('applications and documents', () => {
         .expect(httpStatus.OK);
 
       expect(await stored(application)).toMatchObject({ agent: 'Nobody', reviewStatus: 'Whatever' });
+    });
+
+    // The team's message says "moved to" and then the phase the request marks
+    // as current. The student's profile puts the marker on the phase being
+    // entered, so its messages read right. A move that sends the application's
+    // own phase list back, for the server to step on, names the phase being
+    // left; and leaving the first phase has no wording of its own, so it is
+    // announced with the last one's.
+    test('a move that leaves the marker where it was tells the team the phase left, and "Done" for the first', async () => {
+      const toldAbout = async (anApplication) =>
+        (await Notifications.find({ type: 'application', applicationId: anApplication._id }).lean()).map((n) => n.message);
+      const first = seededAt('Initiated');
+      const second = seededAt('Submitted');
+
+      expect((await complete(u.counsellorA, first)).status).toBe(httpStatus.OK);
+      expect((await complete(u.counsellorA, second)).status).toBe(httpStatus.OK);
+
+      expect(currentOf(await stored(first))).toBe('Submitted');
+      expect(await toldAbout(first)).toEqual([expect.stringContaining('has been moved to Done by')]);
+      expect(currentOf(await stored(second))).toBe('Conditional offer');
+      expect(await toldAbout(second)).toEqual([expect.stringContaining('has been moved to Submitted by')]);
     });
 
     test("an application staff add is not put on the student's own list of applications; a partner's is", async () => {
