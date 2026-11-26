@@ -30,6 +30,7 @@ const KINDS = {
   message: 11,
   university: 12,
   course: 13,
+  courseDetail: 14,
 };
 
 const hex = (number, width) => number.toString(16).padStart(width, '0');

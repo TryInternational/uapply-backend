@@ -3,6 +3,7 @@ const {
   User,
   Universities,
   Courses,
+  CourseDetails,
   Students,
   Application,
   Documents,
@@ -52,6 +53,7 @@ const loadSeed = async () => {
   await User.insertMany(Object.values(seed.users).map(asUserDocument), stored);
   await Universities.insertMany(seed.universities, stored);
   await Courses.insertMany(seed.courses, stored);
+  await CourseDetails.insertMany(seed.courseDetails, stored);
   await Students.insertMany(seed.students, stored);
   await Application.insertMany(seed.applications, stored);
   await Documents.insertMany(seed.documents, stored);
@@ -71,6 +73,7 @@ const countsOf = (seed) => ({
   users: Object.keys(seed.users).length,
   universities: seed.universities.length,
   courses: seed.courses.length,
+  courseDetails: seed.courseDetails.length,
   students: seed.students.length,
   applications: seed.applications.length,
   documents: seed.documents.length,

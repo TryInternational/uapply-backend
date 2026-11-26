@@ -21,6 +21,10 @@ const { build, daysBefore, SEED_NOW, PHASES, FEE_TYPES, LEAD_STATUSES, DAY } = f
  *             special rights, a member of staff who has left, two sub-agents
  *             and two school counsellors. Two of each partner, so that "sees
  *             only their own" has someone else's records to leave out.
+ *  Courses    two, at two universities and two levels. Each has a place in
+ *             the country the Courses pages ask for and a page of its own
+ *             (its intakes, campuses and university), so a screen can list
+ *             them and an application can be made from them.
  *  Students   every stage, for each kind of owner.
  *  Applications  one at each of the eight phases, and one in each review state.
  *  Documents  one in each state.
@@ -82,6 +86,18 @@ const buildSeed = () => {
     build.course({ institution: universities[0].name, institutionSlug: universities[0].slug }),
     build.course({ institution: universities[1].name, institutionSlug: universities[1].slug, courseLevel: 'Postgraduate' }),
   ];
+  // What each course's own page says. An application is made from this.
+  const courseDetails = courses.map((aCourse, index) =>
+    build.courseDetail({
+      courseRefId: aCourse.courseRefId,
+      name: aCourse.name,
+      slug: aCourse.slug,
+      courseLevel: aCourse.courseLevel,
+      approxAnnualFee: aCourse.approxAnnualFee,
+      // eslint-disable-next-line security/detect-object-injection
+      institution: { name: universities[index].name, slug: universities[index].slug },
+    })
+  );
 
   // ---- students ------------------------------------------------------------
   const students = [];
@@ -364,6 +380,7 @@ const buildSeed = () => {
     users,
     universities,
     courses,
+    courseDetails,
     students,
     applications,
     documents,

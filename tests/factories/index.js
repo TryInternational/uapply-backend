@@ -97,6 +97,35 @@ const course = (overrides = {}) => {
     courseLevel: 'Undergraduate',
     currency: 'GBP',
     approxAnnualFee: 15000 + n * 500,
+    // The course list is asked for by country, so a course with no place is
+    // one no screen can show.
+    locations: [{ key: 'United Kingdom', value: 'London' }],
+    intakeMonths: ['September', 'January'],
+    attendanceTypes: ['FullTime'],
+    ...overrides,
+  };
+};
+
+/**
+ * What a course's own page says about it, which is kept apart from the course
+ * (the two are joined by `courseRefId`). An application is made from this: it
+ * gives the months a student can start in, the campuses, and the university
+ * the application is stored with. Pass the course's own `courseRefId`, `name`
+ * and `courseLevel`, and its university as `institution`.
+ */
+const courseDetail = (overrides = {}) => {
+  const n = next('courseDetail');
+  return {
+    _id: seedId('courseDetail', n),
+    courseRefId: `seed-course-${n}`,
+    name: `Seed Course ${n}`,
+    slug: `seed-course-${n}`,
+    courseLevel: 'Undergraduate',
+    locations: [{ key: 'United Kingdom', value: 'London' }],
+    institution: { name: `Seed University ${n}`, slug: `seed-university-${n}` },
+    courseIntakes: [{ intakeMonth: 'September' }, { intakeMonth: 'January' }],
+    campusList: [{ name: 'Seed Main Campus' }],
+    courseSummary: 'A made-up course, for tests.',
     ...overrides,
   };
 };
@@ -337,5 +366,20 @@ module.exports = {
   phasesUpTo,
   reset,
   asUserDocument,
-  build: { role, user, university, course, student, application, document, comment, note, fee, lead, conversation, message },
+  build: {
+    role,
+    user,
+    university,
+    course,
+    courseDetail,
+    student,
+    application,
+    document,
+    comment,
+    note,
+    fee,
+    lead,
+    conversation,
+    message,
+  },
 };

@@ -12,6 +12,7 @@ const MODELS = {
   user: models.User,
   university: models.Universities,
   course: models.Courses,
+  courseDetail: models.CourseDetails,
   student: models.Students,
   application: models.Application,
   document: models.Documents,
