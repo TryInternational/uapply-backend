@@ -173,14 +173,25 @@ describe('User routes', () => {
       await request(app).get('/v1/users').send().expect(httpStatus.UNAUTHORIZED);
     });
 
-    test('should return 403 if a non-admin is trying to access all users', async () => {
+    // The template this API began from kept the list for admins. Here every
+    // member of staff reads it: the assign and mention pickers are built from it.
+    test('should return 200 if a member of staff who is not an admin asks for all users', async () => {
       await insertUsers([userOne, userTwo, admin]);
 
-      await request(app)
+      const res = await request(app)
         .get('/v1/users')
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send()
-        .expect(httpStatus.FORBIDDEN);
+        .expect(httpStatus.OK);
+
+      expect(res.body.totalResults).toBe(3);
+      expect(res.body.results[0]).not.toHaveProperty('password');
+    });
+
+    test('should return 401 for the whole list in one page if access token is missing', async () => {
+      await insertUsers([userOne, userTwo, admin]);
+
+      await request(app).get('/v1/users/users').send().expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should correctly apply filter on name field', async () => {
@@ -375,14 +386,19 @@ describe('User routes', () => {
       await request(app).get(`/v1/users/${userOne._id}`).send().expect(httpStatus.UNAUTHORIZED);
     });
 
-    test('should return 403 error if user is trying to get another user', async () => {
+    // As with the list: a member of staff may read a colleague's record. Only
+    // changing it is kept to the person themselves and to admins.
+    test('should return 200 if a member of staff is trying to get another user', async () => {
       await insertUsers([userOne, userTwo]);
 
-      await request(app)
+      const res = await request(app)
         .get(`/v1/users/${userTwo._id}`)
         .set('Authorization', `Bearer ${userOneAccessToken}`)
         .send()
-        .expect(httpStatus.FORBIDDEN);
+        .expect(httpStatus.OK);
+
+      expect(res.body).toMatchObject({ id: userTwo._id.toHexString(), email: userTwo.email });
+      expect(res.body).not.toHaveProperty('password');
     });
 
     test('should return 200 and the user object if admin is trying to get another user', async () => {
