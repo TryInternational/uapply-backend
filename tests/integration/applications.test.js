@@ -2,7 +2,7 @@ const request = require('supertest');
 const httpStatus = require('http-status');
 const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
-const { Students, Application, Documents } = require('../../src/models');
+const { Students, Application, Documents, Notifications } = require('../../src/models');
 const { loadSeed } = require('../seed/loadSeed');
 const { PHASES, phasesUpTo } = require('../factories');
 const { accessTokenFor } = require('../fixtures/token.fixture');
@@ -114,6 +114,55 @@ describe('applications and documents', () => {
       expect(String(made.createdBy)).toBe(String(u.counsellorA._id));
       expect(made.reviewStatus).toBe('APPROVED');
       expect(made.reviewHistory).toEqual([]);
+    });
+
+    // The message for the student's team is written after the application is
+    // stored. It used to read the name from `editor` in the request and the
+    // institute's name from the application; with either missing the request
+    // was answered 500 although the application was there, and a caller told
+    // "500" would send it again.
+    const toldAbout = (anApplication) =>
+      Notifications.find({ type: 'application', applicationId: anApplication._id }).lean();
+    const applicationsOf = (student) => Application.find({ studentId: student._id }).lean();
+
+    test("a request that names no editor is answered 201, and the team is told under the caller's name", async () => {
+      const student = aStudent();
+      const before = (await applicationsOf(student)).length;
+
+      const res = await as(u.counsellorA).post('/v1/application', body(student, { editor: undefined }));
+
+      expect(res.status).toBe(httpStatus.CREATED);
+      expect(await applicationsOf(student)).toHaveLength(before + 1);
+      const told = await toldAbout(await stored(res.body));
+      expect(told).toHaveLength(1);
+      expect(told[0].message).toContain(`initiated by ${u.counsellorA.name} for`);
+      expect(String(told[0].createdBy)).toBe(String(u.counsellorA._id));
+    });
+
+    test('a request that names no institute is answered 201, and the team is still told', async () => {
+      const student = aStudent();
+      const before = (await applicationsOf(student)).length;
+
+      const res = await as(u.counsellorA).post('/v1/application', body(student, { institute: undefined }));
+
+      expect(res.status).toBe(httpStatus.CREATED);
+      expect(await applicationsOf(student)).toHaveLength(before + 1);
+      const told = await toldAbout(await stored(res.body));
+      expect(told).toHaveLength(1);
+      expect(told[0].message).toContain(`initiated by ${u.counsellorA.name} for`);
+      expect(told[0].message).not.toMatch(/undefined/);
+    });
+
+    test('the team is told who added it from the session, whatever name the request gives', async () => {
+      const res = await as(u.counsellorA)
+        .post('/v1/application', body(aStudent(), { editor: { id: String(u.admin._id), name: 'Somebody Else' } }))
+        .expect(httpStatus.CREATED);
+
+      const told = await toldAbout(await stored(res.body));
+      expect(told).toHaveLength(1);
+      expect(told[0].message).toContain(`initiated by ${u.counsellorA.name} for`);
+      expect(told[0].message).not.toContain('Somebody Else');
+      expect(String(told[0].createdBy)).toBe(String(u.counsellorA._id));
     });
   });
 
@@ -612,29 +661,6 @@ describe('applications and documents', () => {
         .expect(httpStatus.OK);
 
       expect(await stored(application)).toMatchObject({ agent: 'Nobody', reviewStatus: 'Whatever' });
-    });
-
-    test.each([
-      ['who is adding it', { editor: undefined }],
-      ['the institute', { institute: undefined }],
-    ])('an application added without %s is answered 500, and is stored all the same', async (what, missing) => {
-      const student = seed.studentsOwnedBy(u.counsellorA).find((s) => s.channel === 'direct' && s.stage === 'NotApplied');
-      const before = await Application.countDocuments();
-
-      await as(u.counsellorA)
-        .post('/v1/application', {
-          studentId: String(student._id),
-          courseName: 'Seed Course for a test',
-          courseLevel: 'Undergraduate',
-          intakeMonth: 'January',
-          intakeYear: 2027,
-          institute: { name: 'Seed University 1' },
-          editor: editor(u.counsellorA),
-          ...missing,
-        })
-        .expect(httpStatus.INTERNAL_SERVER_ERROR);
-
-      expect(await Application.countDocuments()).toBe(before + 1);
     });
 
     test("an application staff add is not put on the student's own list of applications; a partner's is", async () => {

@@ -495,13 +495,33 @@ const createApplication = catchAsync(async (req, res) => {
   // Deduplicate users by slackMemberId
   const deduplicatedUsers = Array.from(new Map(simplifiedUsers.map((user) => [user.slackMemberId, user])).values());
 
+  // The application is already stored by now, so nothing below may fail the
+  // request: a caller told "500" sends it again and makes a second one.
+  //
+  // Who added it comes from the signed-in user (actorOf), with `editor` in the
+  // request only as the fallback for a caller with no session. Reading
+  // `req.body.editor.name` directly threw when the request left `editor` out,
+  // and let a request name anybody. The details are built from what the
+  // application has: `institute` is not required, and reading its name threw
+  // when it was missing.
+  const editor = actorOf(req);
+  const details = [
+    ['Application No', application.applicationId],
+    ['University', application.institute && application.institute.name],
+    ['Degree', application.courseLevel],
+    ['Course', application.courseName],
+    ['Intake', [application.intakeMonth, application.intakeYear].filter(Boolean).join(' ')],
+  ]
+    .filter(([, value]) => value)
+    .map(([label, value]) => `${label} - ${value}`);
+
   const slackBody = {
     attachments: [
       {
-        pretext: `*An application has been initiated by ${req.body.editor.name} for ${student.firstName || ''} ${
+        pretext: `*An application has been initiated by ${editor.name} for ${student.firstName || ''} ${
           student.middleName || ''
         } ${student.lastName || ''}*`,
-        text: `\nApplication No - ${application.applicationId}.\nUniversity - ${application.institute.name}.\nDegree - ${application.courseLevel}.\nCourse - ${application.courseName}.\nIntake - ${application.intakeMonth} ${application.intakeYear}`,
+        text: `\n${details.join('.\n')}`,
         color: '#FFFF00',
       },
     ],
@@ -520,7 +540,7 @@ const createApplication = catchAsync(async (req, res) => {
     'application',
     student.id,
     application.id,
-    req.body.editor.id
+    editor.id
   );
   // }
   res.status(httpStatus.CREATED).send(application);
