@@ -721,9 +721,27 @@ const updateApplication = catchAsync(async (req, res) => {
       let currentIndex = stages.findIndex((stage) => stage.phaseState === 'AwaitingResponseStudent');
       if (currentIndex === -1) currentIndex = stages.findIndex((stage) => stage.isCurrent);
       if (currentIndex === -1) currentIndex = stages.findIndex((stage) => stage.status === 'Done');
-      // Captured before the mutation below reassigns phaseStates; this is the
-      // stage the notification/Slack messages describe the move as.
-      const movedToStatus = currentIndex !== -1 && stages[currentIndex] ? stages[currentIndex].status : null;
+      // The phase the request marks: with `holdPhase` the caller has put the
+      // marker on the phase being entered; without it, this is the phase being
+      // completed, and the marker is stepped on to the next one below. What is
+      // captured at a move (`stageRecord`) is filed under this phase.
+      const markedStatus = currentIndex !== -1 && stages[currentIndex] ? stages[currentIndex].status : null;
+      // The phase the application is at once this move is made. Everything
+      // that speaks of where the application has got to goes by this one: the
+      // messages and the timeline, the rule of one place per intake, giving
+      // the place up, and enrolling the student.
+      //
+      // All of them used to go by the marked phase. So a move sent without
+      // `holdPhase` was announced as a move to the phase just left ("moved to
+      // Submitted" for an application now holding a conditional offer, and
+      // "moved to Done" for one leaving its first phase); one place per intake
+      // was only checked a phase late, after a second application had already
+      // entered Confirmation; and an application that reached the last phase
+      // did not enrol its student until that phase was completed as well.
+      // Captured before the mutation below reassigns phaseStates.
+      const enteredAt =
+        currentIndex === -1 || req.body.holdPhase === true ? currentIndex : Math.min(currentIndex + 1, stages.length - 1);
+      const movedToStatus = enteredAt !== -1 && stages[enteredAt] ? stages[enteredAt].status : null;
       const application = await applicationService.findApplicationById(req.params.applicationId);
       if (!application) {
         throw new ApiError(httpStatus.NOT_FOUND, 'Application not found');
@@ -1045,7 +1063,7 @@ const updateApplication = catchAsync(async (req, res) => {
         const rec = req.body.stageRecord;
         update.$push = {
           stageRecords: {
-            stage: movedToStatus,
+            stage: markedStatus,
             fields: rec.fields && typeof rec.fields === 'object' ? rec.fields : {},
             docs: Array.isArray(rec.docs) ? rec.docs.map(String) : [],
             note: typeof rec.note === 'string' ? rec.note : '',

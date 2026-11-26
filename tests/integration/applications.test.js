@@ -2,7 +2,7 @@ const request = require('supertest');
 const httpStatus = require('http-status');
 const app = require('../../src/app');
 const setupTestDB = require('../utils/setupTestDB');
-const { Students, Application, Documents, Notifications } = require('../../src/models');
+const { Students, Application, Documents, Notifications, Activity } = require('../../src/models');
 const { loadSeed } = require('../seed/loadSeed');
 const { build, PHASES, phasesUpTo } = require('../factories');
 const { accessTokenFor } = require('../fixtures/token.fixture');
@@ -186,7 +186,15 @@ describe('applications and documents', () => {
     });
 
     test('each move goes one phase further', async () => {
-      const application = seededAt('Submitted');
+      // A student with this one application, so that nothing else holds their place.
+      const student = build.student({ stage: 'Applied', createdBy: u.counsellorA._id });
+      const application = build.application({
+        studentId: student._id,
+        phase: 'Submitted',
+        institute: { name: 'Seed University 1' },
+      });
+      await Students.insertMany([student], { timestamps: false });
+      await Application.insertMany([application], { timestamps: false });
 
       expect((await complete(u.counsellorA, application)).status).toBe(httpStatus.OK);
       expect((await complete(u.counsellorA, application)).status).toBe(httpStatus.OK);
@@ -314,23 +322,72 @@ describe('applications and documents', () => {
       }
     );
 
-    test('completing the last phase enrols the student', async () => {
+    // The team is told, and the timeline says, where the application has got
+    // to. A move that sends the application's own phase list back, for the
+    // server to step on, used to be announced as a move to the phase just
+    // left; and leaving the first phase, which has no wording of its own, was
+    // announced as "moved to Done".
+    test.each(PHASES.slice(0, -1).map((from, index) => [from, PHASES[index + 1]]))(
+      'a move the server steps on from %s is announced, and written on the timeline, as a move to %s',
+      async (from, to) => {
+        const student = build.student({
+          stage: 'Applied',
+          createdBy: u.counsellorA._id,
+          assignedTo: [{ user: u.counsellorA._id, role: 'sales' }],
+        });
+        const application = build.application({
+          studentId: student._id,
+          phase: from,
+          institute: { name: 'Seed University 1' },
+        });
+        await Students.insertMany([student], { timestamps: false });
+        await Application.insertMany([application], { timestamps: false });
+
+        expect((await complete(u.counsellorB, application)).status).toBe(httpStatus.OK);
+
+        expect(currentOf(await stored(application))).toBe(to);
+        const told = await Notifications.find({ type: 'application', applicationId: application._id }).lean();
+        expect(told).toHaveLength(1);
+        // capitals are not compared: one of the messages writes "UnConditional offer"
+        expect(told[0].message.toLowerCase()).toContain(`moved to ${to} by ${u.counsellorB.name}`.toLowerCase());
+        const written = await Activity.find({ student: student._id, 'meta.applicationId': String(application._id) }).lean();
+        // reaching the last phase writes a second entry, for the enrolment; it names no phase
+        expect(written.map((entry) => entry.meta.phase).filter(Boolean)).toEqual([to]);
+      }
+    );
+
+    // The student is enrolled when the application reaches the last phase,
+    // whichever way the move is sent. It used to wait, on a move that leaves
+    // the marker for the server to step on, until the last phase had been
+    // completed as well: the application read "Done" while the student was
+    // still "Applied".
+    test('reaching the last phase enrols the student', async () => {
       // Counsellor B's student at Applied has an application at CAS Received and no other place held.
       const application = seededAt('CAS Received');
       const student = studentOf(application);
       expect(student.stage).toBe('Applied');
 
       expect((await complete(u.counsellorB, application)).status).toBe(httpStatus.OK);
+
       expect(currentOf(await stored(application))).toBe('Done');
-      expect((await Students.findById(student._id).lean()).stage).toBe('Applied');
+      const enrolled = await Students.findById(student._id).lean();
+      expect(enrolled.stage).toBe('Enrolled');
+      expect(enrolled.enrolledAt.getTime()).toBeGreaterThanOrEqual(startedAt);
+    });
+
+    test('completing the last phase finishes the application, and the student is enrolled only the once', async () => {
+      const application = seededAt('CAS Received');
+      const student = studentOf(application);
+      expect((await complete(u.counsellorB, application)).status).toBe(httpStatus.OK);
+      const { enrolledAt } = await Students.findById(student._id).lean();
 
       expect((await complete(u.counsellorB, application)).status).toBe(httpStatus.OK);
 
       const now = await stored(application);
       expect(phase(now, 'Done').phaseState).toBe('Completed');
-      const enrolled = await Students.findById(student._id).lean();
-      expect(enrolled.stage).toBe('Enrolled');
-      expect(enrolled.enrolledAt.getTime()).toBeGreaterThanOrEqual(startedAt);
+      const after = await Students.findById(student._id).lean();
+      expect(after.stage).toBe('Enrolled');
+      expect(after.enrolledAt.getTime()).toBe(enrolledAt.getTime());
     });
 
     test('the first phase is completed like any other', async () => {
@@ -436,15 +493,19 @@ describe('applications and documents', () => {
         expect(currentOf(await stored(second()))).toBe('Initiated');
       });
 
+      // The rule is about the phase the application would enter. On a move
+      // that leaves the marker for the server to step on, it used to be read
+      // from the phase being left, so the second application was let into
+      // Confirmation and only stopped at the move after that.
       test('the same is true when the server moves the marker itself', async () => {
-        // Put the second application at Confirmation's doorstep, then complete Confirmation.
+        // Put the second application at Confirmation's doorstep, then complete that phase.
         await placeAt(u.counsellorA, second(), 'Unconditional offer').expect(httpStatus.OK);
-        expect((await complete(u.counsellorA, second())).status).toBe(httpStatus.OK);
-        expect(currentOf(await stored(second()))).toBe('Confirmation');
 
-        expect((await complete(u.counsellorA, second())).status).toBe(httpStatus.CONFLICT);
+        const res = await complete(u.counsellorA, second());
 
-        expect(currentOf(await stored(second()))).toBe('Confirmation');
+        expect(res.status).toBe(httpStatus.CONFLICT);
+        expect(res.body.message).toContain(holder().institute.name);
+        expect(currentOf(await stored(second()))).toBe('Unconditional offer');
       });
 
       test('below Confirmation the second application moves freely', async () => {
@@ -693,27 +754,6 @@ describe('applications and documents', () => {
         .expect(httpStatus.OK);
 
       expect(await stored(application)).toMatchObject({ agent: 'Nobody', reviewStatus: 'Whatever' });
-    });
-
-    // The team's message says "moved to" and then the phase the request marks
-    // as current. The student's profile puts the marker on the phase being
-    // entered, so its messages read right. A move that sends the application's
-    // own phase list back, for the server to step on, names the phase being
-    // left; and leaving the first phase has no wording of its own, so it is
-    // announced with the last one's.
-    test('a move that leaves the marker where it was tells the team the phase left, and "Done" for the first', async () => {
-      const toldAbout = async (anApplication) =>
-        (await Notifications.find({ type: 'application', applicationId: anApplication._id }).lean()).map((n) => n.message);
-      const first = seededAt('Initiated');
-      const second = seededAt('Submitted');
-
-      expect((await complete(u.counsellorA, first)).status).toBe(httpStatus.OK);
-      expect((await complete(u.counsellorA, second)).status).toBe(httpStatus.OK);
-
-      expect(currentOf(await stored(first))).toBe('Submitted');
-      expect(await toldAbout(first)).toEqual([expect.stringContaining('has been moved to Done by')]);
-      expect(currentOf(await stored(second))).toBe('Conditional offer');
-      expect(await toldAbout(second)).toEqual([expect.stringContaining('has been moved to Submitted by')]);
     });
 
     test("an application staff add is not put on the student's own list of applications; a partner's is", async () => {
